@@ -1,0 +1,108 @@
+-- programs
+
+entrypoints Program ;
+
+Program.   Program ::= Stmt ;
+
+-- Arg.       Arg     ::= ArgMod Ident ;
+ArgType.   Arg     ::= ArgMod Ident ":" Type ;
+separator  Arg "," ;
+
+--statements
+
+Block.       Block ::= "{" Stmt "}" ;
+Skip.        Stmt ::= "skip" ;
+BStmt.       Stmt ::= Block ;
+EStmt.       Stmt ::= Expr ;
+Break.       Stmt ::= "break" ;
+Continue.    Stmt ::= "continue" ;
+Composition. Stmt ::= Stmt ";" Stmt ;
+Cond.        Stmt ::= "if" Expr ":" Stmt ;
+CondElse.    Stmt ::= "if" Expr ":" Stmt "else" Stmt ;
+While.       Stmt ::= "while" Expr ":" Stmt ;
+ForList.     Stmt ::= "for" Ident "from" Expr ":" Stmt ;
+ForRange.    Stmt ::= "for" Ident "from" Expr "to" Expr ":" Stmt ;
+Ass.         Stmt ::= [TypeMod] Ident "=" Expr ;
+AssType.     Stmt ::= [TypeMod] Ident ":" Type "=" Expr ;
+-- FnDef.       Stmt ::= [FuncMod] Ident "(" [Arg] ")" Stmt ;
+FnDefType.   Stmt ::= [FuncMod] Ident ":" Type "(" [Arg] ")" Stmt ;
+Ret.         Stmt ::= "return" Expr ;
+VRet.        Stmt ::= "return" ;
+
+-- types
+
+Int.   Type ::= "int" ;
+Str.   Type ::= "string" ;
+Bool.  Type ::= "boolean" ;
+Void.  Type ::= "void" ;
+Float. Type ::= "float" ;
+List.  Type ::= "(" Type ")" ;
+Array. Type ::= "[" Type "]" ;
+Fun.   Type ::= "(" [Type] ")" "->" Type ;
+separator Type "," ;
+
+-- argument modifiers
+
+AModDef.   ArgMod ::= "" ;
+AModVar.   ArgMod ::= "var" ;
+AModVal.   ArgMod ::= "val" ;
+AModInOut. ArgMod ::= "inout" ;
+separator ArgMod "" ;
+
+-- type modifiers
+
+TModDef.      TypeMod ::= "" ;
+TModReadonly. TypeMod ::= "readonly" ;
+separator TypeMod "" ;
+
+-- function modifiers
+
+FModDef. FuncMod ::= "" ;
+separator FuncMod "" ;
+
+-- expressions
+
+EVar.      Expr6 ::= Ident ;
+ELitInt.   Expr6 ::= Integer ;
+ELitTrue.  Expr6 ::= "true" ;
+ELitFalse. Expr6 ::= "false" ;
+EList.     Expr6 ::= "(" [Expr] ")" ;
+EArray.    Expr6 ::= "[" [Expr] "]" ;
+EApp.      Expr6 ::= Ident "(" [Expr] ")" ;
+ELambda.   Expr6 ::= "\\" ":" Type "(" [Arg] ")" "->" Stmt ;
+ERand.     Expr6 ::= "random" "from" Expr ;
+ERandDist. Expr6 ::= "random" "from" Expr "distribution" Expr ;
+EProb.     Expr6 ::= "probability" "of" Stmt "satisfying" Expr ;
+EProbSamp. Expr6 ::= "probability" "tested" Expr "times" "of" Stmt "satisfying" Expr ;
+EString.   Expr6 ::= String ;
+
+Neg.       Expr5 ::= "-" Expr6 ;
+Not.       Expr5 ::= "!" Expr6 ;
+EMul.      Expr4 ::= Expr4 MulOp Expr5 ;
+EAdd.      Expr3 ::= Expr3 AddOp Expr4 ;
+ERel.      Expr2 ::= Expr2 RelOp Expr3 ;
+EAnd.      Expr1 ::= Expr2 "&&" Expr1 ;
+EOr.       Expr  ::= Expr1 "||" Expr ;
+
+coercions Expr 6 ;
+separator Expr "," ;
+
+-- operators
+
+Plus.  AddOp ::= "+" ;
+Minus. AddOp ::= "-" ;
+Times. MulOp ::= "*" ;
+Div.   MulOp ::= "/" ;
+Mod.   MulOp ::= "%" ;
+LTH.   RelOp ::= "<" ;
+LE.    RelOp ::= "<=" ;
+GTH.   RelOp ::= ">" ;
+GE.    RelOp ::= ">=" ;
+EQU.   RelOp ::= "==" ;
+NE.    RelOp ::= "!=" ;
+
+-- comments
+comment "#" ;
+comment "//" ;
+comment "--" ;
+comment "/*" "*/" ;
