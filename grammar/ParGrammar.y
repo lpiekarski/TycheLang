@@ -18,60 +18,68 @@ import ErrM
   '%' { PT _ (TS _ 3) }
   '&&' { PT _ (TS _ 4) }
   '(' { PT _ (TS _ 5) }
-  ')' { PT _ (TS _ 6) }
-  '*' { PT _ (TS _ 7) }
-  '+' { PT _ (TS _ 8) }
-  ',' { PT _ (TS _ 9) }
-  '-' { PT _ (TS _ 10) }
-  '->' { PT _ (TS _ 11) }
-  '/' { PT _ (TS _ 12) }
-  ':' { PT _ (TS _ 13) }
-  ';' { PT _ (TS _ 14) }
-  '<' { PT _ (TS _ 15) }
-  '<<' { PT _ (TS _ 16) }
-  '<=' { PT _ (TS _ 17) }
-  '=' { PT _ (TS _ 18) }
-  '==' { PT _ (TS _ 19) }
-  '>' { PT _ (TS _ 20) }
-  '>=' { PT _ (TS _ 21) }
-  '>>' { PT _ (TS _ 22) }
-  '[' { PT _ (TS _ 23) }
-  ']' { PT _ (TS _ 24) }
-  'and' { PT _ (TS _ 25) }
-  'boolean' { PT _ (TS _ 26) }
-  'break' { PT _ (TS _ 27) }
-  'continue' { PT _ (TS _ 28) }
-  'def' { PT _ (TS _ 29) }
-  'distribution' { PT _ (TS _ 30) }
-  'else' { PT _ (TS _ 31) }
-  'false' { PT _ (TS _ 32) }
-  'float' { PT _ (TS _ 33) }
-  'for' { PT _ (TS _ 34) }
-  'from' { PT _ (TS _ 35) }
-  'if' { PT _ (TS _ 36) }
-  'inout' { PT _ (TS _ 37) }
-  'int' { PT _ (TS _ 38) }
-  'lambda' { PT _ (TS _ 39) }
-  'of' { PT _ (TS _ 40) }
-  'or' { PT _ (TS _ 41) }
-  'probability' { PT _ (TS _ 42) }
-  'random' { PT _ (TS _ 43) }
-  'readonly' { PT _ (TS _ 44) }
-  'return' { PT _ (TS _ 45) }
-  'satisfying' { PT _ (TS _ 46) }
-  'skip' { PT _ (TS _ 47) }
-  'string' { PT _ (TS _ 48) }
-  'tested' { PT _ (TS _ 49) }
-  'times' { PT _ (TS _ 50) }
-  'to' { PT _ (TS _ 51) }
-  'true' { PT _ (TS _ 52) }
-  'val' { PT _ (TS _ 53) }
-  'var' { PT _ (TS _ 54) }
-  'void' { PT _ (TS _ 55) }
-  'while' { PT _ (TS _ 56) }
-  '{' { PT _ (TS _ 57) }
-  '||' { PT _ (TS _ 58) }
-  '}' { PT _ (TS _ 59) }
+  '()' { PT _ (TS _ 6) }
+  ')' { PT _ (TS _ 7) }
+  '*' { PT _ (TS _ 8) }
+  '+' { PT _ (TS _ 9) }
+  ',' { PT _ (TS _ 10) }
+  '-' { PT _ (TS _ 11) }
+  '->' { PT _ (TS _ 12) }
+  '/' { PT _ (TS _ 13) }
+  ':' { PT _ (TS _ 14) }
+  '::' { PT _ (TS _ 15) }
+  ';' { PT _ (TS _ 16) }
+  '<' { PT _ (TS _ 17) }
+  '<=' { PT _ (TS _ 18) }
+  '=' { PT _ (TS _ 19) }
+  '==' { PT _ (TS _ 20) }
+  '>' { PT _ (TS _ 21) }
+  '>=' { PT _ (TS _ 22) }
+  '?' { PT _ (TS _ 23) }
+  '[' { PT _ (TS _ 24) }
+  ']' { PT _ (TS _ 25) }
+  '_' { PT _ (TS _ 26) }
+  'and' { PT _ (TS _ 27) }
+  'array' { PT _ (TS _ 28) }
+  'boolean' { PT _ (TS _ 29) }
+  'break' { PT _ (TS _ 30) }
+  'continue' { PT _ (TS _ 31) }
+  'def' { PT _ (TS _ 32) }
+  'distribution' { PT _ (TS _ 33) }
+  'do' { PT _ (TS _ 34) }
+  'each' { PT _ (TS _ 35) }
+  'else' { PT _ (TS _ 36) }
+  'equals' { PT _ (TS _ 37) }
+  'false' { PT _ (TS _ 38) }
+  'float' { PT _ (TS _ 39) }
+  'for' { PT _ (TS _ 40) }
+  'from' { PT _ (TS _ 41) }
+  'if' { PT _ (TS _ 42) }
+  'inout' { PT _ (TS _ 43) }
+  'int' { PT _ (TS _ 44) }
+  'lambda' { PT _ (TS _ 45) }
+  'mod' { PT _ (TS _ 46) }
+  'not' { PT _ (TS _ 47) }
+  'of' { PT _ (TS _ 48) }
+  'or' { PT _ (TS _ 49) }
+  'probability' { PT _ (TS _ 50) }
+  'random' { PT _ (TS _ 51) }
+  'readonly' { PT _ (TS _ 52) }
+  'return' { PT _ (TS _ 53) }
+  'satisfying' { PT _ (TS _ 54) }
+  'string' { PT _ (TS _ 55) }
+  'tested' { PT _ (TS _ 56) }
+  'then' { PT _ (TS _ 57) }
+  'times' { PT _ (TS _ 58) }
+  'to' { PT _ (TS _ 59) }
+  'true' { PT _ (TS _ 60) }
+  'val' { PT _ (TS _ 61) }
+  'var' { PT _ (TS _ 62) }
+  'void' { PT _ (TS _ 63) }
+  'while' { PT _ (TS _ 64) }
+  '{' { PT _ (TS _ 65) }
+  '||' { PT _ (TS _ 66) }
+  '}' { PT _ (TS _ 67) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -118,7 +126,7 @@ Program :: {
 Arg :: {
   (Maybe (Int, Int), Arg (Maybe (Int, Int)))
 }
-: ArgMod Ident ':' Type {
+: ArgMod FullIdent ':' FullType {
   (fst $1, AbsGrammar.Arg (fst $1)(snd $1)(snd $2)(snd $4)) 
 }
 
@@ -135,44 +143,51 @@ ListArg :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
+FullIdent :: {
+  (Maybe (Int, Int), FullIdent (Maybe (Int, Int)))
+}
+: Ident {
+  (fst $1, AbsGrammar.FullIdent (fst $1)(snd $1)) 
+}
+| '_' {
+  (Just (tokenLineCol $1), AbsGrammar.AnonIdent (Just (tokenLineCol $1)))
+}
+
 Stmt5 :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: 'skip' {
+: ';' {
   (Just (tokenLineCol $1), AbsGrammar.Skip (Just (tokenLineCol $1)))
 }
-| {
-  (Nothing, AbsGrammar.Skip Nothing)
-}
-| Expr {
-  (fst $1, AbsGrammar.EStmt (fst $1)(snd $1)) 
-}
-| 'break' {
+| 'break' ';' {
   (Just (tokenLineCol $1), AbsGrammar.Break (Just (tokenLineCol $1)))
 }
-| 'continue' {
+| 'continue' ';' {
   (Just (tokenLineCol $1), AbsGrammar.Continue (Just (tokenLineCol $1)))
 }
-| 'return' Expr {
+| 'return' Expr ';' {
   (Just (tokenLineCol $1), AbsGrammar.Ret (Just (tokenLineCol $1)) (snd $2)) 
 }
-| 'return' {
+| Expr ';' {
+  (fst $1, AbsGrammar.Ret (fst $1)(snd $1)) 
+}
+| 'return' ';' {
   (Just (tokenLineCol $1), AbsGrammar.VRet (Just (tokenLineCol $1)))
 }
-| 'def' Ident ':' FullType '=' Expr1 {
+| 'def' FullIdent ':' FullType '=' Expr1 ';' {
   (Just (tokenLineCol $1), AbsGrammar.VarDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
 }
-| Ident '=' Expr1 {
+| Ident '=' Expr1 ';' {
   (fst $1, AbsGrammar.Ass (fst $1)(snd $1)(snd $3)) 
 }
-| '{' Stmt '}' {
-  (Just (tokenLineCol $1), snd $2)
+| Stmt6 {
+  (fst $1, snd $1)
 }
 
 Stmt4 :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: 'def' Ident ':' FullType '(' ListArg ')' Stmt5 {
+: 'def' FullIdent ':' FullType '(' ListArg ')' Stmt5 {
   (Just (tokenLineCol $1), AbsGrammar.FnDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
 }
 | Stmt5 {
@@ -182,19 +197,19 @@ Stmt4 :: {
 Stmt1 :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: 'if' Expr ':' Stmt1 {
+: 'if' Expr 'then' Stmt1 {
   (Just (tokenLineCol $1), AbsGrammar.Cond (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
 }
-| 'if' Expr ':' Stmt1 'else' Stmt1 {
+| 'if' Expr 'then' Stmt1 'else' Stmt1 {
   (Just (tokenLineCol $1), AbsGrammar.CondElse (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
 }
-| 'while' Expr ':' Stmt1 {
+| 'while' Expr 'do' Stmt1 {
   (Just (tokenLineCol $1), AbsGrammar.While (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
 }
-| 'for' Ident 'from' Expr ':' Stmt1 {
-  (Just (tokenLineCol $1), AbsGrammar.ForList (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
+| 'for' 'each' Ident 'from' Expr 'do' Stmt1 {
+  (Just (tokenLineCol $1), AbsGrammar.ForList (Just (tokenLineCol $1)) (snd $3)(snd $5)(snd $7)) 
 }
-| 'for' Ident 'from' Expr 'to' Expr ':' Stmt1 {
+| 'for' Ident 'from' Expr 'to' Expr 'do' Stmt1 {
   (Just (tokenLineCol $1), AbsGrammar.ForRange (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
 }
 | Stmt2 {
@@ -204,8 +219,8 @@ Stmt1 :: {
 Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: Stmt ';' Stmt1 {
-  (fst $1, AbsGrammar.Composition (fst $1)(snd $1)(snd $3)) 
+: Stmt1 Stmt {
+  (fst $1, AbsGrammar.Composition (fst $1)(snd $1)(snd $2)) 
 }
 | Stmt1 {
   (fst $1, snd $1)
@@ -223,6 +238,13 @@ Stmt3 :: {
 }
 : Stmt4 {
   (fst $1, snd $1)
+}
+
+Stmt6 :: {
+  (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
+}
+: '{' Stmt '}' {
+  (Just (tokenLineCol $1), snd $2)
 }
 
 Type :: {
@@ -243,7 +265,7 @@ Type :: {
 | 'float' {
   (Just (tokenLineCol $1), AbsGrammar.Float (Just (tokenLineCol $1)))
 }
-| '<<' FullType '>>' {
+| '(' FullType ')' {
   (Just (tokenLineCol $1), AbsGrammar.List (Just (tokenLineCol $1)) (snd $2)) 
 }
 | '[' FullType ']' {
@@ -310,7 +332,7 @@ ListTypeMod :: {
   (fst $1, flip (:) (snd $1)(snd $2)) 
 }
 
-Expr8 :: {
+Expr9 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
 : Ident {
@@ -331,18 +353,34 @@ Expr8 :: {
 | Double {
   (fst $1, AbsGrammar.ELitFloat (fst $1)(snd $1)) 
 }
+| '()' {
+  (Just (tokenLineCol $1), AbsGrammar.EEmpList (Just (tokenLineCol $1)))
+}
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
+}
+
+Expr8 :: {
+  (Maybe (Int, Int), Expr (Maybe (Int, Int)))
+}
+: '-' Expr9 {
+  (Just (tokenLineCol $1), AbsGrammar.Neg (Just (tokenLineCol $1)) (snd $2)) 
+}
+| '!' Expr9 {
+  (Just (tokenLineCol $1), AbsGrammar.Not (Just (tokenLineCol $1)) (snd $2)) 
+}
+| 'not' Expr9 {
+  (Just (tokenLineCol $1), AbsGrammar.Not (Just (tokenLineCol $1)) (snd $2)) 
+}
+| Expr9 {
+  (fst $1, snd $1)
 }
 
 Expr7 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: '-' Expr8 {
-  (Just (tokenLineCol $1), AbsGrammar.Neg (Just (tokenLineCol $1)) (snd $2)) 
-}
-| '!' Expr8 {
-  (Just (tokenLineCol $1), AbsGrammar.Not (Just (tokenLineCol $1)) (snd $2)) 
+: Expr8 '::' Expr7 {
+  (fst $1, AbsGrammar.ECons (fst $1)(snd $1)(snd $3)) 
 }
 | Expr8 {
   (fst $1, snd $1)
@@ -401,20 +439,17 @@ Expr2 :: {
 Expr1 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: 'lambda' ':' FullType '(' ListArg ')' '->' Stmt1 {
-  (Just (tokenLineCol $1), AbsGrammar.ELambda (Just (tokenLineCol $1)) (snd $3)(snd $5)(snd $8)) 
+: '(' ListExpr ')' {
+  (Just (tokenLineCol $1), AbsGrammar.EList (Just (tokenLineCol $1)) (snd $2)) 
 }
-| 'random' 'from' Expr2 {
-  (Just (tokenLineCol $1), AbsGrammar.ERand (Just (tokenLineCol $1)) (snd $3)) 
+| '[' ListExpr ']' {
+  (Just (tokenLineCol $1), AbsGrammar.EArr (Just (tokenLineCol $1)) (snd $2)) 
 }
-| 'random' 'from' Expr2 'distribution' Expr2 {
-  (Just (tokenLineCol $1), AbsGrammar.ERandDist (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
+| 'array' '[' Expr ']' {
+  (Just (tokenLineCol $1), AbsGrammar.EArrSize (Just (tokenLineCol $1)) (snd $3)) 
 }
-| 'probability' 'of' Stmt1 'satisfying' Expr2 {
-  (Just (tokenLineCol $1), AbsGrammar.EProb (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
-}
-| 'probability' 'tested' Expr2 'times' 'of' Stmt1 'satisfying' Expr2 {
-  (Just (tokenLineCol $1), AbsGrammar.EProbSamp (Just (tokenLineCol $1)) (snd $3)(snd $6)(snd $8)) 
+| Ident '(' ListExpr ')' {
+  (fst $1, AbsGrammar.EApp (fst $1)(snd $1)(snd $3)) 
 }
 | Expr2 {
   (fst $1, snd $1)
@@ -423,14 +458,23 @@ Expr1 :: {
 Expr :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: '<<' ListExpr '>>' {
-  (Just (tokenLineCol $1), AbsGrammar.EList (Just (tokenLineCol $1)) (snd $2)) 
+: Expr1 '?' Expr1 ':' Expr1 {
+  (fst $1, AbsGrammar.EIf (fst $1)(snd $1)(snd $3)(snd $5)) 
 }
-| '[' ListExpr ']' {
-  (Just (tokenLineCol $1), AbsGrammar.EArray (Just (tokenLineCol $1)) (snd $2)) 
+| 'lambda' ':' FullType '(' ListArg ')' '->' Stmt1 {
+  (Just (tokenLineCol $1), AbsGrammar.ELambda (Just (tokenLineCol $1)) (snd $3)(snd $5)(snd $8)) 
 }
-| Ident '(' ListExpr ')' {
-  (fst $1, AbsGrammar.EApp (fst $1)(snd $1)(snd $3)) 
+| 'random' 'from' Expr1 {
+  (Just (tokenLineCol $1), AbsGrammar.ERand (Just (tokenLineCol $1)) (snd $3)) 
+}
+| 'random' 'from' Expr1 'distribution' Expr1 {
+  (Just (tokenLineCol $1), AbsGrammar.ERandDist (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
+}
+| 'probability' 'of' Stmt1 'satisfying' Expr1 {
+  (Just (tokenLineCol $1), AbsGrammar.EProb (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
+}
+| 'probability' 'tested' Expr1 'times' 'of' Stmt1 'satisfying' Expr1 {
+  (Just (tokenLineCol $1), AbsGrammar.EProbSamp (Just (tokenLineCol $1)) (snd $3)(snd $6)(snd $8)) 
 }
 | Expr1 {
   (fst $1, snd $1)
@@ -471,6 +515,9 @@ MulOp :: {
 | '%' {
   (Just (tokenLineCol $1), AbsGrammar.Mod (Just (tokenLineCol $1)))
 }
+| 'mod' {
+  (Just (tokenLineCol $1), AbsGrammar.Mod (Just (tokenLineCol $1)))
+}
 
 RelOp :: {
   (Maybe (Int, Int), RelOp (Maybe (Int, Int)))
@@ -490,6 +537,9 @@ RelOp :: {
 | '==' {
   (Just (tokenLineCol $1), AbsGrammar.EQU (Just (tokenLineCol $1)))
 }
+| 'equals' {
+  (Just (tokenLineCol $1), AbsGrammar.EQU (Just (tokenLineCol $1)))
+}
 | '!=' {
   (Just (tokenLineCol $1), AbsGrammar.NE (Just (tokenLineCol $1)))
 }
@@ -501,7 +551,7 @@ OrOp :: {
   (Just (tokenLineCol $1), AbsGrammar.Or (Just (tokenLineCol $1)))
 }
 | '||' {
-  (Just (tokenLineCol $1), AbsGrammar.OrSym (Just (tokenLineCol $1)))
+  (Just (tokenLineCol $1), AbsGrammar.Or (Just (tokenLineCol $1)))
 }
 
 AndOp :: {
@@ -511,7 +561,7 @@ AndOp :: {
   (Just (tokenLineCol $1), AbsGrammar.And (Just (tokenLineCol $1)))
 }
 | '&&' {
-  (Just (tokenLineCol $1), AbsGrammar.AndSym (Just (tokenLineCol $1)))
+  (Just (tokenLineCol $1), AbsGrammar.And (Just (tokenLineCol $1)))
 }
 
 {
