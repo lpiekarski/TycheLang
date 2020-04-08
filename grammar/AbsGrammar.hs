@@ -14,64 +14,56 @@ data Program a = Program a (Stmt a)
 instance Functor Program where
     fmap f x = case x of
         Program a stmt -> Program (f a) (fmap f stmt)
-data Arg a = ArgType a (ArgMod a) Ident (Type a)
+data Arg a = Arg a (ArgMod a) Ident (Type a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Arg where
     fmap f x = case x of
-        ArgType a argmod ident type_ -> ArgType (f a) (fmap f argmod) ident (fmap f type_)
-data Block a = Block a (Stmt a)
-  deriving (Eq, Ord, Show, Read)
-
-instance Functor Block where
-    fmap f x = case x of
-        Block a stmt -> Block (f a) (fmap f stmt)
+        Arg a argmod ident type_ -> Arg (f a) (fmap f argmod) ident (fmap f type_)
 data Stmt a
     = Skip a
-    | BStmt a (Block a)
     | EStmt a (Expr a)
     | Break a
     | Continue a
-    | Composition a (Stmt a) (Stmt a)
+    | Ret a (Expr a)
+    | VRet a
+    | VarDef a Ident (FullType a) (Expr a)
+    | Ass a Ident (Expr a)
+    | FnDef a Ident (FullType a) [Arg a] (Stmt a)
     | Cond a (Expr a) (Stmt a)
     | CondElse a (Expr a) (Stmt a) (Stmt a)
     | While a (Expr a) (Stmt a)
     | ForList a Ident (Expr a) (Stmt a)
     | ForRange a Ident (Expr a) (Expr a) (Stmt a)
-    | Ass a [TypeMod a] Ident (Expr a)
-    | AssType a [TypeMod a] Ident (Type a) (Expr a)
-    | FnDefType a [FuncMod a] Ident (Type a) [Arg a] (Stmt a)
-    | Ret a (Expr a)
-    | VRet a
+    | Composition a (Stmt a) (Stmt a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Stmt where
     fmap f x = case x of
         Skip a -> Skip (f a)
-        BStmt a block -> BStmt (f a) (fmap f block)
         EStmt a expr -> EStmt (f a) (fmap f expr)
         Break a -> Break (f a)
         Continue a -> Continue (f a)
-        Composition a stmt1 stmt2 -> Composition (f a) (fmap f stmt1) (fmap f stmt2)
+        Ret a expr -> Ret (f a) (fmap f expr)
+        VRet a -> VRet (f a)
+        VarDef a ident fulltype expr -> VarDef (f a) ident (fmap f fulltype) (fmap f expr)
+        Ass a ident expr -> Ass (f a) ident (fmap f expr)
+        FnDef a ident fulltype args stmt -> FnDef (f a) ident (fmap f fulltype) (map (fmap f) args) (fmap f stmt)
         Cond a expr stmt -> Cond (f a) (fmap f expr) (fmap f stmt)
         CondElse a expr stmt1 stmt2 -> CondElse (f a) (fmap f expr) (fmap f stmt1) (fmap f stmt2)
         While a expr stmt -> While (f a) (fmap f expr) (fmap f stmt)
         ForList a ident expr stmt -> ForList (f a) ident (fmap f expr) (fmap f stmt)
         ForRange a ident expr1 expr2 stmt -> ForRange (f a) ident (fmap f expr1) (fmap f expr2) (fmap f stmt)
-        Ass a typemods ident expr -> Ass (f a) (map (fmap f) typemods) ident (fmap f expr)
-        AssType a typemods ident type_ expr -> AssType (f a) (map (fmap f) typemods) ident (fmap f type_) (fmap f expr)
-        FnDefType a funcmods ident type_ args stmt -> FnDefType (f a) (map (fmap f) funcmods) ident (fmap f type_) (map (fmap f) args) (fmap f stmt)
-        Ret a expr -> Ret (f a) (fmap f expr)
-        VRet a -> VRet (f a)
+        Composition a stmt1 stmt2 -> Composition (f a) (fmap f stmt1) (fmap f stmt2)
 data Type a
     = Int a
     | Str a
     | Bool a
     | Void a
     | Float a
-    | List a (Type a)
-    | Array a (Type a)
-    | Fun a [Type a] (Type a)
+    | List a (FullType a)
+    | Array a (FullType a)
+    | Fun a [ArgType a] (FullType a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
@@ -81,52 +73,57 @@ instance Functor Type where
         Bool a -> Bool (f a)
         Void a -> Void (f a)
         Float a -> Float (f a)
-        List a type_ -> List (f a) (fmap f type_)
-        Array a type_ -> Array (f a) (fmap f type_)
-        Fun a types type_ -> Fun (f a) (map (fmap f) types) (fmap f type_)
-data ArgMod a = AModDef a | AModVar a | AModVal a | AModInOut a
+        List a fulltype -> List (f a) (fmap f fulltype)
+        Array a fulltype -> Array (f a) (fmap f fulltype)
+        Fun a argtypes fulltype -> Fun (f a) (map (fmap f) argtypes) (fmap f fulltype)
+data ArgType a = ArgType a (ArgMod a) (Type a)
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor ArgType where
+    fmap f x = case x of
+        ArgType a argmod type_ -> ArgType (f a) (fmap f argmod) (fmap f type_)
+data FullType a = FullType a [TypeMod a] (Type a)
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor FullType where
+    fmap f x = case x of
+        FullType a typemods type_ -> FullType (f a) (map (fmap f) typemods) (fmap f type_)
+data ArgMod a = AModVar a | AModVal a | AModInOut a
   deriving (Eq, Ord, Show, Read)
 
 instance Functor ArgMod where
     fmap f x = case x of
-        AModDef a -> AModDef (f a)
         AModVar a -> AModVar (f a)
         AModVal a -> AModVal (f a)
         AModInOut a -> AModInOut (f a)
-data TypeMod a = TModDef a | TModReadonly a
+data TypeMod a = TModReadonly a
   deriving (Eq, Ord, Show, Read)
 
 instance Functor TypeMod where
     fmap f x = case x of
-        TModDef a -> TModDef (f a)
         TModReadonly a -> TModReadonly (f a)
-data FuncMod a = FModDef a
-  deriving (Eq, Ord, Show, Read)
-
-instance Functor FuncMod where
-    fmap f x = case x of
-        FModDef a -> FModDef (f a)
 data Expr a
     = EVar a Ident
     | ELitInt a Integer
     | ELitTrue a
     | ELitFalse a
-    | EList a [Expr a]
-    | EArray a [Expr a]
-    | EApp a Ident [Expr a]
-    | ELambda a (Type a) [Arg a] (Stmt a)
-    | ERand a (Expr a)
-    | ERandDist a (Expr a) (Expr a)
-    | EProb a (Stmt a) (Expr a)
-    | EProbSamp a (Expr a) (Stmt a) (Expr a)
     | EString a String
+    | ELitFloat a Double
     | Neg a (Expr a)
     | Not a (Expr a)
     | EMul a (Expr a) (MulOp a) (Expr a)
     | EAdd a (Expr a) (AddOp a) (Expr a)
     | ERel a (Expr a) (RelOp a) (Expr a)
-    | EAnd a (Expr a) (Expr a)
-    | EOr a (Expr a) (Expr a)
+    | EAnd a (Expr a) (AndOp a) (Expr a)
+    | EOr a (Expr a) (OrOp a) (Expr a)
+    | ELambda a (FullType a) [Arg a] (Stmt a)
+    | ERand a (Expr a)
+    | ERandDist a (Expr a) (Expr a)
+    | EProb a (Stmt a) (Expr a)
+    | EProbSamp a (Expr a) (Stmt a) (Expr a)
+    | EList a [Expr a]
+    | EArray a [Expr a]
+    | EApp a Ident [Expr a]
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Expr where
@@ -135,22 +132,23 @@ instance Functor Expr where
         ELitInt a integer -> ELitInt (f a) integer
         ELitTrue a -> ELitTrue (f a)
         ELitFalse a -> ELitFalse (f a)
-        EList a exprs -> EList (f a) (map (fmap f) exprs)
-        EArray a exprs -> EArray (f a) (map (fmap f) exprs)
-        EApp a ident exprs -> EApp (f a) ident (map (fmap f) exprs)
-        ELambda a type_ args stmt -> ELambda (f a) (fmap f type_) (map (fmap f) args) (fmap f stmt)
-        ERand a expr -> ERand (f a) (fmap f expr)
-        ERandDist a expr1 expr2 -> ERandDist (f a) (fmap f expr1) (fmap f expr2)
-        EProb a stmt expr -> EProb (f a) (fmap f stmt) (fmap f expr)
-        EProbSamp a expr1 stmt expr2 -> EProbSamp (f a) (fmap f expr1) (fmap f stmt) (fmap f expr2)
         EString a string -> EString (f a) string
+        ELitFloat a double -> ELitFloat (f a) double
         Neg a expr -> Neg (f a) (fmap f expr)
         Not a expr -> Not (f a) (fmap f expr)
         EMul a expr1 mulop expr2 -> EMul (f a) (fmap f expr1) (fmap f mulop) (fmap f expr2)
         EAdd a expr1 addop expr2 -> EAdd (f a) (fmap f expr1) (fmap f addop) (fmap f expr2)
         ERel a expr1 relop expr2 -> ERel (f a) (fmap f expr1) (fmap f relop) (fmap f expr2)
-        EAnd a expr1 expr2 -> EAnd (f a) (fmap f expr1) (fmap f expr2)
-        EOr a expr1 expr2 -> EOr (f a) (fmap f expr1) (fmap f expr2)
+        EAnd a expr1 andop expr2 -> EAnd (f a) (fmap f expr1) (fmap f andop) (fmap f expr2)
+        EOr a expr1 orop expr2 -> EOr (f a) (fmap f expr1) (fmap f orop) (fmap f expr2)
+        ELambda a fulltype args stmt -> ELambda (f a) (fmap f fulltype) (map (fmap f) args) (fmap f stmt)
+        ERand a expr -> ERand (f a) (fmap f expr)
+        ERandDist a expr1 expr2 -> ERandDist (f a) (fmap f expr1) (fmap f expr2)
+        EProb a stmt expr -> EProb (f a) (fmap f stmt) (fmap f expr)
+        EProbSamp a expr1 stmt expr2 -> EProbSamp (f a) (fmap f expr1) (fmap f stmt) (fmap f expr2)
+        EList a exprs -> EList (f a) (map (fmap f) exprs)
+        EArray a exprs -> EArray (f a) (map (fmap f) exprs)
+        EApp a ident exprs -> EApp (f a) ident (map (fmap f) exprs)
 data AddOp a = Plus a | Minus a
   deriving (Eq, Ord, Show, Read)
 
@@ -177,3 +175,17 @@ instance Functor RelOp where
         GE a -> GE (f a)
         EQU a -> EQU (f a)
         NE a -> NE (f a)
+data OrOp a = Or a | OrSym a
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor OrOp where
+    fmap f x = case x of
+        Or a -> Or (f a)
+        OrSym a -> OrSym (f a)
+data AndOp a = And a | AndSym a
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor AndOp where
+    fmap f x = case x of
+        And a -> And (f a)
+        AndSym a -> AndSym (f a)

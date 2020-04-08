@@ -26,28 +26,35 @@ String literals //String// have the form
 except ``"`` unless preceded by ``\``.
 
 
+Double-precision float literals //Double// have the structure
+indicated by the regular expression ``digit+ '.' digit+ ('e' ('-')? digit+)?`` i.e.\
+two sequences of digits separated by a decimal point, optionally
+followed by an unsigned or negative exponent.
+
+
 
 
 ===Reserved words and symbols===
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in grammar are the following:
-  | ``boolean`` | ``break`` | ``continue`` | ``distribution``
-  | ``else`` | ``false`` | ``float`` | ``for``
-  | ``from`` | ``if`` | ``inout`` | ``int``
-  | ``of`` | ``probability`` | ``random`` | ``readonly``
+  | ``and`` | ``boolean`` | ``break`` | ``continue``
+  | ``def`` | ``distribution`` | ``else`` | ``false``
+  | ``float`` | ``for`` | ``from`` | ``if``
+  | ``inout`` | ``int`` | ``lambda`` | ``of``
+  | ``or`` | ``probability`` | ``random`` | ``readonly``
   | ``return`` | ``satisfying`` | ``skip`` | ``string``
   | ``tested`` | ``times`` | ``to`` | ``true``
   | ``val`` | ``var`` | ``void`` | ``while``
 
 The symbols used in grammar are the following:
-  | : | , | { | }
-  | ; | = | ( | )
-  | [ | ] | -> | \
-  | - | ! | && | ||
-  | + | * | / | %
-  | < | <= | > | >=
-  | == | != |  | 
+  | : | , | = | (
+  | ) | ; | { | }
+  | << | >> | [ | ]
+  | -> | - | ! | +
+  | * | / | % | <
+  | <= | > | >= | ==
+  | != | || | && | 
 
 ===Comments===
 Single-line comments begin with #, //, --.Multiple-line comments are  enclosed with /* and */.
@@ -63,73 +70,76 @@ All other symbols are terminals.
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// 
   |  |  **|**  | //Arg// ``,`` //[Arg]// 
-  | //Block// | -> | ``{`` //Stmt// ``}`` 
-  | //Stmt// | -> | ``skip`` 
-  |  |  **|**  | //Block// 
+  | //Stmt5// | -> | ``skip`` 
+  |  |  **|**  | **eps**
   |  |  **|**  | //Expr// 
   |  |  **|**  | ``break`` 
   |  |  **|**  | ``continue`` 
-  |  |  **|**  | //Stmt// ``;`` //Stmt// 
-  |  |  **|**  | ``if`` //Expr// ``:`` //Stmt// 
-  |  |  **|**  | ``if`` //Expr// ``:`` //Stmt// ``else`` //Stmt// 
-  |  |  **|**  | ``while`` //Expr// ``:`` //Stmt// 
-  |  |  **|**  | ``for`` //Ident// ``from`` //Expr// ``:`` //Stmt// 
-  |  |  **|**  | ``for`` //Ident// ``from`` //Expr// ``to`` //Expr// ``:`` //Stmt// 
-  |  |  **|**  | //[TypeMod]// //Ident// ``=`` //Expr// 
-  |  |  **|**  | //[TypeMod]// //Ident// ``:`` //Type// ``=`` //Expr// 
-  |  |  **|**  | //[FuncMod]// //Ident// ``:`` //Type// ``(`` //[Arg]// ``)`` //Stmt// 
   |  |  **|**  | ``return`` //Expr// 
   |  |  **|**  | ``return`` 
+  |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``=`` //Expr1// 
+  |  |  **|**  | //Ident// ``=`` //Expr1// 
+  |  |  **|**  | ``{`` //Stmt// ``}`` 
+  | //Stmt4// | -> | ``def`` //Ident// ``:`` //FullType// ``(`` //[Arg]// ``)`` //Stmt5// 
+  |  |  **|**  | //Stmt5// 
+  | //Stmt1// | -> | ``if`` //Expr// ``:`` //Stmt1// 
+  |  |  **|**  | ``if`` //Expr// ``:`` //Stmt1// ``else`` //Stmt1// 
+  |  |  **|**  | ``while`` //Expr// ``:`` //Stmt1// 
+  |  |  **|**  | ``for`` //Ident// ``from`` //Expr// ``:`` //Stmt1// 
+  |  |  **|**  | ``for`` //Ident// ``from`` //Expr// ``to`` //Expr// ``:`` //Stmt1// 
+  |  |  **|**  | //Stmt2// 
+  | //Stmt// | -> | //Stmt// ``;`` //Stmt1// 
+  |  |  **|**  | //Stmt1// 
+  | //Stmt2// | -> | //Stmt3// 
+  | //Stmt3// | -> | //Stmt4// 
   | //Type// | -> | ``int`` 
   |  |  **|**  | ``string`` 
   |  |  **|**  | ``boolean`` 
   |  |  **|**  | ``void`` 
   |  |  **|**  | ``float`` 
-  |  |  **|**  | ``(`` //Type// ``)`` 
-  |  |  **|**  | ``[`` //Type// ``]`` 
-  |  |  **|**  | ``(`` //[Type]// ``)`` ``->`` //Type// 
-  | //[Type]// | -> | **eps**
-  |  |  **|**  | //Type// 
-  |  |  **|**  | //Type// ``,`` //[Type]// 
-  | //ArgMod// | -> | **eps**
-  |  |  **|**  | ``var`` 
+  |  |  **|**  | ``<<`` //FullType// ``>>`` 
+  |  |  **|**  | ``[`` //FullType// ``]`` 
+  |  |  **|**  | ``(`` //[ArgType]// ``)`` ``->`` //FullType// 
+  | //ArgType// | -> | //ArgMod// //Type// 
+  | //FullType// | -> | //[TypeMod]// //Type// 
+  | //[ArgType]// | -> | **eps**
+  |  |  **|**  | //ArgType// 
+  |  |  **|**  | //ArgType// ``,`` //[ArgType]// 
+  | //ArgMod// | -> | ``var`` 
   |  |  **|**  | ``val`` 
   |  |  **|**  | ``inout`` 
-  | //[ArgMod]// | -> | **eps**
-  |  |  **|**  | //ArgMod// //[ArgMod]// 
-  | //TypeMod// | -> | **eps**
-  |  |  **|**  | ``readonly`` 
+  | //TypeMod// | -> | ``readonly`` 
   | //[TypeMod]// | -> | **eps**
   |  |  **|**  | //TypeMod// //[TypeMod]// 
-  | //FuncMod// | -> | **eps**
-  | //[FuncMod]// | -> | **eps**
-  |  |  **|**  | //FuncMod// //[FuncMod]// 
-  | //Expr6// | -> | //Ident// 
+  | //Expr8// | -> | //Ident// 
   |  |  **|**  | //Integer// 
   |  |  **|**  | ``true`` 
   |  |  **|**  | ``false`` 
-  |  |  **|**  | ``(`` //[Expr]// ``)`` 
+  |  |  **|**  | //String// 
+  |  |  **|**  | //Double// 
+  |  |  **|**  | ``(`` //Expr// ``)`` 
+  | //Expr7// | -> | ``-`` //Expr8// 
+  |  |  **|**  | ``!`` //Expr8// 
+  |  |  **|**  | //Expr8// 
+  | //Expr6// | -> | //Expr6// //MulOp// //Expr7// 
+  |  |  **|**  | //Expr7// 
+  | //Expr5// | -> | //Expr5// //AddOp// //Expr6// 
+  |  |  **|**  | //Expr6// 
+  | //Expr4// | -> | //Expr4// //RelOp// //Expr5// 
+  |  |  **|**  | //Expr5// 
+  | //Expr3// | -> | //Expr4// //AndOp// //Expr3// 
+  |  |  **|**  | //Expr4// 
+  | //Expr2// | -> | //Expr3// //OrOp// //Expr2// 
+  |  |  **|**  | //Expr3// 
+  | //Expr1// | -> | ``lambda`` ``:`` //FullType// ``(`` //[Arg]// ``)`` ``->`` //Stmt1// 
+  |  |  **|**  | ``random`` ``from`` //Expr2// 
+  |  |  **|**  | ``random`` ``from`` //Expr2// ``distribution`` //Expr2// 
+  |  |  **|**  | ``probability`` ``of`` //Stmt1// ``satisfying`` //Expr2// 
+  |  |  **|**  | ``probability`` ``tested`` //Expr2// ``times`` ``of`` //Stmt1// ``satisfying`` //Expr2// 
+  |  |  **|**  | //Expr2// 
+  | //Expr// | -> | ``<<`` //[Expr]// ``>>`` 
   |  |  **|**  | ``[`` //[Expr]// ``]`` 
   |  |  **|**  | //Ident// ``(`` //[Expr]// ``)`` 
-  |  |  **|**  | ``\`` ``:`` //Type// ``(`` //[Arg]// ``)`` ``->`` //Stmt// 
-  |  |  **|**  | ``random`` ``from`` //Expr// 
-  |  |  **|**  | ``random`` ``from`` //Expr// ``distribution`` //Expr// 
-  |  |  **|**  | ``probability`` ``of`` //Stmt// ``satisfying`` //Expr// 
-  |  |  **|**  | ``probability`` ``tested`` //Expr// ``times`` ``of`` //Stmt// ``satisfying`` //Expr// 
-  |  |  **|**  | //String// 
-  |  |  **|**  | ``(`` //Expr// ``)`` 
-  | //Expr5// | -> | ``-`` //Expr6// 
-  |  |  **|**  | ``!`` //Expr6// 
-  |  |  **|**  | //Expr6// 
-  | //Expr4// | -> | //Expr4// //MulOp// //Expr5// 
-  |  |  **|**  | //Expr5// 
-  | //Expr3// | -> | //Expr3// //AddOp// //Expr4// 
-  |  |  **|**  | //Expr4// 
-  | //Expr2// | -> | //Expr2// //RelOp// //Expr3// 
-  |  |  **|**  | //Expr3// 
-  | //Expr1// | -> | //Expr2// ``&&`` //Expr1// 
-  |  |  **|**  | //Expr2// 
-  | //Expr// | -> | //Expr1// ``||`` //Expr// 
   |  |  **|**  | //Expr1// 
   | //[Expr]// | -> | **eps**
   |  |  **|**  | //Expr// 
@@ -145,5 +155,9 @@ All other symbols are terminals.
   |  |  **|**  | ``>=`` 
   |  |  **|**  | ``==`` 
   |  |  **|**  | ``!=`` 
+  | //OrOp// | -> | ``or`` 
+  |  |  **|**  | ``||`` 
+  | //AndOp// | -> | ``and`` 
+  |  |  **|**  | ``&&`` 
 
 
