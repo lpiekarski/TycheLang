@@ -1,0 +1,33 @@
+2.8 Grégoire Détrez <gregoire.detrez@gu.se>  May 2015
+	* Builds with ghc 7.10.1
+	* Add support for JFlex (java)
+	* Add an option to generate files in an other directory
+	* Add an experimental option that turns the AST into a parametrized
+	  functor (in Haskell only)
+	* New pygment backend to generate syntax highlighters
+	* Bug fixes
+
+2.7.1 Grégoire Détrez <gregoire.detrez@gu.se> October 2014
+	* Generated haskell code is now warning free
+	* Removed unused terminal in happy
+	* Correctly escape backslashes in symbols
+	* Fix problem that was preventing custom tokens to work in OCaml if
+	they conflict with the build-in Ident
+	* BNFC build is also warning free (ghc 7.4.2)
+	* Test programs return non-zerro exit code on parse error
+
+2.7.0.0 Grégoire Détrez <gregoire.detrez@gu.se> September 2014
+	* Add token support for Ocaml
+	* New option parser
+	* Adds an optional argument to change Makefile name
+	* Add a --ghc option to derive Data, Typeable, Generic in Haskell
+	* New online documentation (https://bnfc.readthedocs.org)
+	* Derive ``Read`` for newtype decls in Haskell
+	* New option to get the version number --version
+	* Remove the F# backend
+	* Remove the Java4 backend
+	* New Applicative and Alternative instances to ``Err``
+	* Remove the coupling between building the parser and the pdf from
+	latex
+	* Improvement to the CNF Backend
+	* Bug fixes #92, #21, #34, #33, #90, #30, #60
