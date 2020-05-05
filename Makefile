@@ -1,4 +1,6 @@
 all:
+	ghc --make interpreter.hs -o interpreter
+grammar:
 	happy -gca ParGrammar.y
 	alex -g LexGrammar.x
 	ghc --make TestGrammar.hs -o TestGrammar
