@@ -11,12 +11,12 @@ import SkelGrammar
 import PrintGrammar
 import AbsGrammar
 
-
-
-
 import ErrM
 
-runTree :: (Show a, Print a) => a -> IO ()
-runTree tree
- = do
-      putStrLn "asd"
+runProgram :: Program (Maybe (Int, Int)) -> IO ()
+runProgram prog = case transProgram prog of
+  Ok str -> putStr str
+  Bad str -> do 
+               putStr "Error: "
+               putStr str
+               putStrLn ""

@@ -13,23 +13,19 @@ import PrintGrammar
 import AbsGrammar
 import RunGrammar
 
-
-
-
 import ErrM
 
-type ParseFun a = [Token] -> Err a
 
-myLLexer = myLexer
+lexer = myLexer
 
-runFile :: (Print a, Show a) => ParseFun a -> FilePath -> IO ()
-runFile p f = readFile f >>= run p
+runFile :: FilePath -> IO ()
+runFile f = readFile f >>= run
 
-run :: (Print a, Show a) => ParseFun a -> String -> IO ()
-run p s = let ts = myLLexer s in case p ts of
+run :: String -> IO ()
+run s = let ts = lexer s in case pProgram ts of
            Bad s    -> do putStrLn s
                           exitFailure
-           Ok  tree -> do runTree tree
+           Ok  prog -> do runProgram prog
                           exitSuccess
 
 usage :: IO ()
@@ -47,8 +43,9 @@ main = do
   args <- getArgs
   case args of
     ["--help"] -> usage
-    [] -> getContents >>= run pProgram
-    fs -> mapM_ (runFile pProgram) fs
+    [] -> getContents >>= run
+    fs -> mapM_ runFile fs
+
 
 
 
