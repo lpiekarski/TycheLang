@@ -1,13 +1,12 @@
 all:
-	ghc --make interpreter.hs -o interpreter
+	ghc --make Tyche/Interpreter.hs -o interpreter
 grammar:
-	happy -gca ParGrammar.y
-	alex -g LexGrammar.x
-	ghc --make TestGrammar.hs -o TestGrammar
+	happy -gca Tyche/Par.y
+	alex -g Tyche/Lex.x
 
 clean:
-	-rm -f *.log *.aux *.hi *.o *.dvi
+	-rm -f Tyche/*.log Tyche/*.aux Tyche/*.hi Tyche/*.o Tyche/*.dvi
 
 distclean: clean
-	-rm -f DocGrammar.* LexGrammar.* ParGrammar.* LayoutGrammar.* SkelGrammar.* PrintGrammar.* TestGrammar.* AbsGrammar.* TestGrammar ErrM.* SharedString.* ComposOp.* grammar.dtd XMLGrammar.* Makefile*
-	
+	-rm -f Tyche/Doc.* Tyche/Lex.* Tyche/Par.* Tyche/Layout.* Tyche/Skel.* Tyche/Print.* Tyche/Test.* Tyche/Abs.* Tyche/Test Tyche/ErrM.* Tyche/SharedString.* Tyche/ComposOp.* Tyche/tyche.dtd Tyche/XML.* Makefile*
+		-rmdir -p Tyche/

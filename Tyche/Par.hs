@@ -4,10 +4,10 @@
 {-# OPTIONS_GHC -XPartialTypeSignatures #-}
 #endif
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns -fno-warn-overlapping-patterns #-}
-module ParGrammar where
-import AbsGrammar
-import LexGrammar
-import ErrM
+module Tyche.Par where
+import Tyche.Abs
+import Tyche.Lex
+import Tyche.ErrM
 import qualified Data.Array as Happy_Data_Array
 import qualified Data.Bits as Bits
 import qualified GHC.Exts as Happy_GHC_Exts
@@ -476,7 +476,7 @@ happyReduce_5 = happySpecReduce_1  4# happyReduction_5
 happyReduction_5 happy_x_1
 	 =  case happyOut15 happy_x_1 of { (HappyWrap15 happy_var_1) -> 
 	happyIn8
-		 ((fst happy_var_1, AbsGrammar.Program (fst happy_var_1)(snd happy_var_1))
+		 ((fst happy_var_1, Tyche.Abs.Program (fst happy_var_1)(snd happy_var_1))
 	)}
 
 happyReduce_6 = happyReduce 4# 5# happyReduction_6
@@ -489,7 +489,7 @@ happyReduction_6 (happy_x_4 `HappyStk`
 	case happyOut11 happy_x_2 of { (HappyWrap11 happy_var_2) -> 
 	case happyOut21 happy_x_4 of { (HappyWrap21 happy_var_4) -> 
 	happyIn9
-		 ((fst happy_var_1, AbsGrammar.Arg (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_4))
+		 ((fst happy_var_1, Tyche.Abs.Arg (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_4))
 	) `HappyStk` happyRest}}}
 
 happyReduce_7 = happySpecReduce_0  6# happyReduction_7
@@ -518,21 +518,21 @@ happyReduce_10 = happySpecReduce_1  7# happyReduction_10
 happyReduction_10 happy_x_1
 	 =  case happyOut4 happy_x_1 of { (HappyWrap4 happy_var_1) -> 
 	happyIn11
-		 ((fst happy_var_1, AbsGrammar.FullIdent (fst happy_var_1)(snd happy_var_1))
+		 ((fst happy_var_1, Tyche.Abs.FullIdent (fst happy_var_1)(snd happy_var_1))
 	)}
 
 happyReduce_11 = happySpecReduce_1  7# happyReduction_11
 happyReduction_11 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn11
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.AnonIdent (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.AnonIdent (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_12 = happySpecReduce_1  8# happyReduction_12
 happyReduction_12 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn12
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Skip (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Skip (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_13 = happySpecReduce_2  8# happyReduction_13
@@ -540,7 +540,7 @@ happyReduction_13 happy_x_2
 	happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn12
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Break (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Break (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_14 = happySpecReduce_2  8# happyReduction_14
@@ -548,7 +548,7 @@ happyReduction_14 happy_x_2
 	happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn12
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Continue (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Continue (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_15 = happySpecReduce_3  8# happyReduction_15
@@ -558,7 +558,7 @@ happyReduction_15 happy_x_3
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut35 happy_x_2 of { (HappyWrap35 happy_var_2) -> 
 	happyIn12
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Ret (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Ret (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_16 = happySpecReduce_2  8# happyReduction_16
@@ -566,7 +566,7 @@ happyReduction_16 happy_x_2
 	happy_x_1
 	 =  case happyOut35 happy_x_1 of { (HappyWrap35 happy_var_1) -> 
 	happyIn12
-		 ((fst happy_var_1, AbsGrammar.Ret (fst happy_var_1)(snd happy_var_1))
+		 ((fst happy_var_1, Tyche.Abs.Ret (fst happy_var_1)(snd happy_var_1))
 	)}
 
 happyReduce_17 = happySpecReduce_2  8# happyReduction_17
@@ -574,7 +574,7 @@ happyReduction_17 happy_x_2
 	happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn12
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.VRet (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.VRet (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_18 = happyReduce 7# 8# happyReduction_18
@@ -591,7 +591,7 @@ happyReduction_18 (happy_x_7 `HappyStk`
 	case happyOut21 happy_x_4 of { (HappyWrap21 happy_var_4) -> 
 	case happyOut34 happy_x_6 of { (HappyWrap34 happy_var_6) -> 
 	happyIn12
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.VarDef (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4)(snd happy_var_6))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.VarDef (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4)(snd happy_var_6))
 	) `HappyStk` happyRest}}}}
 
 happyReduce_19 = happyReduce 4# 8# happyReduction_19
@@ -603,7 +603,7 @@ happyReduction_19 (happy_x_4 `HappyStk`
 	 = case happyOut4 happy_x_1 of { (HappyWrap4 happy_var_1) -> 
 	case happyOut34 happy_x_3 of { (HappyWrap34 happy_var_3) -> 
 	happyIn12
-		 ((fst happy_var_1, AbsGrammar.Ass (fst happy_var_1)(snd happy_var_1)(snd happy_var_3))
+		 ((fst happy_var_1, Tyche.Abs.Ass (fst happy_var_1)(snd happy_var_1)(snd happy_var_3))
 	) `HappyStk` happyRest}}
 
 happyReduce_20 = happySpecReduce_1  8# happyReduction_20
@@ -629,7 +629,7 @@ happyReduction_21 (happy_x_8 `HappyStk`
 	case happyOut10 happy_x_6 of { (HappyWrap10 happy_var_6) -> 
 	case happyOut12 happy_x_8 of { (HappyWrap12 happy_var_8) -> 
 	happyIn13
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.FnDef (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4)(snd happy_var_6)(snd happy_var_8))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.FnDef (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4)(snd happy_var_6)(snd happy_var_8))
 	) `HappyStk` happyRest}}}}}
 
 happyReduce_22 = happySpecReduce_1  9# happyReduction_22
@@ -649,7 +649,7 @@ happyReduction_23 (happy_x_4 `HappyStk`
 	case happyOut35 happy_x_2 of { (HappyWrap35 happy_var_2) -> 
 	case happyOut14 happy_x_4 of { (HappyWrap14 happy_var_4) -> 
 	happyIn14
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Cond (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Cond (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4))
 	) `HappyStk` happyRest}}}
 
 happyReduce_24 = happyReduce 6# 10# happyReduction_24
@@ -665,7 +665,7 @@ happyReduction_24 (happy_x_6 `HappyStk`
 	case happyOut14 happy_x_4 of { (HappyWrap14 happy_var_4) -> 
 	case happyOut14 happy_x_6 of { (HappyWrap14 happy_var_6) -> 
 	happyIn14
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.CondElse (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4)(snd happy_var_6))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.CondElse (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4)(snd happy_var_6))
 	) `HappyStk` happyRest}}}}
 
 happyReduce_25 = happyReduce 4# 10# happyReduction_25
@@ -678,7 +678,7 @@ happyReduction_25 (happy_x_4 `HappyStk`
 	case happyOut35 happy_x_2 of { (HappyWrap35 happy_var_2) -> 
 	case happyOut14 happy_x_4 of { (HappyWrap14 happy_var_4) -> 
 	happyIn14
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.While (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.While (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4))
 	) `HappyStk` happyRest}}}
 
 happyReduce_26 = happyReduce 7# 10# happyReduction_26
@@ -695,7 +695,7 @@ happyReduction_26 (happy_x_7 `HappyStk`
 	case happyOut35 happy_x_5 of { (HappyWrap35 happy_var_5) -> 
 	case happyOut14 happy_x_7 of { (HappyWrap14 happy_var_7) -> 
 	happyIn14
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.ForList (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_5)(snd happy_var_7))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.ForList (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_5)(snd happy_var_7))
 	) `HappyStk` happyRest}}}}
 
 happyReduce_27 = happyReduce 8# 10# happyReduction_27
@@ -714,7 +714,7 @@ happyReduction_27 (happy_x_8 `HappyStk`
 	case happyOut35 happy_x_6 of { (HappyWrap35 happy_var_6) -> 
 	case happyOut14 happy_x_8 of { (HappyWrap14 happy_var_8) -> 
 	happyIn14
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.ForRange (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4)(snd happy_var_6)(snd happy_var_8))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.ForRange (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_4)(snd happy_var_6)(snd happy_var_8))
 	) `HappyStk` happyRest}}}}}
 
 happyReduce_28 = happySpecReduce_1  10# happyReduction_28
@@ -730,7 +730,7 @@ happyReduction_29 happy_x_2
 	 =  case happyOut14 happy_x_1 of { (HappyWrap14 happy_var_1) -> 
 	case happyOut15 happy_x_2 of { (HappyWrap15 happy_var_2) -> 
 	happyIn15
-		 ((fst happy_var_1, AbsGrammar.Composition (fst happy_var_1)(snd happy_var_1)(snd happy_var_2))
+		 ((fst happy_var_1, Tyche.Abs.Composition (fst happy_var_1)(snd happy_var_1)(snd happy_var_2))
 	)}}
 
 happyReduce_30 = happySpecReduce_1  11# happyReduction_30
@@ -768,35 +768,35 @@ happyReduce_34 = happySpecReduce_1  15# happyReduction_34
 happyReduction_34 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn19
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Int (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Int (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_35 = happySpecReduce_1  15# happyReduction_35
 happyReduction_35 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn19
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Str (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Str (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_36 = happySpecReduce_1  15# happyReduction_36
 happyReduction_36 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn19
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Bool (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Bool (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_37 = happySpecReduce_1  15# happyReduction_37
 happyReduction_37 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn19
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Void (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Void (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_38 = happySpecReduce_1  15# happyReduction_38
 happyReduction_38 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn19
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Float (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Float (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_39 = happySpecReduce_3  15# happyReduction_39
@@ -806,7 +806,7 @@ happyReduction_39 happy_x_3
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut21 happy_x_2 of { (HappyWrap21 happy_var_2) -> 
 	happyIn19
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.List (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.List (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_40 = happySpecReduce_3  15# happyReduction_40
@@ -816,7 +816,7 @@ happyReduction_40 happy_x_3
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut21 happy_x_2 of { (HappyWrap21 happy_var_2) -> 
 	happyIn19
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Array (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Array (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_41 = happyReduce 5# 15# happyReduction_41
@@ -830,7 +830,7 @@ happyReduction_41 (happy_x_5 `HappyStk`
 	case happyOut22 happy_x_2 of { (HappyWrap22 happy_var_2) -> 
 	case happyOut21 happy_x_5 of { (HappyWrap21 happy_var_5) -> 
 	happyIn19
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Fun (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_5))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Fun (Just (tokenLineCol happy_var_1)) (snd happy_var_2)(snd happy_var_5))
 	) `HappyStk` happyRest}}}
 
 happyReduce_42 = happySpecReduce_2  16# happyReduction_42
@@ -839,7 +839,7 @@ happyReduction_42 happy_x_2
 	 =  case happyOut23 happy_x_1 of { (HappyWrap23 happy_var_1) -> 
 	case happyOut19 happy_x_2 of { (HappyWrap19 happy_var_2) -> 
 	happyIn20
-		 ((fst happy_var_1, AbsGrammar.ArgType (fst happy_var_1)(snd happy_var_1)(snd happy_var_2))
+		 ((fst happy_var_1, Tyche.Abs.ArgType (fst happy_var_1)(snd happy_var_1)(snd happy_var_2))
 	)}}
 
 happyReduce_43 = happySpecReduce_2  17# happyReduction_43
@@ -848,7 +848,7 @@ happyReduction_43 happy_x_2
 	 =  case happyOut25 happy_x_1 of { (HappyWrap25 happy_var_1) -> 
 	case happyOut19 happy_x_2 of { (HappyWrap19 happy_var_2) -> 
 	happyIn21
-		 ((fst happy_var_1, AbsGrammar.FullType (fst happy_var_1)(reverse (snd happy_var_1)) (snd happy_var_2))
+		 ((fst happy_var_1, Tyche.Abs.FullType (fst happy_var_1)(reverse (snd happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_44 = happySpecReduce_0  18# happyReduction_44
@@ -877,28 +877,28 @@ happyReduce_47 = happySpecReduce_1  19# happyReduction_47
 happyReduction_47 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn23
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.AModVar (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.AModVar (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_48 = happySpecReduce_1  19# happyReduction_48
 happyReduction_48 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn23
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.AModVal (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.AModVal (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_49 = happySpecReduce_1  19# happyReduction_49
 happyReduction_49 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn23
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.AModInOut (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.AModInOut (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_50 = happySpecReduce_1  20# happyReduction_50
 happyReduction_50 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn24
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.TModReadonly (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.TModReadonly (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_51 = happySpecReduce_0  21# happyReduction_51
@@ -919,49 +919,49 @@ happyReduce_53 = happySpecReduce_1  22# happyReduction_53
 happyReduction_53 happy_x_1
 	 =  case happyOut4 happy_x_1 of { (HappyWrap4 happy_var_1) -> 
 	happyIn26
-		 ((fst happy_var_1, AbsGrammar.EVar (fst happy_var_1)(snd happy_var_1))
+		 ((fst happy_var_1, Tyche.Abs.EVar (fst happy_var_1)(snd happy_var_1))
 	)}
 
 happyReduce_54 = happySpecReduce_1  22# happyReduction_54
 happyReduction_54 happy_x_1
 	 =  case happyOut5 happy_x_1 of { (HappyWrap5 happy_var_1) -> 
 	happyIn26
-		 ((fst happy_var_1, AbsGrammar.ELitInt (fst happy_var_1)(snd happy_var_1))
+		 ((fst happy_var_1, Tyche.Abs.ELitInt (fst happy_var_1)(snd happy_var_1))
 	)}
 
 happyReduce_55 = happySpecReduce_1  22# happyReduction_55
 happyReduction_55 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn26
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.ELitTrue (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.ELitTrue (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_56 = happySpecReduce_1  22# happyReduction_56
 happyReduction_56 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn26
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.ELitFalse (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.ELitFalse (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_57 = happySpecReduce_1  22# happyReduction_57
 happyReduction_57 happy_x_1
 	 =  case happyOut6 happy_x_1 of { (HappyWrap6 happy_var_1) -> 
 	happyIn26
-		 ((fst happy_var_1, AbsGrammar.EString (fst happy_var_1)(snd happy_var_1))
+		 ((fst happy_var_1, Tyche.Abs.EString (fst happy_var_1)(snd happy_var_1))
 	)}
 
 happyReduce_58 = happySpecReduce_1  22# happyReduction_58
 happyReduction_58 happy_x_1
 	 =  case happyOut7 happy_x_1 of { (HappyWrap7 happy_var_1) -> 
 	happyIn26
-		 ((fst happy_var_1, AbsGrammar.ELitFloat (fst happy_var_1)(snd happy_var_1))
+		 ((fst happy_var_1, Tyche.Abs.ELitFloat (fst happy_var_1)(snd happy_var_1))
 	)}
 
 happyReduce_59 = happySpecReduce_1  22# happyReduction_59
 happyReduction_59 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn26
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.EEmpList (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.EEmpList (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_60 = happySpecReduce_3  22# happyReduction_60
@@ -980,7 +980,7 @@ happyReduction_61 happy_x_2
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut26 happy_x_2 of { (HappyWrap26 happy_var_2) -> 
 	happyIn27
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Neg (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Neg (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_62 = happySpecReduce_2  23# happyReduction_62
@@ -989,7 +989,7 @@ happyReduction_62 happy_x_2
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut26 happy_x_2 of { (HappyWrap26 happy_var_2) -> 
 	happyIn27
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Not (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Not (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_63 = happySpecReduce_2  23# happyReduction_63
@@ -998,7 +998,7 @@ happyReduction_63 happy_x_2
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut26 happy_x_2 of { (HappyWrap26 happy_var_2) -> 
 	happyIn27
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Not (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Not (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_64 = happySpecReduce_1  23# happyReduction_64
@@ -1015,7 +1015,7 @@ happyReduction_65 happy_x_3
 	 =  case happyOut27 happy_x_1 of { (HappyWrap27 happy_var_1) -> 
 	case happyOut28 happy_x_3 of { (HappyWrap28 happy_var_3) -> 
 	happyIn28
-		 ((fst happy_var_1, AbsGrammar.ECons (fst happy_var_1)(snd happy_var_1)(snd happy_var_3))
+		 ((fst happy_var_1, Tyche.Abs.ECons (fst happy_var_1)(snd happy_var_1)(snd happy_var_3))
 	)}}
 
 happyReduce_66 = happySpecReduce_1  24# happyReduction_66
@@ -1033,7 +1033,7 @@ happyReduction_67 happy_x_3
 	case happyOut38 happy_x_2 of { (HappyWrap38 happy_var_2) -> 
 	case happyOut28 happy_x_3 of { (HappyWrap28 happy_var_3) -> 
 	happyIn29
-		 ((fst happy_var_1, AbsGrammar.EMul (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
+		 ((fst happy_var_1, Tyche.Abs.EMul (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
 	)}}}
 
 happyReduce_68 = happySpecReduce_1  25# happyReduction_68
@@ -1051,7 +1051,7 @@ happyReduction_69 happy_x_3
 	case happyOut37 happy_x_2 of { (HappyWrap37 happy_var_2) -> 
 	case happyOut29 happy_x_3 of { (HappyWrap29 happy_var_3) -> 
 	happyIn30
-		 ((fst happy_var_1, AbsGrammar.EAdd (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
+		 ((fst happy_var_1, Tyche.Abs.EAdd (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
 	)}}}
 
 happyReduce_70 = happySpecReduce_1  26# happyReduction_70
@@ -1069,7 +1069,7 @@ happyReduction_71 happy_x_3
 	case happyOut39 happy_x_2 of { (HappyWrap39 happy_var_2) -> 
 	case happyOut30 happy_x_3 of { (HappyWrap30 happy_var_3) -> 
 	happyIn31
-		 ((fst happy_var_1, AbsGrammar.ERel (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
+		 ((fst happy_var_1, Tyche.Abs.ERel (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
 	)}}}
 
 happyReduce_72 = happySpecReduce_1  27# happyReduction_72
@@ -1087,7 +1087,7 @@ happyReduction_73 happy_x_3
 	case happyOut41 happy_x_2 of { (HappyWrap41 happy_var_2) -> 
 	case happyOut32 happy_x_3 of { (HappyWrap32 happy_var_3) -> 
 	happyIn32
-		 ((fst happy_var_1, AbsGrammar.EAnd (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
+		 ((fst happy_var_1, Tyche.Abs.EAnd (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
 	)}}}
 
 happyReduce_74 = happySpecReduce_1  28# happyReduction_74
@@ -1105,7 +1105,7 @@ happyReduction_75 happy_x_3
 	case happyOut40 happy_x_2 of { (HappyWrap40 happy_var_2) -> 
 	case happyOut33 happy_x_3 of { (HappyWrap33 happy_var_3) -> 
 	happyIn33
-		 ((fst happy_var_1, AbsGrammar.EOr (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
+		 ((fst happy_var_1, Tyche.Abs.EOr (fst happy_var_1)(snd happy_var_1)(snd happy_var_2)(snd happy_var_3))
 	)}}}
 
 happyReduce_76 = happySpecReduce_1  29# happyReduction_76
@@ -1122,7 +1122,7 @@ happyReduction_77 happy_x_3
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut36 happy_x_2 of { (HappyWrap36 happy_var_2) -> 
 	happyIn34
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.EList (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.EList (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_78 = happySpecReduce_3  30# happyReduction_78
@@ -1132,7 +1132,7 @@ happyReduction_78 happy_x_3
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut36 happy_x_2 of { (HappyWrap36 happy_var_2) -> 
 	happyIn34
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.EArr (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.EArr (Just (tokenLineCol happy_var_1)) (snd happy_var_2))
 	)}}
 
 happyReduce_79 = happyReduce 4# 30# happyReduction_79
@@ -1144,7 +1144,7 @@ happyReduction_79 (happy_x_4 `HappyStk`
 	 = case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut35 happy_x_3 of { (HappyWrap35 happy_var_3) -> 
 	happyIn34
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.EArrSize (Just (tokenLineCol happy_var_1)) (snd happy_var_3))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.EArrSize (Just (tokenLineCol happy_var_1)) (snd happy_var_3))
 	) `HappyStk` happyRest}}
 
 happyReduce_80 = happyReduce 4# 30# happyReduction_80
@@ -1156,7 +1156,7 @@ happyReduction_80 (happy_x_4 `HappyStk`
 	 = case happyOut4 happy_x_1 of { (HappyWrap4 happy_var_1) -> 
 	case happyOut36 happy_x_3 of { (HappyWrap36 happy_var_3) -> 
 	happyIn34
-		 ((fst happy_var_1, AbsGrammar.EApp (fst happy_var_1)(snd happy_var_1)(snd happy_var_3))
+		 ((fst happy_var_1, Tyche.Abs.EApp (fst happy_var_1)(snd happy_var_1)(snd happy_var_3))
 	) `HappyStk` happyRest}}
 
 happyReduce_81 = happySpecReduce_1  30# happyReduction_81
@@ -1177,7 +1177,7 @@ happyReduction_82 (happy_x_5 `HappyStk`
 	case happyOut34 happy_x_3 of { (HappyWrap34 happy_var_3) -> 
 	case happyOut34 happy_x_5 of { (HappyWrap34 happy_var_5) -> 
 	happyIn35
-		 ((fst happy_var_1, AbsGrammar.EIf (fst happy_var_1)(snd happy_var_1)(snd happy_var_3)(snd happy_var_5))
+		 ((fst happy_var_1, Tyche.Abs.EIf (fst happy_var_1)(snd happy_var_1)(snd happy_var_3)(snd happy_var_5))
 	) `HappyStk` happyRest}}}
 
 happyReduce_83 = happyReduce 8# 31# happyReduction_83
@@ -1195,7 +1195,7 @@ happyReduction_83 (happy_x_8 `HappyStk`
 	case happyOut10 happy_x_5 of { (HappyWrap10 happy_var_5) -> 
 	case happyOut14 happy_x_8 of { (HappyWrap14 happy_var_8) -> 
 	happyIn35
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.ELambda (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_5)(snd happy_var_8))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.ELambda (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_5)(snd happy_var_8))
 	) `HappyStk` happyRest}}}}
 
 happyReduce_84 = happySpecReduce_3  31# happyReduction_84
@@ -1205,7 +1205,7 @@ happyReduction_84 happy_x_3
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	case happyOut34 happy_x_3 of { (HappyWrap34 happy_var_3) -> 
 	happyIn35
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.ERand (Just (tokenLineCol happy_var_1)) (snd happy_var_3))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.ERand (Just (tokenLineCol happy_var_1)) (snd happy_var_3))
 	)}}
 
 happyReduce_85 = happyReduce 5# 31# happyReduction_85
@@ -1219,7 +1219,7 @@ happyReduction_85 (happy_x_5 `HappyStk`
 	case happyOut34 happy_x_3 of { (HappyWrap34 happy_var_3) -> 
 	case happyOut34 happy_x_5 of { (HappyWrap34 happy_var_5) -> 
 	happyIn35
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.ERandDist (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_5))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.ERandDist (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_5))
 	) `HappyStk` happyRest}}}
 
 happyReduce_86 = happyReduce 5# 31# happyReduction_86
@@ -1233,7 +1233,7 @@ happyReduction_86 (happy_x_5 `HappyStk`
 	case happyOut14 happy_x_3 of { (HappyWrap14 happy_var_3) -> 
 	case happyOut34 happy_x_5 of { (HappyWrap34 happy_var_5) -> 
 	happyIn35
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.EProb (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_5))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.EProb (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_5))
 	) `HappyStk` happyRest}}}
 
 happyReduce_87 = happyReduce 8# 31# happyReduction_87
@@ -1251,7 +1251,7 @@ happyReduction_87 (happy_x_8 `HappyStk`
 	case happyOut14 happy_x_6 of { (HappyWrap14 happy_var_6) -> 
 	case happyOut34 happy_x_8 of { (HappyWrap34 happy_var_8) -> 
 	happyIn35
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.EProbSamp (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_6)(snd happy_var_8))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.EProbSamp (Just (tokenLineCol happy_var_1)) (snd happy_var_3)(snd happy_var_6)(snd happy_var_8))
 	) `HappyStk` happyRest}}}}
 
 happyReduce_88 = happySpecReduce_1  31# happyReduction_88
@@ -1287,119 +1287,119 @@ happyReduce_92 = happySpecReduce_1  33# happyReduction_92
 happyReduction_92 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn37
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Plus (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Plus (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_93 = happySpecReduce_1  33# happyReduction_93
 happyReduction_93 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn37
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Minus (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Minus (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_94 = happySpecReduce_1  34# happyReduction_94
 happyReduction_94 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn38
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Times (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Times (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_95 = happySpecReduce_1  34# happyReduction_95
 happyReduction_95 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn38
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Div (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Div (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_96 = happySpecReduce_1  34# happyReduction_96
 happyReduction_96 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn38
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Mod (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Mod (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_97 = happySpecReduce_1  34# happyReduction_97
 happyReduction_97 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn38
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Mod (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Mod (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_98 = happySpecReduce_1  35# happyReduction_98
 happyReduction_98 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn39
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.LTH (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.LTH (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_99 = happySpecReduce_1  35# happyReduction_99
 happyReduction_99 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn39
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.LE (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.LE (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_100 = happySpecReduce_1  35# happyReduction_100
 happyReduction_100 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn39
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.GTH (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.GTH (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_101 = happySpecReduce_1  35# happyReduction_101
 happyReduction_101 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn39
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.GE (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.GE (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_102 = happySpecReduce_1  35# happyReduction_102
 happyReduction_102 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn39
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.EQU (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.EQU (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_103 = happySpecReduce_1  35# happyReduction_103
 happyReduction_103 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn39
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.EQU (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.EQU (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_104 = happySpecReduce_1  35# happyReduction_104
 happyReduction_104 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn39
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.NE (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.NE (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_105 = happySpecReduce_1  36# happyReduction_105
 happyReduction_105 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn40
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Or (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Or (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_106 = happySpecReduce_1  36# happyReduction_106
 happyReduction_106 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn40
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.Or (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.Or (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_107 = happySpecReduce_1  37# happyReduction_107
 happyReduction_107 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn41
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.And (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.And (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyReduce_108 = happySpecReduce_1  37# happyReduction_108
 happyReduction_108 happy_x_1
 	 =  case happyOutTok happy_x_1 of { happy_var_1 -> 
 	happyIn41
-		 ((Just (tokenLineCol happy_var_1), AbsGrammar.And (Just (tokenLineCol happy_var_1)))
+		 ((Just (tokenLineCol happy_var_1), Tyche.Abs.And (Just (tokenLineCol happy_var_1)))
 	)}
 
 happyNewToken action sts stk [] =

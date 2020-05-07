@@ -6,14 +6,14 @@ import System.Environment ( getArgs, getProgName )
 import System.Exit ( exitFailure, exitSuccess )
 import Control.Monad (when)
 
-import LexGrammar
-import ParGrammar
-import SkelGrammar
-import PrintGrammar
-import AbsGrammar
-import RunGrammar
+import Tyche.Lex
+import Tyche.Par
+import Tyche.Trans
+import Tyche.Print
+import Tyche.Abs
+import Tyche.RunProgram
 
-import ErrM
+import Tyche.ErrM
 
 
 lexer = myLexer
