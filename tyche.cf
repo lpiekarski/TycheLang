@@ -75,7 +75,7 @@ ELitTrue.  Expr9 ::= "true" ;
 ELitFalse. Expr9 ::= "false" ;
 EString.   Expr9 ::= String ;
 ELitFloat. Expr9 ::= Double ;
-EEmpList.  Expr9 ::= "()" ;
+EEmpList.  Expr9 ::= "()" ":" FullType ;
 
 Neg.       Expr8 ::= "-" Expr9 ;
 Not.       Expr8 ::= "!" Expr9 ;
@@ -96,7 +96,8 @@ EOr.       Expr2 ::= Expr3 OrOp Expr2 ;
 EList.     Expr1 ::= "(" [Expr] ")" ;
 EArr.      Expr1 ::= "[" [Expr] "]" ;
 EArrSize.  Expr1 ::= "array" "[" Expr "]" ;
-EApp.      Expr1 ::= Ident "(" [Expr] ")" ;
+EApp.      Expr1 ::= Expr2 "(" [Expr] ")" ;
+EArrApp.   Expr1 ::= Expr2 "[" Expr "]" ;
 
 EIf.       Expr ::= Expr1 "?" Expr1 ":" Expr1 ;
 ELambda.   Expr ::= "lambda" ":" FullType "(" [Arg] ")" "->" Stmt1 ;

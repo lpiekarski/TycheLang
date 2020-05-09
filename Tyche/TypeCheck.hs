@@ -76,11 +76,11 @@ typecheckTypeMod x te = case x of
 typecheckExpr :: Expr (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckExpr x te = case x of
   EVar _ ident -> typecheckfailure x
-  ELitInt _ integer -> typecheckfailure x
-  ELitTrue _ -> typecheckfailure x
-  ELitFalse _ -> typecheckfailure x
-  EString _ string -> typecheckfailure x
-  ELitFloat _ double -> typecheckfailure x
+  ELitInt lineInfo integer -> Ok (te, Just (FullType lineInfo [] (Int lineInfo)))
+  ELitTrue lineInfo -> Ok (te, Just (FullType lineInfo [] (Bool lineInfo)))
+  ELitFalse lineInfo -> Ok (te, Just (FullType lineInfo [] (Bool lineInfo)))
+  EString lineInfo string -> Ok (te, Just (FullType lineInfo [] (Str lineInfo)))
+  ELitFloat lineInfo double -> Ok (te, Just (FullType lineInfo [] (Float lineInfo)))
   EEmpList _ -> typecheckfailure x
   Neg _ expr -> typecheckfailure x
   Not _ expr -> typecheckfailure x
