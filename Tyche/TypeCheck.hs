@@ -2,29 +2,39 @@ module Tyche.TypeCheck where
 
 import Tyche.Abs
 import Tyche.ErrM
+import Tyche.Print
 import Tyche.Types
 
 typecheckIdent :: Ident -> TEnv -> TypeCheckResult
 typecheckIdent x te = case x of
-  Ident string -> Ok Nothing
-typecheckProgram :: Show a => Program a -> TypeCheckResult
+  Ident string -> Ok (te, Nothing)
+typecheckProgram :: Program (Maybe (Int, Int)) -> TypeCheckResult
 typecheckProgram x = case x of
   Program _ stmt -> typecheckStmt stmt (\v -> Nothing)
-typecheckArg :: Show a => Arg a -> TEnv -> TypeCheckResult
+typecheckArg :: Arg (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckArg x te = case x of
   Arg _ argmod fullident fulltype -> typecheckfailure x
-typecheckFullIdent :: Show a => FullIdent a -> TEnv -> TypeCheckResult
+typecheckFullIdent :: FullIdent (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckFullIdent x te = case x of
   FullIdent _ ident -> typecheckfailure x
   AnonIdent _ -> typecheckfailure x
-typecheckStmt :: Show a => Stmt a -> TEnv -> TypeCheckResult
+typecheckStmt :: Stmt (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckStmt x te = case x of
   Skip _ -> typecheckfailure x
   Break _ -> typecheckfailure x
   Continue _ -> typecheckfailure x
   Ret _ expr -> typecheckfailure x
   VRet _ -> typecheckfailure x
-  VarDef _ fullident fulltype expr -> typecheckfailure x
+  VarDef lineInfo fullident fulltype expr ->
+    case typecheckExpr expr te of
+      Bad str -> Bad str
+      Ok (te2, res) ->
+        case res of
+          Nothing -> Bad ("at " ++ (lineInfoString lineInfo) ++ " Expression has no type")
+          Just ft -> if (matchFullType fulltype ft) then
+            Ok (extendFunc te2 fullident (Just fulltype), Nothing)
+          else
+            Bad ("at " ++ (lineInfoString lineInfo) ++ " Can't assign type " ++ (printTree ft) ++ " to type " ++ (printTree fulltype))
   Ass _ ident expr -> typecheckfailure x
   FnDef _ fullident fulltype args stmt -> typecheckfailure x
   Cond _ expr stmt -> typecheckfailure x
@@ -32,8 +42,14 @@ typecheckStmt x te = case x of
   While _ expr stmt -> typecheckfailure x
   ForList _ ident expr stmt -> typecheckfailure x
   ForRange _ ident expr1 expr2 stmt -> typecheckfailure x
-  Composition _ stmt1 stmt2 -> typecheckfailure x
-typecheckType :: Show a => Type a -> TEnv -> TypeCheckResult
+  Composition _ stmt1 stmt2 ->
+    case typecheckStmt stmt1 te of
+      Bad str -> Bad str
+      Ok (te2, _) ->
+        case typecheckStmt stmt2 te2 of
+          Bad str -> Bad str
+          Ok (te3, res) -> Ok (te3, res)
+typecheckType :: Type (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckType x te = case x of
   Int _ -> typecheckfailure x
   Str _ -> typecheckfailure x
@@ -43,21 +59,21 @@ typecheckType x te = case x of
   List _ fulltype -> typecheckfailure x
   Array _ fulltype -> typecheckfailure x
   Fun _ argtypes fulltype -> typecheckfailure x
-typecheckArgType :: Show a => ArgType a -> TEnv -> TypeCheckResult
+typecheckArgType :: ArgType (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckArgType x te = case x of
   ArgType _ argmod type_ -> typecheckfailure x
-typecheckFullType :: Show a => FullType a -> TEnv -> TypeCheckResult
+typecheckFullType :: FullType (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckFullType x te = case x of
   FullType _ typemods type_ -> typecheckfailure x
-typecheckArgMod :: Show a => ArgMod a -> TEnv -> TypeCheckResult
+typecheckArgMod :: ArgMod (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckArgMod x te = case x of
   AModVar _ -> typecheckfailure x
   AModVal _ -> typecheckfailure x
   AModInOut _ -> typecheckfailure x
-typecheckTypeMod :: Show a => TypeMod a -> TEnv -> TypeCheckResult
+typecheckTypeMod :: TypeMod (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckTypeMod x te = case x of
   TModReadonly _ -> typecheckfailure x
-typecheckExpr :: Show a => Expr a -> TEnv -> TypeCheckResult
+typecheckExpr :: Expr (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckExpr x te = case x of
   EVar _ ident -> typecheckfailure x
   ELitInt _ integer -> typecheckfailure x
@@ -84,26 +100,26 @@ typecheckExpr x te = case x of
   ERandDist _ expr1 expr2 -> typecheckfailure x
   EProb _ stmt expr -> typecheckfailure x
   EProbSamp _ expr1 stmt expr2 -> typecheckfailure x
-typecheckAddOp :: Show a => AddOp a -> TEnv -> TypeCheckResult
+typecheckAddOp :: AddOp (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckAddOp x te = case x of
-  Plus _ -> Ok Nothing
-  Minus _ -> Ok Nothing
-typecheckMulOp :: Show a => MulOp a -> TEnv -> TypeCheckResult
+  Plus _ -> Ok (te, Nothing)
+  Minus _ -> Ok (te, Nothing)
+typecheckMulOp :: MulOp (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckMulOp x te = case x of
-  Times _ -> Ok Nothing
-  Div _ -> Ok Nothing
-  Mod _ -> Ok Nothing
-typecheckRelOp :: Show a => RelOp a -> TEnv -> TypeCheckResult
+  Times _ -> Ok (te, Nothing)
+  Div _ -> Ok (te, Nothing)
+  Mod _ -> Ok (te, Nothing)
+typecheckRelOp :: RelOp (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckRelOp x te = case x of
-  LTH _ -> Ok Nothing
-  LE _ -> Ok Nothing
-  GTH _ -> Ok Nothing
-  GE _ -> Ok Nothing
-  EQU _ -> Ok Nothing
-  NE _ -> Ok Nothing
-typecheckOrOp :: Show a => OrOp a -> TEnv -> TypeCheckResult
+  LTH _ -> Ok (te, Nothing)
+  LE _ -> Ok (te, Nothing)
+  GTH _ -> Ok (te, Nothing)
+  GE _ -> Ok (te, Nothing)
+  EQU _ -> Ok (te, Nothing)
+  NE _ -> Ok (te, Nothing)
+typecheckOrOp :: OrOp (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckOrOp x te = case x of
-  Or _ -> Ok Nothing
-typecheckAndOp :: Show a => AndOp a -> TEnv -> TypeCheckResult
+  Or _ -> Ok (te, Nothing)
+typecheckAndOp :: AndOp (Maybe (Int, Int)) -> TEnv -> TypeCheckResult
 typecheckAndOp x te = case x of
-  And _ -> Ok Nothing
+  And _ -> Ok (te, Nothing)
