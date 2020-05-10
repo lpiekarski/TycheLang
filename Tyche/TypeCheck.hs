@@ -632,7 +632,7 @@ typecheckExpr x te scope =
                       Bad str ->
                         Bad str
                       Ok (_, _, _) ->
-                        Ok (te, Just fun, scope)
+                        Ok (te, Just ft, scope)
                 otherwise ->
                   Bad ("at " ++ (lineInfoString lineInfo) ++ " Expected expression type Function")
     EArrApp lineInfo expr1 expr2 ->
@@ -684,7 +684,7 @@ typecheckExpr x te scope =
                         if matchFullType ft2 ft3 then
                           Ok (te, Just ft2, scope)
                         else
-                          Bad ("at " ++ (lineInfoString lineInfo) ++ " If branches have different types")
+                          Bad ("at " ++ (lineInfoString lineInfo) ++ " If branches have different types: '" ++ (printTree ft2) ++ "' and '" ++ (printTree ft3) ++ "'")
               else
                 Bad ("at " ++ (lineInfoString lineInfo) ++ " Expected expression type Bool")
     ELambda lineInfo fulltype args stmt ->
