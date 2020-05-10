@@ -81,12 +81,12 @@ instance Functor Type where
         List a fulltype -> List (f a) (fmap f fulltype)
         Array a fulltype -> Array (f a) (fmap f fulltype)
         Fun a argtypes fulltype -> Fun (f a) (map (fmap f) argtypes) (fmap f fulltype)
-data ArgType a = ArgType a (ArgMod a) (Type a)
+data ArgType a = ArgType a (ArgMod a) (FullType a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor ArgType where
     fmap f x = case x of
-        ArgType a argmod type_ -> ArgType (f a) (fmap f argmod) (fmap f type_)
+        ArgType a argmod fulltype -> ArgType (f a) (fmap f argmod) (fmap f fulltype)
 data FullType a = FullType a [TypeMod a] (Type a)
   deriving (Eq, Ord, Show, Read)
 
@@ -125,7 +125,7 @@ data Expr a
     | EOr a (Expr a) (OrOp a) (Expr a)
     | EList a [Expr a]
     | EArr a [Expr a]
-    | EArrSize a (Expr a)
+    | EArrSize a (FullType a) (Expr a)
     | EApp a (Expr a) [Expr a]
     | EArrApp a (Expr a) (Expr a)
     | EIf a (Expr a) (Expr a) (Expr a)
@@ -155,7 +155,7 @@ instance Functor Expr where
         EOr a expr1 orop expr2 -> EOr (f a) (fmap f expr1) (fmap f orop) (fmap f expr2)
         EList a exprs -> EList (f a) (map (fmap f) exprs)
         EArr a exprs -> EArr (f a) (map (fmap f) exprs)
-        EArrSize a expr -> EArrSize (f a) (fmap f expr)
+        EArrSize a fulltype expr -> EArrSize (f a) (fmap f fulltype) (fmap f expr)
         EApp a expr exprs -> EApp (f a) (fmap f expr) (map (fmap f) exprs)
         EArrApp a expr1 expr2 -> EArrApp (f a) (fmap f expr1) (fmap f expr2)
         EIf a expr1 expr2 expr3 -> EIf (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)

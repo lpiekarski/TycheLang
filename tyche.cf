@@ -52,7 +52,7 @@ Float.    Type     ::= "float" ;
 List.     Type     ::= "(" FullType ")" ;
 Array.    Type     ::= "[" FullType "]" ;
 Fun.      Type     ::= "(" [ArgType] ")" "->" FullType ;
-ArgType.  ArgType  ::= ArgMod Type ;
+ArgType.  ArgType  ::= ArgMod FullType ;
 FullType. FullType ::= [TypeMod] Type ;
 separator ArgType "," ;
 
@@ -95,7 +95,7 @@ EOr.       Expr2 ::= Expr3 OrOp Expr2 ;
 
 EList.     Expr1 ::= "(" [Expr] ")" ;
 EArr.      Expr1 ::= "[" [Expr] "]" ;
-EArrSize.  Expr1 ::= "array" "[" Expr "]" ;
+EArrSize.  Expr1 ::= "array" ":" FullType "[" Expr "]" ;
 EApp.      Expr1 ::= Expr2 "(" [Expr] ")" ;
 EArrApp.   Expr1 ::= Expr2 "[" Expr "]" ;
 

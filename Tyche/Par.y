@@ -278,7 +278,7 @@ Type :: {
 ArgType :: {
   (Maybe (Int, Int), ArgType (Maybe (Int, Int)))
 }
-: ArgMod Type {
+: ArgMod FullType {
   (fst $1, Tyche.Abs.ArgType (fst $1)(snd $1)(snd $2)) 
 }
 
@@ -445,8 +445,8 @@ Expr1 :: {
 | '[' ListExpr ']' {
   (Just (tokenLineCol $1), Tyche.Abs.EArr (Just (tokenLineCol $1)) (snd $2)) 
 }
-| 'array' '[' Expr ']' {
-  (Just (tokenLineCol $1), Tyche.Abs.EArrSize (Just (tokenLineCol $1)) (snd $3)) 
+| 'array' ':' FullType '[' Expr ']' {
+  (Just (tokenLineCol $1), Tyche.Abs.EArrSize (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
 }
 | Expr2 '(' ListExpr ')' {
   (fst $1, Tyche.Abs.EApp (fst $1)(snd $1)(snd $3)) 

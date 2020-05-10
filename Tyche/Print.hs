@@ -128,7 +128,7 @@ instance Print (Type a) where
 
 instance Print (ArgType a) where
   prt i e = case e of
-    ArgType _ argmod type_ -> prPrec i 0 (concatD [prt 0 argmod, prt 0 type_])
+    ArgType _ argmod fulltype -> prPrec i 0 (concatD [prt 0 argmod, prt 0 fulltype])
   prtList _ [] = (concatD [])
   prtList _ [x] = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
@@ -166,7 +166,7 @@ instance Print (Expr a) where
     EOr _ expr1 orop expr2 -> prPrec i 2 (concatD [prt 3 expr1, prt 0 orop, prt 2 expr2])
     EList _ exprs -> prPrec i 1 (concatD [doc (showString "("), prt 0 exprs, doc (showString ")")])
     EArr _ exprs -> prPrec i 1 (concatD [doc (showString "["), prt 0 exprs, doc (showString "]")])
-    EArrSize _ expr -> prPrec i 1 (concatD [doc (showString "array"), doc (showString "["), prt 0 expr, doc (showString "]")])
+    EArrSize _ fulltype expr -> prPrec i 1 (concatD [doc (showString "array"), doc (showString ":"), prt 0 fulltype, doc (showString "["), prt 0 expr, doc (showString "]")])
     EApp _ expr exprs -> prPrec i 1 (concatD [prt 2 expr, doc (showString "("), prt 0 exprs, doc (showString ")")])
     EArrApp _ expr1 expr2 -> prPrec i 1 (concatD [prt 2 expr1, doc (showString "["), prt 0 expr2, doc (showString "]")])
     EIf _ expr1 expr2 expr3 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "?"), prt 1 expr2, doc (showString ":"), prt 1 expr3])

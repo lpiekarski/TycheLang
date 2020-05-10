@@ -67,7 +67,7 @@ transExpr x = case x of
   ELitFalse _ -> failure x
   EString _ string -> failure x
   ELitFloat _ double -> failure x
-  EEmpList _ -> failure x
+  EEmpList _ fulltype -> failure x
   Neg _ expr -> failure x
   Not _ expr -> failure x
   ECons _ expr1 expr2 -> failure x
@@ -78,8 +78,9 @@ transExpr x = case x of
   EOr _ expr1 orop expr2 -> failure x
   EList _ exprs -> failure x
   EArr _ exprs -> failure x
-  EArrSize _ expr -> failure x
-  EApp _ ident exprs -> failure x
+  EArrSize _ fulltype expr -> failure x
+  EApp _ expr exprs -> failure x
+  EArrApp _ expr exprs -> failure x
   EIf _ expr1 expr2 expr3 -> failure x
   ELambda _ fulltype args stmt -> failure x
   ERand _ expr -> failure x

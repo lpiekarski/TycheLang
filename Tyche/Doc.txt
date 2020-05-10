@@ -105,7 +105,7 @@ All other symbols are terminals.
   |  |  **|**  | ``(`` //FullType// ``)`` 
   |  |  **|**  | ``[`` //FullType// ``]`` 
   |  |  **|**  | ``(`` //[ArgType]// ``)`` ``->`` //FullType// 
-  | //ArgType// | -> | //ArgMod// //Type// 
+  | //ArgType// | -> | //ArgMod// //FullType// 
   | //FullType// | -> | //[TypeMod]// //Type// 
   | //[ArgType]// | -> | **eps**
   |  |  **|**  | //ArgType// 
@@ -142,7 +142,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr3// 
   | //Expr1// | -> | ``(`` //[Expr]// ``)`` 
   |  |  **|**  | ``[`` //[Expr]// ``]`` 
-  |  |  **|**  | ``array`` ``[`` //Expr// ``]`` 
+  |  |  **|**  | ``array`` ``:`` //FullType// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr2// ``(`` //[Expr]// ``)`` 
   |  |  **|**  | //Expr2// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr2// 
