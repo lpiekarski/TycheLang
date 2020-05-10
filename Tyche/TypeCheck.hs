@@ -374,10 +374,10 @@ typecheckExpr x te scope =
             Nothing ->
               Bad ("at " ++ (lineInfoString lineInfo) ++ " Expected expression type Int")
             Just ft ->
-              if isInt ft then
+              if isInt ft || isFloat ft then
                 Ok (te, res, scope)
               else
-                Bad ("at " ++ (lineInfoString lineInfo) ++ " Expected expression type Int. Got " ++ (printTree ft))
+                Bad ("at " ++ (lineInfoString lineInfo) ++ " Expected expression type Int or Float. Got '" ++ (printTree ft) ++ "'")
     Not lineInfo expr ->
       case typecheckExpr expr te scope of
         Bad str ->
