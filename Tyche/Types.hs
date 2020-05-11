@@ -4,6 +4,7 @@ import Tyche.ErrM
 import Tyche.Abs
 
 import Data.Array
+import System.IO ( stdin, hGetContents )
 
 extendFunc :: (Eq a) => (a -> b) -> a -> b -> a -> b
 extendFunc f nx ny x = if nx == x then ny else f x
@@ -113,11 +114,50 @@ elementType ft = case ft of
   FullType _ _ (Array _ res) -> Just res
   otherwise -> Nothing
 
+newLoc :: Store -> (Loc, Store)
+newLoc (next, s) = (next, (next + 1, s))
+
+saveInStore :: Store -> Loc -> Val -> Store
+saveInStore (l, s) loc val = (l, \loc' -> if loc' == loc then val else s loc')
+
+printStore :: Store -> IO ()
+printStore store =
+  let
+    go (next, s) i =
+      if i == next then
+        return ()
+      else do
+        putStrLn ((show i) ++ ": " ++ (show (s i)))
+        go (next, s) (i + 1)
+  in
+    go store 0
+
+
+printState :: State -> IO ()
+printState (store, err) = do
+  putStrLn "store:"
+  printStore store
+  putStrLn "error:"
+  putStrLn (show err)
+  return ()
+
 type Loc = Int
-data Val = IntVal Int | FloatVal Double | BoolVal Bool | StringVal String | ListVal (Val, Maybe Loc) | ArrayVal (Array Int Val) | FuncVal (Cont -> Cont)
+data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal (Loc, Val, Maybe Loc) | ArrayVal (Array Int Val) | FuncVal (Cont -> Cont) | NoVal
+instance Show Val where
+  show val = case val of
+    IntVal integer -> "int " ++ (show integer)
+    FloatVal double -> "float " ++ (show double)
+    BoolVal bool -> "bool " ++ (show bool)
+    StringVal str -> "string " ++ str
+    ListVal (l, v, ml) -> "list " ++ (show l) ++ " " ++ (show v) ++ " " ++ (show ml)
+    ArrayVal (_) -> "array"
+    FuncVal (_) -> "function"
+    NoVal -> "empty"
 type Var = Ident
-type State = Loc -> Val
-type Cont = Err (State -> State)
+type Store = (Loc, Loc -> Val)
+data Error = NoError | DivisionBy0 | TypeError | BreakError deriving (Show)
+type State = (Store, Error)
+type Cont = State -> State
 type ECont = Val -> Cont
 type VEnv = Var -> Maybe Loc
 data Label = LBreak | LContinue | LProb Int Int Int

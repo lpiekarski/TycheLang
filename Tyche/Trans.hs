@@ -3,6 +3,7 @@ module Tyche.Trans where
 import Tyche.Abs
 import Tyche.Types
 import Tyche.ErrM
+import Tyche.Print
 
 
 transIdent :: Ident -> ()
@@ -14,12 +15,14 @@ transProgram :: Program (Maybe (Int, Int)) -> IO (Err ())
 transProgram x =
   case x of
     Program _ stmt -> do
-      res <- transStmt stmt (\v -> Nothing) (\v -> Nothing) (LEnv (\v -> Nothing)) (Ok (\state -> state))
-      case res of
-        Bad str -> do
-          return (Bad str)
-        Ok _ -> do
+      cont <- (transStmt stmt (\v -> Nothing) (\v -> Nothing) (LEnv (\v -> Nothing)) (\state -> state))
+      let (finalState, finalError) = cont ((0, \l -> NoVal), NoError)
+      printState (finalState, finalError)
+      case finalError of
+        NoError -> do
           return (Ok ())
+        otherwise -> do
+          return (Bad (show finalError))
 transArg :: Arg (Maybe (Int, Int)) -> ()
 transArg x =
   case x of
@@ -33,16 +36,21 @@ transFullIdent x =
     AnonIdent _ ->
       ()
 transStmt :: Stmt (Maybe (Int, Int)) -> TEnv -> VEnv -> LEnv -> Cont -> IO (Cont)
-transStmt x tenv venv lenv cont =
+transStmt x tenv venv (LEnv lenv) cont =
   case x of
     Skip lineInfo -> do
       return (cont)
     Break lineInfo -> do
-      return (cont)
+      case (lenv LBreak) of
+        Nothing ->
+          return (\((next, store), err) -> ((next, store), BreakError))
+        Just c1 ->
+          return (c1)
     Continue lineInfo -> do
       return (cont)
     Ret lineInfo expr -> do
-      return (cont)
+      evalExpr <- transExpr expr tenv venv (LEnv lenv) (\val -> (cont))
+      return (evalExpr)
     VRet lineInfo -> do
       return (cont)
     VarDef lineInfo fullident fulltype expr -> do
@@ -62,8 +70,8 @@ transStmt x tenv venv lenv cont =
     ForRange lineInfo ident expr1 expr2 stmt -> do
       return (cont)
     Composition lineInfo stmt1 stmt2 -> do
-      s2 <- transStmt stmt2 tenv venv lenv cont
-      s1 <- transStmt stmt1 tenv venv lenv s2
+      s2 <- transStmt stmt2 tenv venv (LEnv lenv) cont
+      s1 <- transStmt stmt1 tenv venv (LEnv lenv) s2
       return (s1)
 transType :: Type (Maybe (Int, Int)) -> ()
 transType x =
@@ -109,22 +117,30 @@ transTypeMod x =
     TModReadonly _ ->
       ()
 transExpr :: Expr (Maybe (Int, Int)) -> TEnv -> VEnv -> LEnv -> ECont -> IO (Cont)
-transExpr x tenv venv lenv econt =
+transExpr x tenv venv lenv econt = do
   case x of
-    EVar _ ident -> do
-      return (econt (BoolVal True))
+    EVar lineInfo ident -> do
+      case venv ident of
+        Nothing -> do
+          return (\((next, store), err) -> ((next, store), TypeError))
+        Just loc -> do
+          return (\((next, store), err) -> (econt (store loc)) ((next, store), err))
     ELitInt _ integer -> do
-      return (econt (BoolVal True))
+      return (econt (IntVal integer))
     ELitTrue _ -> do
       return (econt (BoolVal True))
     ELitFalse _ -> do
-      return (econt (BoolVal True))
+      return (econt (BoolVal False))
     EString _ string -> do
-      return (econt (BoolVal True))
+      return (econt (StringVal string))
     ELitFloat _ double -> do
-      return (econt (BoolVal True))
+      return (econt (FloatVal double))
     EEmpList _ fulltype -> do
-      return (econt (BoolVal True))
+      return (\((next, store), err) -> 
+          let
+            (l, store'@(next', s')) = newLoc (next, store)
+          in
+            (saveInStore store' l (ListVal (l, NoVal, Nothing)), err))
     Neg _ expr -> do
       return (econt (BoolVal True))
     Not _ expr -> do
