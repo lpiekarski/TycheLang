@@ -15,16 +15,19 @@ import Tyche.Abs
 import Tyche.ErrM
 
 runProgram :: Program (Maybe (Int, Int)) -> IO ()
-runProgram prog = do
+runProgram prog =
   case typecheckProgram prog of
-    Ok _ -> 
-      case transProgram prog of
-        Ok str -> putStr str
+    Ok _ -> do
+      tp <- transProgram prog
+      case tp of
+        Ok () -> return ()
         Bad str -> do 
-          putStr "Error: "
+          putStr "Runtime Error: "
           putStr str
           putStrLn ""
+          return ()
     Bad str -> do
       putStr "TypeCheck Error: "
       putStr str
       putStrLn ""
+      return ()

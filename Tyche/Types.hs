@@ -3,6 +3,8 @@ module Tyche.Types where
 import Tyche.ErrM
 import Tyche.Abs
 
+import Data.Array
+
 extendFunc :: (Eq a) => (a -> b) -> a -> b -> a -> b
 extendFunc f nx ny x = if nx == x then ny else f x
 
@@ -111,21 +113,15 @@ elementType ft = case ft of
   FullType _ _ (Array _ res) -> Just res
   otherwise -> Nothing
 
-type Result = Err String
 type Loc = Int
-type Val = Int
+data Val = IntVal Int | FloatVal Double | BoolVal Bool | StringVal String | ListVal (Val, Maybe Loc) | ArrayVal (Array Int Val) | FuncVal (Cont -> Cont)
 type Var = Ident
 type State = Loc -> Val
-type Cont = State -> State
-type VEnv = Var -> Loc
-type ICont = VEnv -> Cont
+type Cont = Err (State -> State)
+type ECont = Val -> Cont
+type VEnv = Var -> Maybe Loc
+data Label = LBreak | LContinue | LProb Int Int Int
+data LEnv = LEnv (Label -> Maybe Cont)
 type Scope = (Maybe (FullType (Maybe (Int, Int))), Bool, Int)
-
-failure :: Show a => a -> Result
-failure x = Bad $ "Undefined case: " ++ show x
-
 type TypeCheckResult = Err (TEnv, Maybe (FullType (Maybe (Int, Int))), Scope)
 type TEnv = Var -> Maybe (FullType (Maybe (Int, Int)))
-
-typecheckfailure :: Show a => a -> TypeCheckResult
-typecheckfailure x = Bad $ "Udefined case for type check: " ++ show x
