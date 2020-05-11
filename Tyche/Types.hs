@@ -120,6 +120,18 @@ newLoc (next, s) = (next, (next + 1, s))
 saveInStore :: Store -> Loc -> Val -> Store
 saveInStore (l, s) loc val = (l, \loc' -> if loc' == loc then val else s loc')
 
+addBreakLabel :: LEnv -> IO Cont -> LEnv
+addBreakLabel (LEnv lenv) cont =
+  LEnv (\label -> case label of
+    LBreak -> Just cont
+    otherwise -> lenv label)
+
+addContinueLabel :: LEnv -> IO Cont -> LEnv
+addContinueLabel (LEnv lenv) cont =
+  LEnv (\label -> case label of
+    LContinue -> Just cont
+    otherwise -> lenv label)
+
 printStore :: Store -> IO ()
 printStore store =
   let
@@ -155,13 +167,13 @@ instance Show Val where
     NoVal -> "empty"
 type Var = Ident
 type Store = (Loc, Loc -> Val)
-data Error = NoError | DivisionBy0 | TypeError | BreakError deriving (Show)
+data Error = NoError | DivisionBy0 | TypeError | BreakError | ContinueError deriving (Show)
 type State = (Store, Error)
 type Cont = State -> IO State
 type ECont = Val -> IO Cont
 type VEnv = Var -> Maybe Loc
 data Label = LBreak | LContinue | LProb Int Int Int
-data LEnv = LEnv (Label -> Maybe Cont)
+data LEnv = LEnv (Label -> Maybe (IO Cont))
 type Scope = (Maybe (FullType (Maybe (Int, Int))), Bool, Int)
 type TypeCheckResult = Err (TEnv, Maybe (FullType (Maybe (Int, Int))), Scope)
 type TEnv = Var -> Maybe (FullType (Maybe (Int, Int)))

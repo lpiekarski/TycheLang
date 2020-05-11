@@ -45,38 +45,45 @@ transStmt x tenv venv (LEnv lenv) cont =
         Nothing ->
           return (\((next, store), err) -> return ((next, store), BreakError))
         Just c1 ->
-          return (c1)
+          c1
     Continue lineInfo ->
-      cont
-    Ret lineInfo expr -> do
+      case (lenv LContinue) of
+        Nothing ->
+          return (\((next, store), err) -> return ((next, store), ContinueError))
+        Just c1 ->
+          c1
+    Ret lineInfo expr ->
       transExpr expr tenv venv (LEnv lenv) (\val -> (cont))
-    VRet lineInfo -> do
+    VRet lineInfo ->
       cont
-    VarDef lineInfo fullident fulltype expr -> do
+    VarDef lineInfo fullident fulltype expr ->
       cont
-    Ass lineInfo ident expr -> do
+    Ass lineInfo ident expr ->
       cont
-    FnDef lineInfo fullident fulltype args stmt -> do
+    FnDef lineInfo fullident fulltype args stmt ->
       cont
-    Cond lineInfo expr stmt -> do
+    Cond lineInfo expr stmt ->
       cont
-    CondElse lineInfo expr stmt1 stmt2 -> do
+    CondElse lineInfo expr stmt1 stmt2 ->
       cont
-    While lineInfo expr stmt -> do
+    While lineInfo expr stmt ->
       transExpr expr tenv venv (LEnv lenv) (\val ->
           (case val of
             BoolVal bval ->
               if bval then
-                transStmt stmt tenv venv (LEnv lenv) (transStmt x tenv venv (LEnv lenv) cont)
+                let
+                  c1 = transStmt x tenv venv (LEnv lenv) cont
+                in
+                  transStmt stmt tenv venv (addContinueLabel (addBreakLabel (LEnv lenv) cont) c1) c1
               else
                 cont
             otherwise ->
               return (\((next, store), err) -> return ((next, store), TypeError))))
-    ForList lineInfo ident expr stmt -> do
+    ForList lineInfo ident expr stmt ->
       cont
-    ForRange lineInfo ident expr1 expr2 stmt -> do
+    ForRange lineInfo ident expr1 expr2 stmt ->
       cont
-    Composition lineInfo stmt1 stmt2 -> do
+    Composition lineInfo stmt1 stmt2 ->
       transStmt stmt1 tenv venv (LEnv lenv) (transStmt stmt2 tenv venv (LEnv lenv) cont)
 transType :: Type (Maybe (Int, Int)) -> ()
 transType x =
@@ -143,11 +150,10 @@ transExpr x tenv venv lenv econt = do
     ELitFloat _ double ->
       econt (FloatVal double)
     EEmpList _ fulltype ->
-      return (\((next, store), err) -> 
-          let
-            (l, store'@(next', s')) = newLoc (next, store)
-          in
-            return (saveInStore store' l (ListVal (l, NoVal, Nothing)), err))
+      return (\((next, store), err) -> do
+          let (l, store'@(next', s')) = newLoc (next, store)
+          cont <- econt (ListVal (l, NoVal, Nothing))
+          cont (saveInStore store' l (ListVal (l, NoVal, Nothing)), err))
     Neg _ expr ->
       econt (BoolVal True)
     Not _ expr ->
