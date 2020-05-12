@@ -15,7 +15,7 @@ transProgram :: Program (Maybe (Int, Int)) -> IO (Err ())
 transProgram x =
   case x of
     Program _ stmt -> do
-      cont <- (transStmt stmt (\v -> Nothing) (\v -> Nothing) (LEnv (\v -> Nothing)) (return (\state -> return state)))
+      cont <- (transStmt stmt (\v -> Nothing) (\v -> Nothing) (LEnv (\v -> Nothing)) (return (\tenv -> \venv -> return (\state -> return state))))
       (finalState, finalError) <- cont ((0, \l -> NoVal), NoError)
       printState (finalState, finalError)
       case finalError of
@@ -35,11 +35,12 @@ transFullIdent x =
       ()
     AnonIdent _ ->
       ()
-transStmt :: Stmt (Maybe (Int, Int)) -> TEnv -> VEnv -> LEnv -> IO (Cont) -> IO (Cont)
-transStmt x tenv venv (LEnv lenv) cont =
+transStmt :: Stmt (Maybe (Int, Int)) -> TEnv -> VEnv -> LEnv -> IO (ICont) -> IO (Cont)
+transStmt x tenv venv (LEnv lenv) icont =
   case x of
-    Skip lineInfo -> 
-      cont
+    Skip lineInfo -> do
+      ic <- icont
+      ic tenv venv
     Break lineInfo ->
       case (lenv LBreak) of
         Nothing ->
@@ -52,39 +53,54 @@ transStmt x tenv venv (LEnv lenv) cont =
           return (\((next, store), err) -> return ((next, store), ContinueError))
         Just c1 ->
           c1
-    Ret lineInfo expr ->
-      transExpr expr tenv venv (LEnv lenv) (\val -> (cont))
-    VRet lineInfo ->
-      cont
+    Ret lineInfo expr -> do
+      ic <- icont
+      transExpr expr tenv venv (LEnv lenv) (\val -> (ic tenv venv))
+    VRet lineInfo -> do
+      ic <- icont
+      ic tenv venv
     VarDef lineInfo fullident fulltype expr ->
-      cont
-    Ass lineInfo ident expr ->
-      cont
-    FnDef lineInfo fullident fulltype args stmt ->
-      cont
-    Cond lineInfo expr stmt ->
-      cont
-    CondElse lineInfo expr stmt1 stmt2 ->
-      cont
+      return (\((next, store), err) -> do
+          let (l, store'@(next', s')) = newLoc (next, store)
+          ic <- icont
+          c <- (ic tenv venv)
+          c (saveInStore store' l (ListVal (l, NoVal, Nothing)), err))
+    Ass lineInfo ident expr -> do
+      ic <- icont
+      ic tenv venv
+    FnDef lineInfo fullident fulltype args stmt -> do
+      ic <- icont
+      ic tenv venv
+    Cond lineInfo expr stmt -> do
+      ic <- icont
+      ic tenv venv
+    CondElse lineInfo expr stmt1 stmt2 -> do
+      ic <- icont
+      ic tenv venv
     While lineInfo expr stmt ->
       transExpr expr tenv venv (LEnv lenv) (\val ->
           (case val of
             BoolVal bval ->
               if bval then
                 let
-                  c1 = transStmt x tenv venv (LEnv lenv) cont
-                in
-                  transStmt stmt tenv venv (addContinueLabel (addBreakLabel (LEnv lenv) cont) c1) c1
-              else
-                cont
+                  c1 = transStmt x tenv venv (LEnv lenv) icont
+                  ic1 = (return (\tenv' -> \venv' -> c1))
+                in do
+                  ic <- icont
+                  transStmt stmt tenv venv (addContinueLabel (addBreakLabel (LEnv lenv) (ic tenv venv)) c1) ic1
+              else do
+                ic <- icont
+                ic tenv venv
             otherwise ->
               return (\((next, store), err) -> return ((next, store), TypeError))))
-    ForList lineInfo ident expr stmt ->
-      cont
-    ForRange lineInfo ident expr1 expr2 stmt ->
-      cont
+    ForList lineInfo ident expr stmt -> do
+      ic <- icont
+      ic tenv venv
+    ForRange lineInfo ident expr1 expr2 stmt -> do
+      ic <- icont
+      ic tenv venv
     Composition lineInfo stmt1 stmt2 ->
-      transStmt stmt1 tenv venv (LEnv lenv) (transStmt stmt2 tenv venv (LEnv lenv) cont)
+      transStmt stmt1 tenv venv (LEnv lenv) (return (\tenv' -> \venv' -> (transStmt stmt2 tenv' venv' (LEnv lenv) icont)))
 transType :: Type (Maybe (Int, Int)) -> ()
 transType x =
   case x of

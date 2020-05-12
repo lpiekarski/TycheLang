@@ -170,6 +170,7 @@ type Store = (Loc, Loc -> Val)
 data Error = NoError | DivisionBy0 | TypeError | BreakError | ContinueError deriving (Show)
 type State = (Store, Error)
 type Cont = State -> IO State
+type ICont = TEnv -> VEnv -> IO Cont
 type ECont = Val -> IO Cont
 type VEnv = Var -> Maybe Loc
 data Label = LBreak | LContinue | LProb Int Int Int
