@@ -131,6 +131,13 @@ addContinueLabel (LEnv lenv) cont =
   LEnv (\label -> case label of
     LContinue -> Just cont
     otherwise -> lenv label)
+    
+addReadonly :: FullType (Maybe (Int, Int)) -> FullType (Maybe (Int, Int))
+addReadonly ft@(FullType li tms t) =
+  if isReadonly ft then
+    ft
+  else
+    FullType li ((TModReadonly Nothing):tms) t
 
 printStore :: Store -> IO ()
 printStore store =
@@ -171,10 +178,37 @@ data Error = NoError | DivisionBy0 | TypeError | BreakError | ContinueError deri
 type State = (Store, Error)
 type Cont = State -> IO State
 type ICont = TEnv -> VEnv -> IO Cont
-type ECont = Val -> IO Cont
+type ECont = FullType (Maybe (Int, Int)) -> Val -> IO Cont
 type VEnv = Var -> Maybe Loc
 data Label = LBreak | LContinue | LProb Int Int Int
 data LEnv = LEnv (Label -> Maybe (IO Cont))
 type Scope = (Maybe (FullType (Maybe (Int, Int))), Bool, Int)
 type TypeCheckResult = Err (TEnv, Maybe (FullType (Maybe (Int, Int))), Scope)
 type TEnv = Var -> Maybe (FullType (Maybe (Int, Int)))
+
+readonlyBoolT = FullType Nothing [TModReadonly Nothing] (Bool Nothing)
+boolT = FullType Nothing [] (Bool Nothing)
+readonlyIntT = FullType Nothing [TModReadonly Nothing] (Int Nothing)
+intT = FullType Nothing [] (Int Nothing)
+readonlyStringT = FullType Nothing [TModReadonly Nothing] (Str Nothing)
+stringT = FullType Nothing [] (Str Nothing)
+readonlyFloatT = FullType Nothing [TModReadonly Nothing] (Float Nothing)
+floatT = FullType Nothing [] (Float Nothing)
+readonlyListT fulltype = FullType Nothing [TModReadonly Nothing] (List Nothing fulltype)
+listT fulltype = FullType Nothing [] (List Nothing fulltype)
+
+{-typeOf :: Val -> FullType (Maybe (Int, Int))
+typeOf IntVal _ = readonlyIntT
+typeOf FloatVal _
+BoolVal _
+StringVal _
+ListVal (_, Val, _)
+ArrayVal (Array Int Val)
+FuncVal (Cont -> Cont)
+NoVal-}
+
+negateVal :: Val -> Val
+negateVal (IntVal v) = IntVal (-v)
+negateVal (FloatVal v) = FloatVal (-v)
+negateVal (BoolVal v) = BoolVal (not v)
+negateVal v = v

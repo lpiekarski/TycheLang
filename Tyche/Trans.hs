@@ -55,20 +55,20 @@ transStmt x tenv venv (LEnv lenv) icont =
           c1
     Ret lineInfo expr -> do
       ic <- icont
-      transExpr expr tenv venv (LEnv lenv) (\val -> (ic tenv venv))
+      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> (ic tenv venv))
     VRet lineInfo -> do
       ic <- icont
       ic tenv venv
     VarDef lineInfo fullident fulltype expr ->
       case fullident of
         AnonIdent _ ->
-          transExpr expr tenv venv (LEnv lenv) (\val -> return (\(store, err) -> do
+          transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> return (\(store, err) -> do
           let (l, store') = newLoc store
           ic <- icont
           c <- (ic tenv venv)
           c (saveInStore store' l val, err)))
         FullIdent _ ident ->
-          transExpr expr tenv venv (LEnv lenv) (\val -> return (\(store, err) -> do
+          transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> return (\(store, err) -> do
           let (l, store') = newLoc store
           ic <- icont
           let venv' = extendFunc venv ident (Just l)
@@ -88,7 +88,7 @@ transStmt x tenv venv (LEnv lenv) icont =
       ic <- icont
       ic tenv venv
     While lineInfo expr stmt ->
-      transExpr expr tenv venv (LEnv lenv) (\val ->
+      transExpr expr tenv venv (LEnv lenv) (\fulltype -> \val ->
           (case val of
             BoolVal bval ->
               if bval then
@@ -155,69 +155,73 @@ transTypeMod x =
     TModReadonly _ ->
       ()
 transExpr :: Expr (Maybe (Int, Int)) -> TEnv -> VEnv -> LEnv -> ECont -> IO (Cont)
-transExpr x tenv venv lenv econt = do
+transExpr x tenv venv (LEnv lenv) econt = do
   case x of
     EVar lineInfo ident ->
       case venv ident of
         Nothing ->
           return (\((next, store), err) -> return ((next, store), TypeError))
         Just loc ->
-          return (\((next, store), err) -> do
-            nc <- (econt (store loc))
-            nc ((next, store), err))
+          return (\((next, store), err) -> 
+            case tenv ident of
+              Nothing ->
+                return ((next, store), TypeError)
+              Just fulltype -> do
+                nc <- (econt fulltype (store loc))
+                nc ((next, store), err))
     ELitInt _ integer ->
-      econt (IntVal integer)
+      econt (readonlyIntT) (IntVal integer)
     ELitTrue _ ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     ELitFalse _ ->
-      econt (BoolVal False)
+      econt (readonlyBoolT) (BoolVal False)
     EString _ string ->
-      econt (StringVal string)
+      econt (readonlyStringT) (StringVal string)
     ELitFloat _ double ->
-      econt (FloatVal double)
+      econt (readonlyFloatT) (FloatVal double)
     EEmpList _ fulltype ->
       return (\((next, store), err) -> do
           let (l, store'@(next', s')) = newLoc (next, store)
-          cont <- econt (ListVal (l, NoVal, Nothing))
+          cont <- econt (readonlyListT fulltype) (ListVal (l, NoVal, Nothing))
           cont (saveInStore store' l (ListVal (l, NoVal, Nothing)), err))
     Neg _ expr ->
-      econt (BoolVal True)
+      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> econt valtype (negateVal val))
     Not _ expr ->
-      econt (BoolVal True)
+      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> econt valtype (negateVal val))
     ECons _ expr1 expr2 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EMul _ expr1 mulop expr2 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EAdd _ expr1 addop expr2 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     ERel _ expr1 relop expr2 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EAnd _ expr1 andop expr2 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EOr _ expr1 orop expr2 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EList _ exprs ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EArr _ exprs ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EArrSize _ fulltype expr ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EApp _ expr exprs ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EArrApp _ expr exprs ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EIf _ expr1 expr2 expr3 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     ELambda _ fulltype args stmt ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     ERand _ expr ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     ERandDist _ expr1 expr2 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EProb _ stmt expr ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
     EProbSamp _ expr1 stmt expr2 ->
-      econt (BoolVal True)
+      econt (readonlyBoolT) (BoolVal True)
 transAddOp :: AddOp (Maybe (Int, Int)) -> ()
 transAddOp x =
   case x of
