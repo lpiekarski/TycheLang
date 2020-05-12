@@ -63,8 +63,15 @@ transStmt x tenv venv (LEnv lenv) icont =
       return (\((next, store), err) -> do
           let (l, store'@(next', s')) = newLoc (next, store)
           ic <- icont
-          c <- (ic tenv venv)
-          c (saveInStore store' l (ListVal (l, NoVal, Nothing)), err))
+          case fullident of
+            AnonIdent _ -> do
+              c <- (ic tenv venv)
+              transExpr expr tenv venv (LEnv lenv) (\val -> c (saveInStore store' l val, err))
+            FullIdent _ ident -> do
+              let venv' = extendFunc venv ident l
+              let tenv' = extendFunc tenv ident fulltype
+              c <- (ic tenv' venv')
+              transExpr expr tenv venv (LEnv lenv) (\val -> c (saveInStore store' l val, err)))
     Ass lineInfo ident expr -> do
       ic <- icont
       ic tenv venv
