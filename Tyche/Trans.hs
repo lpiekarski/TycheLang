@@ -53,10 +53,10 @@ transStmt x tenv venv (LEnv lenv) icont =
           return (\((next, store), err) -> return ((next, store), ContinueError))
         Just c1 ->
           c1
-    Ret lineInfo expr -> do
+    Ret lineInfo expr -> do  --TODO
       ic <- icont
       transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> (ic tenv venv))
-    VRet lineInfo ->
+    VRet lineInfo ->  --TODO
       case (lenv LReturn) of
         Nothing -> do
           ic <- icont
@@ -93,7 +93,7 @@ transStmt x tenv venv (LEnv lenv) icont =
             ic <- icont
             c <- (ic tenv venv)
             c (saveInStore store l val, err)))
-    FnDef lineInfo fullident fulltype args stmt -> do
+    FnDef lineInfo fullident fulltype args stmt -> do  --TODO
       ic <- icont
       ic tenv venv
     Cond lineInfo expr stmt -> do
@@ -135,10 +135,10 @@ transStmt x tenv venv (LEnv lenv) icont =
                 ic tenv venv
             otherwise ->
               return (\((next, store), err) -> return ((next, store), TypeError))))
-    ForList lineInfo ident expr stmt -> do
+    ForList lineInfo ident expr stmt -> do  --TODO
       ic <- icont
       ic tenv venv
-    ForRange lineInfo ident expr1 expr2 stmt -> do
+    ForRange lineInfo ident expr1 expr2 stmt -> do  --TODO
       ic <- icont
       ic tenv venv
     Composition lineInfo stmt1 stmt2 ->
@@ -265,15 +265,15 @@ transExpr x tenv venv (LEnv lenv) econt = do
               econt restype resval
             (_, _, err') ->
               return (\(state, err) -> return (state, err'))))
-    EList _ exprs ->
+    EList _ exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    EArr _ exprs ->
+    EArr _ exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    EArrSize _ fulltype expr ->
+    EArrSize _ fulltype expr ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    EApp _ expr exprs ->
+    EApp _ expr exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    EArrApp _ expr exprs ->
+    EArrApp _ expr exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
     EIf _ expr1 expr2 expr3 ->
       transExpr expr1 tenv venv (LEnv lenv) (\type1 -> \val1 ->
@@ -285,15 +285,15 @@ transExpr x tenv venv (LEnv lenv) econt = do
               transExpr expr3 tenv venv (LEnv lenv) econt
           otherwise ->
             return (\(state, err) -> return (state, TypeError)))
-    ELambda _ fulltype args stmt ->
+    ELambda _ fulltype args stmt ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    ERand _ expr ->
+    ERand _ expr ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    ERandDist _ expr1 expr2 ->
+    ERandDist _ expr1 expr2 ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    EProb _ stmt expr ->
+    EProb _ stmt expr ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    EProbSamp _ expr1 stmt expr2 ->
+    EProbSamp _ expr1 stmt expr2 ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
 transAddOp :: AddOp (Maybe (Int, Int)) -> Val -> Val -> (FullType (Maybe (Int, Int)), Val, Error)
 transAddOp x v1 v2 =
