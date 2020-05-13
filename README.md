@@ -1,6 +1,6 @@
-# Programming Language Interpreter
+# Tyche Language Interpreter
 
-## Interpreter
+## Compiling and running the interpreter
 
 To compile the interpreter all you have to do is run:
 ```bash
@@ -16,7 +16,7 @@ or
 ```
 and providing the program to run in the standard input.
 
-## Grammar
+## Compiling the grammar using BNF Converter
 To compile grammar from `tyche.cf` in bnfc with line information run:
 ```bash
 cd bnfc
