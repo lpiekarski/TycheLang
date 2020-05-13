@@ -350,21 +350,21 @@ typecheckExpr x te scope =
         Nothing ->
           Bad ("at " ++ (lineInfoString lineInfo) ++ " Undefined variable " ++ (printTree ident))
     ELitInt lineInfo integer ->
-      Ok (te, Just (FullType lineInfo [TModReadonly lineInfo] (Int lineInfo)), scope)
+      Ok (te, Just (FullType lineInfo [] (Int lineInfo)), scope)
     ELitTrue lineInfo ->
-      Ok (te, Just (FullType lineInfo [TModReadonly lineInfo] (Bool lineInfo)), scope)
+      Ok (te, Just (FullType lineInfo [] (Bool lineInfo)), scope)
     ELitFalse lineInfo ->
-      Ok (te, Just (FullType lineInfo [TModReadonly lineInfo] (Bool lineInfo)), scope)
+      Ok (te, Just (FullType lineInfo [] (Bool lineInfo)), scope)
     EString lineInfo string ->
-      Ok (te, Just (FullType lineInfo [TModReadonly lineInfo] (Str lineInfo)), scope)
+      Ok (te, Just (FullType lineInfo [] (Str lineInfo)), scope)
     ELitFloat lineInfo double ->
-      Ok (te, Just (FullType lineInfo [TModReadonly lineInfo] (Float lineInfo)), scope)
+      Ok (te, Just (FullType lineInfo [] (Float lineInfo)), scope)
     EEmpList lineInfo fulltype ->
       case typecheckFullType fulltype te scope of
         Bad str ->
           Bad str
         Ok (_, _, _) ->
-          Ok (te, Just (FullType lineInfo [TModReadonly lineInfo] (List lineInfo fulltype)), scope)
+          Ok (te, Just (FullType lineInfo [] (List lineInfo fulltype)), scope)
     Neg lineInfo expr ->
       case typecheckExpr expr te scope of
         Bad str ->

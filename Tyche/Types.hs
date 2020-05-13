@@ -161,14 +161,14 @@ printState (store, err) = do
   return ()
 
 type Loc = Int
-data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal (Loc, Val, Maybe Loc) | ArrayVal (Array Int Val) | FuncVal (Cont -> Cont) | NoVal
+data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal [Val] | ArrayVal (Array Int Val) | FuncVal (Cont -> Cont) | NoVal
 instance Show Val where
   show val = case val of
     IntVal integer -> "int " ++ (show integer)
     FloatVal double -> "float " ++ (show double)
     BoolVal bool -> "bool " ++ (show bool)
     StringVal str -> "string " ++ str
-    ListVal (l, v, ml) -> "list " ++ (show l) ++ " " ++ (show v) ++ " " ++ (show ml)
+    ListVal l -> "list " ++ (show l)
     ArrayVal (_) -> "array"
     FuncVal (_) -> "function"
     NoVal -> "empty"
@@ -180,12 +180,14 @@ type Cont = State -> IO State
 type ICont = TEnv -> VEnv -> IO Cont
 type ECont = FullType (Maybe (Int, Int)) -> Val -> IO Cont
 type VEnv = Var -> Maybe Loc
-data Label = LBreak | LContinue | LProb Int Int Int
+data Label = LBreak | LContinue | LReturn | LProb Int Int Int
 data LEnv = LEnv (Label -> Maybe (IO Cont))
 type Scope = (Maybe (FullType (Maybe (Int, Int))), Bool, Int)
 type TypeCheckResult = Err (TEnv, Maybe (FullType (Maybe (Int, Int))), Scope)
 type TEnv = Var -> Maybe (FullType (Maybe (Int, Int)))
 
+readonlyVoidT = FullType Nothing [TModReadonly Nothing] (Void Nothing)
+voidT = FullType Nothing [] (Void Nothing)
 readonlyBoolT = FullType Nothing [TModReadonly Nothing] (Bool Nothing)
 boolT = FullType Nothing [] (Bool Nothing)
 readonlyIntT = FullType Nothing [TModReadonly Nothing] (Int Nothing)
@@ -207,8 +209,11 @@ ArrayVal (Array Int Val)
 FuncVal (Cont -> Cont)
 NoVal-}
 
-negateVal :: Val -> Val
-negateVal (IntVal v) = IntVal (-v)
-negateVal (FloatVal v) = FloatVal (-v)
-negateVal (BoolVal v) = BoolVal (not v)
-negateVal v = v
+negateNum :: Val -> Val
+negateNum (IntVal v) = IntVal (-v)
+negateNum (FloatVal v) = FloatVal (-v)
+negateNum v = v
+
+negateBool :: Val -> Val
+negateBool (BoolVal v) = BoolVal (not v)
+negateBool v = v

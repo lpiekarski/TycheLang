@@ -56,9 +56,13 @@ transStmt x tenv venv (LEnv lenv) icont =
     Ret lineInfo expr -> do
       ic <- icont
       transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> (ic tenv venv))
-    VRet lineInfo -> do
-      ic <- icont
-      ic tenv venv
+    VRet lineInfo ->
+      case (lenv LReturn) of
+        Nothing -> do
+          ic <- icont
+          ic tenv venv
+        Just c -> do
+          c
     VarDef lineInfo fullident fulltype expr ->
       case fullident of
         AnonIdent _ ->
@@ -180,26 +184,59 @@ transExpr x tenv venv (LEnv lenv) econt = do
     ELitFloat _ double ->
       econt (readonlyFloatT) (FloatVal double)
     EEmpList _ fulltype ->
-      return (\((next, store), err) -> do
-          let (l, store'@(next', s')) = newLoc (next, store)
-          cont <- econt (readonlyListT fulltype) (ListVal (l, NoVal, Nothing))
-          cont (saveInStore store' l (ListVal (l, NoVal, Nothing)), err))
+      econt (readonlyListT fulltype) (ListVal [])
     Neg _ expr ->
-      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> econt valtype (negateVal val))
+      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> econt valtype (negateNum val))
     Not _ expr ->
-      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> econt valtype (negateVal val))
+      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> econt valtype (negateBool val))
     ECons _ expr1 expr2 ->
-      econt (readonlyBoolT) (BoolVal True)
+      transExpr expr1 tenv venv (LEnv lenv) (\eltype -> \el -> transExpr expr2 tenv venv (LEnv lenv) (\listtype -> \listval ->
+        case listval of
+          ListVal list -> 
+            econt (readonlyListT listtype) (ListVal (el:list))
+          otherwise ->
+            return (\(state, err) -> return (state, TypeError))
+        ))
     EMul _ expr1 mulop expr2 ->
-      econt (readonlyBoolT) (BoolVal True)
+      transExpr expr1 tenv venv (LEnv lenv) (\type1 -> \val1 ->
+        transExpr expr2 tenv venv (LEnv lenv) (\type2 -> \val2 ->
+          case transMulOp mulop val1 val2 of
+            (restype, resval, NoError) ->
+              econt restype resval
+            (_, _, err') ->
+              return (\(state, err) -> return (state, err'))))
     EAdd _ expr1 addop expr2 ->
-      econt (readonlyBoolT) (BoolVal True)
+      transExpr expr1 tenv venv (LEnv lenv) (\type1 -> \val1 ->
+        transExpr expr2 tenv venv (LEnv lenv) (\type2 -> \val2 ->
+          case transAddOp addop val1 val2 of
+            (restype, resval, NoError) ->
+              econt restype resval
+            (_, _, err') ->
+              return (\(state, err) -> return (state, err'))))
     ERel _ expr1 relop expr2 ->
-      econt (readonlyBoolT) (BoolVal True)
+      transExpr expr1 tenv venv (LEnv lenv) (\type1 -> \val1 ->
+        transExpr expr2 tenv venv (LEnv lenv) (\type2 -> \val2 ->
+          case transRelOp relop val1 val2 of
+            (restype, resval, NoError) ->
+              econt restype resval
+            (_, _, err') ->
+              return (\(state, err) -> return (state, err'))))
     EAnd _ expr1 andop expr2 ->
-      econt (readonlyBoolT) (BoolVal True)
+      transExpr expr1 tenv venv (LEnv lenv) (\type1 -> \val1 ->
+        transExpr expr2 tenv venv (LEnv lenv) (\type2 -> \val2 ->
+          case transAndOp andop val1 val2 of
+            (restype, resval, NoError) ->
+              econt restype resval
+            (_, _, err') ->
+              return (\(state, err) -> return (state, err'))))
     EOr _ expr1 orop expr2 ->
-      econt (readonlyBoolT) (BoolVal True)
+      transExpr expr1 tenv venv (LEnv lenv) (\type1 -> \val1 ->
+        transExpr expr2 tenv venv (LEnv lenv) (\type2 -> \val2 ->
+          case transOrOp orop val1 val2 of
+            (restype, resval, NoError) ->
+              econt restype resval
+            (_, _, err') ->
+              return (\(state, err) -> return (state, err'))))
     EList _ exprs ->
       econt (readonlyBoolT) (BoolVal True)
     EArr _ exprs ->
@@ -222,45 +259,114 @@ transExpr x tenv venv (LEnv lenv) econt = do
       econt (readonlyBoolT) (BoolVal True)
     EProbSamp _ expr1 stmt expr2 ->
       econt (readonlyBoolT) (BoolVal True)
-transAddOp :: AddOp (Maybe (Int, Int)) -> ()
-transAddOp x =
+transAddOp :: AddOp (Maybe (Int, Int)) -> Val -> Val -> (FullType (Maybe (Int, Int)), Val, Error)
+transAddOp x v1 v2 =
   case x of
     Plus _ ->
-      ()
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyIntT, IntVal (x1 + x2), NoError)
+        (FloatVal x1, FloatVal x2) ->
+          (readonlyFloatT, FloatVal (x1 + x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
     Minus _ ->
-      ()
-transMulOp :: MulOp (Maybe (Int, Int)) -> ()
-transMulOp x =
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyIntT, IntVal (x1 - x2), NoError)
+        (FloatVal x1, FloatVal x2) ->
+          (readonlyFloatT, FloatVal (x1 - x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
+transMulOp :: MulOp (Maybe (Int, Int)) -> Val -> Val -> (FullType (Maybe (Int, Int)), Val, Error)
+transMulOp x v1 v2 =
   case x of
     Times _ ->
-      ()
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyIntT, IntVal (x1 * x2), NoError)
+        (FloatVal x1, FloatVal x2) ->
+          (readonlyFloatT, FloatVal (x1 * x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
     Div lineInfo ->
-      ()
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          if x2 == 0 then
+            (readonlyVoidT, NoVal, DivisionBy0)
+          else
+            (readonlyIntT, IntVal (x1 `div` x2), NoError)
+        (FloatVal x1, FloatVal x2) ->
+          if x2 == 0 then
+            (readonlyVoidT, NoVal, DivisionBy0)
+          else
+            (readonlyFloatT, FloatVal (x1 / x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
     Mod _ ->
-      ()
-transRelOp :: RelOp (Maybe (Int, Int)) -> ()
-transRelOp x =
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          if x2 == 0 then
+            (readonlyVoidT, NoVal, DivisionBy0)
+          else
+            (readonlyIntT, IntVal (x1 `mod` x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
+transRelOp :: RelOp (Maybe (Int, Int)) -> Val -> Val -> (FullType (Maybe (Int, Int)), Val, Error)
+transRelOp x v1 v2 =
   case x of
     LTH _ ->
-      ()
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyBoolT, BoolVal (x1 < x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
     LE _ ->
-      ()
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyBoolT, BoolVal (x1 <= x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
     GTH _ ->
-      ()
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyBoolT, BoolVal (x1 > x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
     GE _ ->
-      ()
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyBoolT, BoolVal (x1 >= x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
     EQU _ ->
-      ()
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyBoolT, BoolVal (x1 == x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
     NE _ ->
-      ()
-transOrOp :: OrOp (Maybe (Int, Int)) -> ()
-transOrOp x =
+      case (v1, v2) of
+        (IntVal x1, IntVal x2) ->
+          (readonlyBoolT, BoolVal (x1 /= x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
+transOrOp :: OrOp (Maybe (Int, Int)) -> Val -> Val -> (FullType (Maybe (Int, Int)), Val, Error)
+transOrOp x v1 v2 =
   case x of
     Or _ ->
-      ()
-transAndOp :: AndOp (Maybe (Int, Int)) -> ()
-transAndOp x = 
+      case (v1, v2) of
+        (BoolVal x1, BoolVal x2) ->
+          (readonlyBoolT, BoolVal (x1 || x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
+transAndOp :: AndOp (Maybe (Int, Int)) -> Val -> Val -> (FullType (Maybe (Int, Int)), Val, Error)
+transAndOp x v1 v2 = 
   case x of
     And _ ->
-      ()
+      case (v1, v2) of
+        (BoolVal x1, BoolVal x2) ->
+          (readonlyBoolT, BoolVal (x1 && x2), NoError)
+        otherwise ->
+          (readonlyVoidT, NoVal, TypeError)
 
