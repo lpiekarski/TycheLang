@@ -86,11 +86,28 @@ transStmt x tenv venv (LEnv lenv) icont =
       ic <- icont
       ic tenv venv
     Cond lineInfo expr stmt -> do
-      ic <- icont
-      ic tenv venv
+      transExpr expr tenv venv (LEnv lenv) (\type1 -> \val1 -> 
+        (case val1 of
+          BoolVal bval ->
+            if bval then do
+              transStmt stmt tenv venv (LEnv lenv) icont
+            else do
+              ic <- icont
+              ic tenv venv
+          otherwise ->
+            return (\(state, err) -> return (state, TypeError))
+          ))
     CondElse lineInfo expr stmt1 stmt2 -> do
-      ic <- icont
-      ic tenv venv
+      transExpr expr tenv venv (LEnv lenv) (\type1 -> \val1 -> 
+        (case val1 of
+          BoolVal bval ->
+            if bval then do
+              transStmt stmt1 tenv venv (LEnv lenv) icont
+            else do
+              transStmt stmt2 tenv venv (LEnv lenv) icont
+          otherwise ->
+            return (\(state, err) -> return (state, TypeError))
+          ))
     While lineInfo expr stmt ->
       transExpr expr tenv venv (LEnv lenv) (\fulltype -> \val ->
           (case val of
@@ -248,7 +265,15 @@ transExpr x tenv venv (LEnv lenv) econt = do
     EArrApp _ expr exprs ->
       econt (readonlyBoolT) (BoolVal True)
     EIf _ expr1 expr2 expr3 ->
-      econt (readonlyBoolT) (BoolVal True)
+      transExpr expr1 tenv venv (LEnv lenv) (\type1 -> \val1 ->
+        case val1 of
+          BoolVal bval ->
+            if bval then
+              transExpr expr2 tenv venv (LEnv lenv) econt
+            else
+              transExpr expr3 tenv venv (LEnv lenv) econt
+          otherwise ->
+            return (\(state, err) -> return (state, TypeError)))
     ELambda _ fulltype args stmt ->
       econt (readonlyBoolT) (BoolVal True)
     ERand _ expr ->
