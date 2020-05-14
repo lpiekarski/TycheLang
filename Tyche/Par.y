@@ -28,45 +28,45 @@ import Tyche.ErrM
   '/' { PT _ (TS _ 13) }
   ':' { PT _ (TS _ 14) }
   '::' { PT _ (TS _ 15) }
-  ';' { PT _ (TS _ 16) }
-  '<' { PT _ (TS _ 17) }
-  '<=' { PT _ (TS _ 18) }
-  '=' { PT _ (TS _ 19) }
-  '==' { PT _ (TS _ 20) }
-  '>' { PT _ (TS _ 21) }
-  '>=' { PT _ (TS _ 22) }
-  '?' { PT _ (TS _ 23) }
-  '[' { PT _ (TS _ 24) }
-  ']' { PT _ (TS _ 25) }
-  '_' { PT _ (TS _ 26) }
-  'and' { PT _ (TS _ 27) }
-  'array' { PT _ (TS _ 28) }
-  'boolean' { PT _ (TS _ 29) }
-  'break' { PT _ (TS _ 30) }
-  'continue' { PT _ (TS _ 31) }
-  'def' { PT _ (TS _ 32) }
-  'distribution' { PT _ (TS _ 33) }
-  'do' { PT _ (TS _ 34) }
-  'each' { PT _ (TS _ 35) }
-  'else' { PT _ (TS _ 36) }
-  'equals' { PT _ (TS _ 37) }
-  'false' { PT _ (TS _ 38) }
-  'float' { PT _ (TS _ 39) }
-  'for' { PT _ (TS _ 40) }
-  'from' { PT _ (TS _ 41) }
-  'if' { PT _ (TS _ 42) }
-  'inout' { PT _ (TS _ 43) }
-  'int' { PT _ (TS _ 44) }
-  'lambda' { PT _ (TS _ 45) }
-  'mod' { PT _ (TS _ 46) }
-  'not' { PT _ (TS _ 47) }
-  'of' { PT _ (TS _ 48) }
-  'or' { PT _ (TS _ 49) }
-  'probability' { PT _ (TS _ 50) }
-  'random' { PT _ (TS _ 51) }
-  'readonly' { PT _ (TS _ 52) }
-  'return' { PT _ (TS _ 53) }
-  'satisfying' { PT _ (TS _ 54) }
+  '<' { PT _ (TS _ 16) }
+  '<=' { PT _ (TS _ 17) }
+  '=' { PT _ (TS _ 18) }
+  '==' { PT _ (TS _ 19) }
+  '>' { PT _ (TS _ 20) }
+  '>=' { PT _ (TS _ 21) }
+  '?' { PT _ (TS _ 22) }
+  '[' { PT _ (TS _ 23) }
+  ']' { PT _ (TS _ 24) }
+  '_' { PT _ (TS _ 25) }
+  'and' { PT _ (TS _ 26) }
+  'array' { PT _ (TS _ 27) }
+  'boolean' { PT _ (TS _ 28) }
+  'break' { PT _ (TS _ 29) }
+  'continue' { PT _ (TS _ 30) }
+  'def' { PT _ (TS _ 31) }
+  'distribution' { PT _ (TS _ 32) }
+  'do' { PT _ (TS _ 33) }
+  'each' { PT _ (TS _ 34) }
+  'else' { PT _ (TS _ 35) }
+  'equals' { PT _ (TS _ 36) }
+  'false' { PT _ (TS _ 37) }
+  'float' { PT _ (TS _ 38) }
+  'for' { PT _ (TS _ 39) }
+  'from' { PT _ (TS _ 40) }
+  'if' { PT _ (TS _ 41) }
+  'inout' { PT _ (TS _ 42) }
+  'int' { PT _ (TS _ 43) }
+  'lambda' { PT _ (TS _ 44) }
+  'mod' { PT _ (TS _ 45) }
+  'not' { PT _ (TS _ 46) }
+  'of' { PT _ (TS _ 47) }
+  'or' { PT _ (TS _ 48) }
+  'probability' { PT _ (TS _ 49) }
+  'random' { PT _ (TS _ 50) }
+  'readonly' { PT _ (TS _ 51) }
+  'return' { PT _ (TS _ 52) }
+  'satisfying' { PT _ (TS _ 53) }
+  'skip' { PT _ (TS _ 54) }
   'string' { PT _ (TS _ 55) }
   'tested' { PT _ (TS _ 56) }
   'then' { PT _ (TS _ 57) }
@@ -156,28 +156,25 @@ FullIdent :: {
 Stmt5 :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: ';' {
+: 'skip' {
   (Just (tokenLineCol $1), Tyche.Abs.Skip (Just (tokenLineCol $1)))
 }
-| 'break' ';' {
+| 'break' {
   (Just (tokenLineCol $1), Tyche.Abs.Break (Just (tokenLineCol $1)))
 }
-| 'continue' ';' {
+| 'continue' {
   (Just (tokenLineCol $1), Tyche.Abs.Continue (Just (tokenLineCol $1)))
 }
-| 'return' Expr ';' {
+| 'return' Expr {
   (Just (tokenLineCol $1), Tyche.Abs.Ret (Just (tokenLineCol $1)) (snd $2)) 
 }
-| Expr ';' {
-  (fst $1, Tyche.Abs.Ret (fst $1)(snd $1)) 
-}
-| 'return' ';' {
+| 'return' {
   (Just (tokenLineCol $1), Tyche.Abs.VRet (Just (tokenLineCol $1)))
 }
-| 'def' FullIdent ':' FullType '=' Expr1 ';' {
+| 'def' FullIdent ':' FullType '=' Expr1 {
   (Just (tokenLineCol $1), Tyche.Abs.VarDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
 }
-| Ident '=' Expr1 ';' {
+| Ident '=' Expr1 {
   (fst $1, Tyche.Abs.Ass (fst $1)(snd $1)(snd $3)) 
 }
 | Stmt6 {
@@ -356,6 +353,9 @@ Expr9 :: {
 | '()' ':' FullType {
   (Just (tokenLineCol $1), Tyche.Abs.EEmpList (Just (tokenLineCol $1)) (snd $3)) 
 }
+| Expr9 '(' ListExpr ')' {
+  (fst $1, Tyche.Abs.EApp (fst $1)(snd $1)(snd $3)) 
+}
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
 }
@@ -447,9 +447,6 @@ Expr1 :: {
 }
 | 'array' ':' FullType '[' Expr ']' {
   (Just (tokenLineCol $1), Tyche.Abs.EArrSize (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
-}
-| Expr2 '(' ListExpr ')' {
-  (fst $1, Tyche.Abs.EApp (fst $1)(snd $1)(snd $3)) 
 }
 | Expr2 '[' Expr ']' {
   (fst $1, Tyche.Abs.EArrApp (fst $1)(snd $1)(snd $3)) 

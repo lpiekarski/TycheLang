@@ -1,3 +1,5 @@
+-- layouts
+layout toplevel ;
 -- programs
 
 entrypoints Program ;
@@ -14,14 +16,13 @@ AnonIdent. FullIdent ::= "_" ;
 
 -- statements
 
-Skip.        Stmt5 ::= ";" ;
-Break.       Stmt5 ::= "break" ";" ;
-Continue.    Stmt5 ::= "continue" ";" ;
-Ret.         Stmt5 ::= "return" Expr ";" ;
-Ret.         Stmt5 ::= Expr ";" ;
-VRet.        Stmt5 ::= "return" ";" ;
-VarDef.      Stmt5 ::= "def" FullIdent ":" FullType "=" Expr1 ";" ;
-Ass.         Stmt5 ::= Ident "=" Expr1 ";" ;
+Skip.        Stmt5 ::= "skip" ;
+Break.       Stmt5 ::= "break" ;
+Continue.    Stmt5 ::= "continue" ;
+Ret.         Stmt5 ::= "return" Expr ;
+VRet.        Stmt5 ::= "return" ;
+VarDef.      Stmt5 ::= "def" FullIdent ":" FullType "=" Expr1 ;
+Ass.         Stmt5 ::= Ident "=" Expr1 ;
 
 FnDef.       Stmt4 ::= "def" FullIdent ":" FullType "(" [Arg] ")" Stmt5 ;
 
@@ -76,6 +77,7 @@ ELitFalse. Expr9 ::= "false" ;
 EString.   Expr9 ::= String ;
 ELitFloat. Expr9 ::= Double ;
 EEmpList.  Expr9 ::= "()" ":" FullType ;
+EApp.      Expr9 ::= Expr9 "(" [Expr] ")" ;
 
 Neg.       Expr8 ::= "-" Expr9 ;
 Not.       Expr8 ::= "!" Expr9 ;
@@ -96,7 +98,6 @@ EOr.       Expr2 ::= Expr3 OrOp Expr2 ;
 EList.     Expr1 ::= "(" [Expr] ")" ;
 EArr.      Expr1 ::= "[" [Expr] "]" ;
 EArrSize.  Expr1 ::= "array" ":" FullType "[" Expr "]" ;
-EApp.      Expr1 ::= Expr2 "(" [Expr] ")" ;
 EArrApp.   Expr1 ::= Expr2 "[" Expr "]" ;
 
 EIf.       Expr ::= Expr1 "?" Expr1 ":" Expr1 ;

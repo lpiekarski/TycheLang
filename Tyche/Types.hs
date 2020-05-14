@@ -161,7 +161,7 @@ printState (store, err) = do
   return ()
 
 type Loc = Int
-data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal [Val] | ArrayVal (Array Int Val) | FuncVal (Cont -> Cont) | NoVal
+data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal [Val] | ArrayVal (Array Int Val) | FuncVal ([Either Loc Val] -> Cont -> Cont) | NoVal
 instance Show Val where
   show val = case val of
     IntVal integer -> "int " ++ (show integer)

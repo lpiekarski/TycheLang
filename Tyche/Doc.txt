@@ -45,19 +45,18 @@ The reserved words used in tyche are the following:
   | ``inout`` | ``int`` | ``lambda`` | ``mod``
   | ``not`` | ``of`` | ``or`` | ``probability``
   | ``random`` | ``readonly`` | ``return`` | ``satisfying``
-  | ``string`` | ``tested`` | ``then`` | ``times``
-  | ``to`` | ``true`` | ``val`` | ``var``
-  | ``void`` | ``while`` |  | 
+  | ``skip`` | ``string`` | ``tested`` | ``then``
+  | ``times`` | ``to`` | ``true`` | ``val``
+  | ``var`` | ``void`` | ``while`` | 
 
 The symbols used in tyche are the following:
-  | : | , | _ | ;
-  | = | ( | ) | {
-  | } | [ | ] | ->
-  | () | - | ! | ::
-  | ? | + | * | /
-  | % | < | <= | >
-  | >= | == | != | ||
-  | && |  |  | 
+  | : | , | _ | =
+  | ( | ) | { | }
+  | [ | ] | -> | ()
+  | - | ! | :: | ?
+  | + | * | / | %
+  | < | <= | > | >=
+  | == | != | || | &&
 
 ===Comments===
 Single-line comments begin with #, //, --.Multiple-line comments are  enclosed with /* and */.
@@ -75,14 +74,13 @@ All other symbols are terminals.
   |  |  **|**  | //Arg// ``,`` //[Arg]// 
   | //FullIdent// | -> | //Ident// 
   |  |  **|**  | ``_`` 
-  | //Stmt5// | -> | ``;`` 
-  |  |  **|**  | ``break`` ``;`` 
-  |  |  **|**  | ``continue`` ``;`` 
-  |  |  **|**  | ``return`` //Expr// ``;`` 
-  |  |  **|**  | //Expr// ``;`` 
-  |  |  **|**  | ``return`` ``;`` 
-  |  |  **|**  | ``def`` //FullIdent// ``:`` //FullType// ``=`` //Expr1// ``;`` 
-  |  |  **|**  | //Ident// ``=`` //Expr1// ``;`` 
+  | //Stmt5// | -> | ``skip`` 
+  |  |  **|**  | ``break`` 
+  |  |  **|**  | ``continue`` 
+  |  |  **|**  | ``return`` //Expr// 
+  |  |  **|**  | ``return`` 
+  |  |  **|**  | ``def`` //FullIdent// ``:`` //FullType// ``=`` //Expr1// 
+  |  |  **|**  | //Ident// ``=`` //Expr1// 
   |  |  **|**  | //Stmt6// 
   | //Stmt4// | -> | ``def`` //FullIdent// ``:`` //FullType// ``(`` //[Arg]// ``)`` //Stmt5// 
   |  |  **|**  | //Stmt5// 
@@ -123,6 +121,7 @@ All other symbols are terminals.
   |  |  **|**  | //String// 
   |  |  **|**  | //Double// 
   |  |  **|**  | ``()`` ``:`` //FullType// 
+  |  |  **|**  | //Expr9// ``(`` //[Expr]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //Expr8// | -> | ``-`` //Expr9// 
   |  |  **|**  | ``!`` //Expr9// 
@@ -143,7 +142,6 @@ All other symbols are terminals.
   | //Expr1// | -> | ``(`` //[Expr]// ``)`` 
   |  |  **|**  | ``[`` //[Expr]// ``]`` 
   |  |  **|**  | ``array`` ``:`` //FullType// ``[`` //Expr// ``]`` 
-  |  |  **|**  | //Expr2// ``(`` //[Expr]// ``)`` 
   |  |  **|**  | //Expr2// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr2// 
   | //Expr// | -> | //Expr1// ``?`` //Expr1// ``:`` //Expr1// 

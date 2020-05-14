@@ -115,6 +115,7 @@ data Expr a
     | EString a String
     | ELitFloat a Double
     | EEmpList a (FullType a)
+    | EApp a (Expr a) [Expr a]
     | Neg a (Expr a)
     | Not a (Expr a)
     | ECons a (Expr a) (Expr a)
@@ -126,7 +127,6 @@ data Expr a
     | EList a [Expr a]
     | EArr a [Expr a]
     | EArrSize a (FullType a) (Expr a)
-    | EApp a (Expr a) [Expr a]
     | EArrApp a (Expr a) (Expr a)
     | EIf a (Expr a) (Expr a) (Expr a)
     | ELambda a (FullType a) [Arg a] (Stmt a)
@@ -145,6 +145,7 @@ instance Functor Expr where
         EString a string -> EString (f a) string
         ELitFloat a double -> ELitFloat (f a) double
         EEmpList a fulltype -> EEmpList (f a) (fmap f fulltype)
+        EApp a expr exprs -> EApp (f a) (fmap f expr) (map (fmap f) exprs)
         Neg a expr -> Neg (f a) (fmap f expr)
         Not a expr -> Not (f a) (fmap f expr)
         ECons a expr1 expr2 -> ECons (f a) (fmap f expr1) (fmap f expr2)
@@ -156,7 +157,6 @@ instance Functor Expr where
         EList a exprs -> EList (f a) (map (fmap f) exprs)
         EArr a exprs -> EArr (f a) (map (fmap f) exprs)
         EArrSize a fulltype expr -> EArrSize (f a) (fmap f fulltype) (fmap f expr)
-        EApp a expr exprs -> EApp (f a) (fmap f expr) (map (fmap f) exprs)
         EArrApp a expr1 expr2 -> EArrApp (f a) (fmap f expr1) (fmap f expr2)
         EIf a expr1 expr2 expr3 -> EIf (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
         ELambda a fulltype args stmt -> ELambda (f a) (fmap f fulltype) (map (fmap f) args) (fmap f stmt)
