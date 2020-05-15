@@ -120,16 +120,16 @@ newLoc (next, s) = (next, (next + 1, s))
 saveInStore :: Store -> Loc -> Val -> Store
 saveInStore (l, s) loc val = (l, \loc' -> if loc' == loc then val else s loc')
 
-addBreakLabel :: LEnv -> IO Cont -> LEnv
-addBreakLabel (LEnv lenv) cont =
+addBreakLabel :: LEnv -> IO ECont -> LEnv
+addBreakLabel (LEnv lenv) econt =
   LEnv (\label -> case label of
-    LBreak -> Just cont
+    LBreak -> Just econt
     otherwise -> lenv label)
 
-addContinueLabel :: LEnv -> IO Cont -> LEnv
-addContinueLabel (LEnv lenv) cont =
+addContinueLabel :: LEnv -> IO ECont -> LEnv
+addContinueLabel (LEnv lenv) econt =
   LEnv (\label -> case label of
-    LContinue -> Just cont
+    LContinue -> Just econt
     otherwise -> lenv label)
     
 addReadonly :: FullType (Maybe (Int, Int)) -> FullType (Maybe (Int, Int))
@@ -174,14 +174,14 @@ instance Show Val where
     NoVal -> "empty"
 type Var = Ident
 type Store = (Loc, Loc -> Val)
-data Error = NoError | DivisionBy0 | TypeError | BreakError | ContinueError deriving (Show)
+data Error = NoError | DivisionBy0 | TypeError | BreakError | ContinueError | ReturnError | LoopError deriving (Show)
 type State = (Store, Error)
 type Cont = State -> IO State
 type ICont = TEnv -> VEnv -> IO Cont
 type ECont = FullType (Maybe (Int, Int)) -> Val -> IO Cont
 type VEnv = Var -> Maybe Loc
 data Label = LBreak | LContinue | LReturn | LProb Int Int Int
-data LEnv = LEnv (Label -> Maybe (IO Cont))
+data LEnv = LEnv (Label -> Maybe (IO ECont))
 type Scope = (Maybe (FullType (Maybe (Int, Int))), Bool, Int)
 type TypeCheckResult = Err (TEnv, Maybe (FullType (Maybe (Int, Int))), Scope)
 type TEnv = Var -> Maybe (FullType (Maybe (Int, Int)))

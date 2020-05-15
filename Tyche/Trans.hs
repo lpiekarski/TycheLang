@@ -45,24 +45,30 @@ transStmt x tenv venv (LEnv lenv) icont =
       case (lenv LBreak) of
         Nothing ->
           return (\((next, store), err) -> return ((next, store), BreakError))
-        Just c1 ->
-          c1
+        Just iec -> do
+          ec <- iec
+          ec readonlyVoidT NoVal
     Continue lineInfo ->
       case (lenv LContinue) of
         Nothing ->
           return (\((next, store), err) -> return ((next, store), ContinueError))
-        Just c1 ->
-          c1
-    Ret lineInfo expr -> do  --TODO
-      ic <- icont
-      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val -> (ic tenv venv))
-    VRet lineInfo ->  --TODO
+        Just iec -> do
+          ec <- iec
+          ec readonlyVoidT NoVal
+    Ret lineInfo expr ->
+      case (lenv LReturn) of
+        Nothing ->
+          return (\(state, err) -> return (state, ReturnError))
+        Just iec -> do
+          ec <- iec
+          transExpr expr tenv venv (LEnv lenv) ec
+    VRet lineInfo -> 
       case (lenv LReturn) of
         Nothing -> do
-          ic <- icont
-          ic tenv venv
-        Just c -> do
-          c
+          return (\(state, err) -> return (state, ReturnError))
+        Just iec -> do
+          ec <- iec
+          ec readonlyVoidT NoVal
     VarDef lineInfo fullident fulltype expr ->
       case fullident of
         AnonIdent _ ->
@@ -129,15 +135,41 @@ transStmt x tenv venv (LEnv lenv) icont =
                   ic1 = (return (\tenv' -> \venv' -> c1))
                 in do
                   ic <- icont
-                  transStmt stmt tenv venv (addContinueLabel (addBreakLabel (LEnv lenv) (ic tenv venv)) c1) ic1
+                  transStmt stmt tenv venv (addContinueLabel (addBreakLabel (LEnv lenv) (return (\valtype -> \val -> ic tenv venv))) (return (\valtype -> \val -> c1))) ic1
               else do
                 ic <- icont
                 ic tenv venv
             otherwise ->
               return (\((next, store), err) -> return ((next, store), TypeError))))
-    ForList lineInfo ident expr stmt -> do  --TODO
-      ic <- icont
-      ic tenv venv
+    ForList lineInfo ident expr stmt -> do
+      transExpr expr tenv venv (LEnv lenv) (\valtype -> \val ->
+        case val of
+          ListVal list ->
+            return (\(state, err) -> do
+              let (l, state') = newLoc state
+              ic <- icont
+              let venv' = extendFunc venv ident (Just l)
+              case listElementType valtype of
+                Nothing ->
+                  return (state, TypeError)
+                Just eltype -> do
+                  let tenv' = extendFunc tenv ident (Just (addReadonly eltype))
+                  let lenv' = addBreakLabel (LEnv lenv) (return (\valtype -> \val -> ic tenv venv))
+                  let
+                    go :: [Val] -> TEnv -> VEnv -> LEnv -> IO ICont -> IO Cont
+                    go [] tenv'' venv'' (LEnv lenv'') icont'' = do
+                      ic'' <- icont''
+                      ic'' tenv'' venv''
+                    go (el:els) tenv'' venv'' (LEnv lenv'') icont'' = do
+                      ic''' <- icont''
+                      let lenv''' = addContinueLabel (LEnv lenv'') (return (\valtype -> \val -> ic''' tenv' venv'))
+                      go els tenv'' venv'' (LEnv lenv'') icont''
+                  fic <- go list tenv' venv' (addContinueLabel lenv' (return (\valtype -> \val -> ic tenv' venv'))) icont
+                  fic (state', err))
+          ArrayVal a ->
+            return (\(state, err) -> return (state, LoopError))
+          otherwise ->
+            return (\(state, err) -> return (state, LoopError)))
     ForRange lineInfo ident expr1 expr2 stmt -> do  --TODO
       ic <- icont
       ic tenv venv
@@ -271,7 +303,7 @@ transExpr x tenv venv (LEnv lenv) econt = do
       econt (readonlyBoolT) (BoolVal True)
     EArrSize _ fulltype expr ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    EApp _ expr exprs ->  --TODO
+    EApp _ expr exprs ->
       econt (readonlyBoolT) (BoolVal True)
     EArrApp _ expr exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
@@ -386,7 +418,7 @@ transRelOp x v1 v2 =
         (IntVal x1, IntVal x2) ->
           (readonlyBoolT, BoolVal (x1 /= x2), NoError)
         otherwise ->
-          (readonlyVoidT, NoVal, TypeError)
+          (readonlyVoidT, NoVal, TypeError )
 transOrOp :: OrOp (Maybe (Int, Int)) -> Val -> Val -> (FullType (Maybe (Int, Int)), Val, Error)
 transOrOp x v1 v2 =
   case x of
