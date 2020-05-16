@@ -15,9 +15,9 @@ import Tyche.Abs
 import Tyche.ErrM
 
 runProgram :: Program (Maybe (Int, Int)) -> IO ()
-runProgram prog =
-  case typecheckProgram prog of
-    Ok _ -> do
+runProgram prog = do
+  --case typecheckProgram prog of
+  --  Ok _ -> do
       tp <- transProgram prog
       case tp of
         Ok () -> return ()
@@ -26,8 +26,8 @@ runProgram prog =
           putStr str
           putStrLn ""
           return ()
-    Bad str -> do
-      putStr "TypeCheck Error: "
-      putStr str
-      putStrLn ""
-      return ()
+    --Bad str -> do
+    --  putStr "TypeCheck Error: "
+    --  putStr str
+    --  putStrLn ""
+    --  return ()

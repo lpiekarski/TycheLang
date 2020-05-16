@@ -163,7 +163,7 @@ transStmt x tenv venv (LEnv lenv) icont =
                     go (el:els) tenv'' venv'' (LEnv lenv'') icont'' = do
                       ic''' <- icont''
                       let lenv''' = addContinueLabel (LEnv lenv'') (return (\valtype -> \val -> ic''' tenv' venv'))
-                      go els tenv'' venv'' (LEnv lenv'') icont''
+                      transStmt stmt tenv'' venv'' (LEnv lenv'') (return (\tenv''' -> \venv''' -> go els tenv''' venv''' (LEnv lenv'') icont''))
                   fic <- go list tenv' venv' (addContinueLabel lenv' (return (\valtype -> \val -> ic tenv' venv'))) icont
                   fic (state', err))
           ArrayVal a ->
@@ -297,8 +297,23 @@ transExpr x tenv venv (LEnv lenv) econt = do
               econt restype resval
             (_, _, err') ->
               return (\(state, err) -> return (state, err'))))
-    EList _ exprs ->  --TODO
-      econt (readonlyBoolT) (BoolVal True)
+    EList _ exprs ->
+      let
+        go :: [Expr (Maybe (Int, Int))] -> TEnv -> VEnv -> LEnv -> ECont -> Maybe (FullType (Maybe (Int, Int))) -> Val -> IO (Cont)
+        go [] tenv' venv' (LEnv lenv') econt' (Just listtype) (ListVal list) =
+          econt' listtype (ListVal (reverse list))
+        go (e:es) tenv' venv' (LEnv lenv') econt' Nothing NoVal =
+          transExpr e tenv' venv' (LEnv lenv') (\valtype -> \val -> go es tenv' venv' (LEnv lenv') econt' (Just valtype) (ListVal [val]))
+        go (e:es) tenv' venv' (LEnv lenv') econt' (Just listtype) (ListVal list) =
+          transExpr e tenv' venv' (LEnv lenv') (\valtype -> \val ->
+            if matchFullType listtype valtype then
+              go es tenv' venv' (LEnv lenv') econt' (Just listtype) (ListVal (val:list)) 
+            else
+              return (\(state, err) -> return (state, TypeError)))
+        go _ _ _ _ _ _ _ =
+          return (\(state, err) -> return (state, TypeError))
+      in
+        go exprs tenv venv (LEnv lenv) econt Nothing NoVal
     EArr _ exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
     EArrSize _ fulltype expr ->  --TODO
