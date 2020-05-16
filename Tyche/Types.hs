@@ -174,7 +174,15 @@ instance Show Val where
     NoVal -> "empty"
 type Var = Ident
 type Store = (Loc, Loc -> Val)
-data Error = NoError | DivisionBy0 | TypeError | BreakError | ContinueError | ReturnError | LoopError deriving (Show)
+data Error = 
+  NoError (Maybe (Int, Int)) |
+  DivisionBy0 (Maybe (Int, Int)) |
+  TypeError (Maybe (Int, Int)) |
+  BreakError (Maybe (Int, Int)) |
+  ContinueError (Maybe (Int, Int)) |
+  ReturnError (Maybe (Int, Int)) |
+  LoopError (Maybe (Int, Int))
+  deriving (Show)
 type State = (Store, Error)
 type Cont = State -> IO State
 type ICont = TEnv -> VEnv -> IO Cont
