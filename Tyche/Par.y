@@ -126,7 +126,7 @@ Program :: {
 Arg :: {
   (Maybe (Int, Int), Arg (Maybe (Int, Int)))
 }
-: ArgMod FullIdent ':' FullType {
+: ArgMod Ident ':' FullType {
   (fst $1, Tyche.Abs.Arg (fst $1)(snd $1)(snd $2)(snd $4)) 
 }
 

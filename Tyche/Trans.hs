@@ -99,9 +99,54 @@ transStmt x tenv venv (LEnv lenv) icont =
             ic <- icont
             c <- (ic tenv venv)
             c (saveInStore store l val, err)))
-    FnDef lineInfo fullident fulltype args stmt -> do  --TODO
-      ic <- icont
-      ic tenv venv
+    FnDef lineInfo fullident fulltype args stmt ->
+      case fullident of
+        AnonIdent _ -> do
+          ic <- icont
+          c <- ic tenv venv
+          return (\(state, err) -> do
+            let (l, state') = newLoc state
+            c (saveInStore state' l (FuncVal (\fts -> \as -> \funcioicont -> do
+              let
+                go [] [] tv vv (LEnv lv) st =
+                  (tv, vv, (LEnv lv), st)
+                go (argtype:argtypes) (argument:arguments) tv vv (LEnv lv) st =
+                  case argument of
+                    Variable loc idnt ->
+                      go argtypes arguments (extendFunc tv idnt (Just argtype)) (extendFunc vv idnt (Just loc)) (LEnv lv) st
+                    Value val idnt -> do
+                      let (l'', st'') = newLoc st
+                      go argtypes arguments (extendFunc tv idnt (Just argtype)) (extendFunc vv idnt (Just l'')) (LEnv lv) (saveInStore st'' l'' val)
+                    otherwise ->
+                      go argtypes arguments tv vv (LEnv lv) st --Inout i idnt ->
+              let (tenv', venv', (LEnv lenv'), state'') = go (argsToFullTypes args) (argsToArgVals args venv (state', err)) tenv venv (LEnv lenv) state'
+              funcicont <- funcioicont
+              funccont <- funcicont tenv' venv'
+              return (\(s, e) -> funccont (state'', NoError lineInfo)))), err))
+        FullIdent _ ident -> do
+          ic <- icont
+          c <- ic tenv venv
+          return (\(state, err) -> do
+            let (l, state') = newLoc state
+            let venv = extendFunc venv ident (Just l)
+            --let tenv = extendFunc tenv ident (Just fulltype)
+            c (saveInStore state' l (FuncVal (\fts -> \as -> \funcioicont -> do
+              let
+                go [] [] tv vv (LEnv lv) st =
+                  (tv, vv, (LEnv lv), st)
+                go (argtype:argtypes) (argument:arguments) tv vv (LEnv lv) st =
+                  case argument of
+                    Variable loc idnt ->
+                      go argtypes arguments (extendFunc tv idnt (Just argtype)) (extendFunc vv idnt (Just loc)) (LEnv lv) st
+                    Value val idnt -> do
+                      let (l'', st'') = newLoc st
+                      go argtypes arguments (extendFunc tv idnt (Just argtype)) (extendFunc vv idnt (Just l'')) (LEnv lv) (saveInStore st'' l'' val)
+                    otherwise ->
+                      go argtypes arguments tv vv (LEnv lv) st --Inout i idnt ->
+              let (tenv', venv', (LEnv lenv'), state'') = go (argsToFullTypes args) (argsToArgVals args venv (state', err)) tenv venv (LEnv lenv) state'
+              funcicont <- funcioicont
+              funccont <- funcicont tenv' venv'
+              return (\(s, e) -> funccont (state'', NoError lineInfo)))), err))
     Cond lineInfo expr stmt -> do
       transExpr expr tenv venv (LEnv lenv) (\type1 -> \val1 -> 
         (case val1 of
@@ -302,18 +347,18 @@ transExpr x tenv venv (LEnv lenv) econt = do
               return (\(state, err) -> return (state, err'))))
     EList lineInfo exprs ->
       let
-        go :: [Expr (Maybe (Int, Int))] -> TEnv -> VEnv -> LEnv -> ECont -> Maybe (FullType (Maybe (Int, Int))) -> Val -> IO (Cont)
-        go [] tenv' venv' (LEnv lenv') econt' (Just listtype) (ListVal list) =
+        go :: [Expr (Maybe (Int, Int))] -> ECont -> Maybe (FullType (Maybe (Int, Int))) -> Val -> IO (Cont)
+        go [] econt' (Just listtype) (ListVal list) =
           econt' (FullType lineInfo [TModReadonly lineInfo] (List lineInfo listtype)) (ListVal (reverse list))
-        go (e:es) tenv' venv' (LEnv lenv') econt' Nothing NoVal =
-          transExpr e tenv' venv' (LEnv lenv') (\valtype -> \val -> go es tenv' venv' (LEnv lenv') econt' (Just valtype) (ListVal [val]))
-        go (e:es) tenv' venv' (LEnv lenv') econt' (Just listtype) (ListVal list) =
-          transExpr e tenv' venv' (LEnv lenv') (\valtype -> \val ->
+        go (e:es) econt' Nothing NoVal =
+          transExpr e tenv venv (LEnv lenv) (\valtype -> \val -> go es econt' (Just valtype) (ListVal [val]))
+        go (e:es) econt' (Just listtype) (ListVal list) =
+          transExpr e tenv venv (LEnv lenv) (\valtype -> \val ->
             if matchFullType listtype valtype then
-              go es tenv' venv' (LEnv lenv') econt' (Just listtype) (ListVal (val:list)) 
+              go es econt' (Just listtype) (ListVal (val:list)) 
             else
               return (\(state, err) -> return (state, TypeError lineInfo)))
-        go _ _ _ _ _ _ _ =
+        go _ _ _ _ =
           return (\(state, err) -> return (state, TypeError lineInfo))
       in
         go exprs tenv venv (LEnv lenv) econt Nothing NoVal
@@ -322,7 +367,25 @@ transExpr x tenv venv (LEnv lenv) econt = do
     EArrSize lineInfo fulltype expr ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
     EApp lineInfo expr exprs ->
-      econt (readonlyBoolT) (BoolVal True)
+      transExpr expr tenv venv (LEnv lenv) (\functype -> \funcval ->
+        case functype of
+          Fun _ argtypes fulltype ->
+            case funcval of
+              FuncVal func ->
+                let
+                  go :: [Expr (Maybe (Int, Int))] -> [ArgVal] -> ([ArgVal] -> IO Cont) -> IO Cont
+                  go [] argvals argvalcont =
+                    argvalcont (reverse argvals)
+                  go (e:es) argvals argvalcont =
+                    transExpr e tenv venv (LEnv lenv) (\valtype -> \val ->
+                      go es (val:argvals) argvalcont)
+                in
+                  go exprs [] (\argvals ->
+                    func argtypes argvals ())
+              otherwise ->
+                return (\(state, err) -> return (state, TypeError lineInfo))
+          otherwise -> 
+            return (\(state, err) -> return (state, TypeError lineInfo)))
     EArrApp lineInfo expr exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
     EIf lineInfo expr1 expr2 expr3 ->

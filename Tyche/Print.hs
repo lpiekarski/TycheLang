@@ -89,7 +89,7 @@ instance Print (Program a) where
 
 instance Print (Arg a) where
   prt i e = case e of
-    Arg _ argmod fullident fulltype -> prPrec i 0 (concatD [prt 0 argmod, prt 0 fullident, doc (showString ":"), prt 0 fulltype])
+    Arg _ argmod id fulltype -> prPrec i 0 (concatD [prt 0 argmod, prt 0 id, doc (showString ":"), prt 0 fulltype])
   prtList _ [] = (concatD [])
   prtList _ [x] = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])

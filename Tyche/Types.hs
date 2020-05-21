@@ -11,12 +11,8 @@ extendFunc f nx ny x = if nx == x then ny else f x
 
 extendFuncArgs :: TEnv -> [Arg (Maybe (Int, Int))] -> TEnv
 extendFuncArgs te [] = te
-extendFuncArgs te ((Arg _ _ fi ft):args) =
-  case fi of
-    FullIdent _ ident ->
+extendFuncArgs te ((Arg _ _ ident ft):args) =
       extendFuncArgs (extendFunc te ident (Just ft)) args
-    AnonIdent _ ->
-      extendFuncArgs te args
 
 lineInfoString :: Maybe (Int, Int) -> String
 lineInfoString Nothing = ""
@@ -159,9 +155,48 @@ printState (store, err) = do
   putStrLn "error:"
   putStrLn (show err)
   return ()
+  
+argsToFullTypes :: [Arg (Maybe (Int, Int))] -> [FullType (Maybe (Int, Int))]
+argsToFullTypes args =
+  let
+    go [] r =
+      reverse r
+    go (a:as) r =
+      case a of
+        Arg _ _ _ fulltype ->
+          go as (fulltype:r)
+  in
+    go args []
+
+argsToArgVals :: [Arg (Maybe (Int, Int))] -> VEnv -> State -> [ArgVal]
+argsToArgVals args venv ((_, storef), _) =
+  let
+    go [] r =
+      reverse r
+    go (a:as) r =
+      case a of
+        Arg lineInfo argmod ident fulltype ->
+          case argmod of
+            AModVar _ ->
+              case venv ident of
+                Nothing ->
+                  go as r
+                Just loc ->
+                  go as ((Variable loc ident):r)
+            AModVal _ ->
+              case venv ident of
+                Nothing ->
+                  go as r
+                Just loc ->
+                  go as ((Value (storef loc) ident):r)
+            AModInOut _ ->
+              go as r
+  in
+    go args []
 
 type Loc = Int
-data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal [Val] | ArrayVal (Array Int Val) | FuncVal ([Either Loc Val] -> Cont -> Cont) | NoVal
+data ArgVal = Variable Loc Ident | Value Val Ident | Inout Ident Ident
+data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal [Val] | ArrayVal (Array Int Val) | FuncVal ([FullType (Maybe (Int, Int))] -> [ArgVal] -> IO ICont -> IO Cont) | NoVal
 instance Show Val where
   show val = case val of
     IntVal integer -> "int " ++ (show integer)

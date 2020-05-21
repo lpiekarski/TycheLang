@@ -14,12 +14,12 @@ data Program a = Program a (Stmt a)
 instance Functor Program where
     fmap f x = case x of
         Program a stmt -> Program (f a) (fmap f stmt)
-data Arg a = Arg a (ArgMod a) (FullIdent a) (FullType a)
+data Arg a = Arg a (ArgMod a) Ident (FullType a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Arg where
     fmap f x = case x of
-        Arg a argmod fullident fulltype -> Arg (f a) (fmap f argmod) (fmap f fullident) (fmap f fulltype)
+        Arg a argmod ident fulltype -> Arg (f a) (fmap f argmod) ident (fmap f fulltype)
 data FullIdent a = FullIdent a Ident | AnonIdent a
   deriving (Eq, Ord, Show, Read)
 

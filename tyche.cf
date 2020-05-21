@@ -6,7 +6,7 @@ entrypoints Program ;
 
 Program.   Program ::= Stmt ;
 
-Arg.       Arg     ::= ArgMod FullIdent ":" FullType ;
+Arg.       Arg     ::= ArgMod Ident ":" FullType ;
 separator  Arg "," ;
 
 -- identifiers
