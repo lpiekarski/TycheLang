@@ -42,48 +42,48 @@ matchFullType :: FullType a -> FullType a -> Bool
 matchFullType ft1 ft2 = case (ft1, ft2) of
   (FullType _ _ t1, FullType _ _ t2) -> matchType t1 t2
   otherwise -> False
-  
+
 argsToArgTypes :: [Arg a] -> [ArgType a]
 argsToArgTypes [] = []
 argsToArgTypes ((Arg li am fi ft):args) =
   (ArgType li am ft):(argsToArgTypes args)
-  
+
 isReadonly :: FullType a -> Bool
 isReadonly ft = case ft of
-  FullType _ tms _ -> 
-    let 
+  FullType _ tms _ ->
+    let
       isRo x = case x of
         TModReadonly _ -> True
         otherwise -> False
     in
       any isRo tms
   otherwise -> False
-  
+
 isArray :: FullType a -> Bool
 isArray ft = case ft of
   FullType _ _ (Array _ _) -> True
   otherwise -> False
-  
+
 isList :: FullType a -> Bool
 isList ft = case ft of
   FullType _ _ (List _ _) -> True
   otherwise -> False
-  
+
 isBool :: FullType a -> Bool
 isBool ft = case ft of
   FullType _ _ (Bool _) -> True
   otherwise -> False
-  
+
 isInt :: FullType a -> Bool
 isInt ft = case ft of
   FullType _ _ (Int _) -> True
   otherwise -> False
-  
+
 isFloat :: FullType a -> Bool
 isFloat ft = case ft of
   FullType _ _ (Float _) -> True
   otherwise -> False
-  
+
 isVoid :: FullType a -> Bool
 isVoid ft = case ft of
   FullType _ _ (Void _) -> True
@@ -93,17 +93,17 @@ isFunction :: FullType a -> Bool
 isFunction ft = case ft of
   FullType _ _ (Fun _ _ _) -> True
   otherwise -> False
- 
+
 arrayElementType :: FullType a -> Maybe (FullType a)
 arrayElementType ft = case ft of
   FullType _ _ (Array _ res) -> Just res
   otherwise -> Nothing
-  
+
 listElementType :: FullType a -> Maybe (FullType a)
 listElementType ft = case ft of
   FullType _ _ (List _ res) -> Just res
   otherwise -> Nothing
-  
+
 elementType :: FullType a -> Maybe (FullType a)
 elementType ft = case ft of
   FullType _ _ (List _ res) -> Just res
@@ -127,7 +127,7 @@ addContinueLabel (LEnv lenv) econt =
   LEnv (\label -> case label of
     LContinue -> Just econt
     otherwise -> lenv label)
-    
+
 addReadonly :: FullType (Maybe (Int, Int)) -> FullType (Maybe (Int, Int))
 addReadonly ft@(FullType li tms t) =
   if isReadonly ft then
@@ -155,7 +155,7 @@ printState (store, err) = do
   putStrLn "error:"
   putStrLn (show err)
   return ()
-  
+
 argsToFullTypes :: [Arg (Maybe (Int, Int))] -> [FullType (Maybe (Int, Int))]
 argsToFullTypes args =
   let
@@ -168,35 +168,40 @@ argsToFullTypes args =
   in
     go args []
 
+argToArgVal :: Arg (Maybe (Int, Int)) -> VEnv -> State -> Maybe ArgVal
+argToArgVal arg venv ((_, storef), _) =
+  case arg of
+    Arg lineInfo argmod ident fulltype ->
+      case argmod of
+        AModVar _ ->
+          case venv ident of
+            Nothing ->
+              Nothing
+            Just loc ->
+              Just (Variable loc ident)
+        AModVal _ ->
+          case venv ident of
+            Nothing ->
+              Nothing
+            Just loc ->
+              Just (Value (storef loc) ident)
+        AModInOut _ ->
+          Nothing
+
 argsToArgVals :: [Arg (Maybe (Int, Int))] -> VEnv -> State -> [ArgVal]
-argsToArgVals args venv ((_, storef), _) =
+argsToArgVals args venv (state@((_, storef), _)) =
   let
     go [] r =
       reverse r
-    go (a:as) r =
-      case a of
-        Arg lineInfo argmod ident fulltype ->
-          case argmod of
-            AModVar _ ->
-              case venv ident of
-                Nothing ->
-                  go as r
-                Just loc ->
-                  go as ((Variable loc ident):r)
-            AModVal _ ->
-              case venv ident of
-                Nothing ->
-                  go as r
-                Just loc ->
-                  go as ((Value (storef loc) ident):r)
-            AModInOut _ ->
-              go as r
+    go (a:as) r = case argToArgVal a venv state of
+        Nothing -> go as r
+        Just res -> go as (res:r)
   in
     go args []
 
 type Loc = Int
 data ArgVal = Variable Loc Ident | Value Val Ident | Inout Ident Ident
-data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal [Val] | ArrayVal (Array Int Val) | FuncVal ([FullType (Maybe (Int, Int))] -> [ArgVal] -> IO ICont -> IO Cont) | NoVal
+data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal [Val] | ArrayVal (Array Int Val) | FuncVal ([ArgType (Maybe (Int, Int))] -> [ArgVal] -> IO ICont -> IO Cont) | NoVal
 instance Show Val where
   show val = case val of
     IntVal integer -> "int " ++ (show integer)
@@ -209,7 +214,7 @@ instance Show Val where
     NoVal -> "empty"
 type Var = Ident
 type Store = (Loc, Loc -> Val)
-data Error = 
+data Error =
   NoError (Maybe (Int, Int)) |
   DivisionBy0 (Maybe (Int, Int)) |
   TypeError (Maybe (Int, Int)) |

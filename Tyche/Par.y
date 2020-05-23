@@ -18,16 +18,16 @@ import Tyche.ErrM
   '%' { PT _ (TS _ 3) }
   '&&' { PT _ (TS _ 4) }
   '(' { PT _ (TS _ 5) }
-  '()' { PT _ (TS _ 6) }
-  ')' { PT _ (TS _ 7) }
-  '*' { PT _ (TS _ 8) }
-  '+' { PT _ (TS _ 9) }
-  ',' { PT _ (TS _ 10) }
-  '-' { PT _ (TS _ 11) }
-  '->' { PT _ (TS _ 12) }
-  '/' { PT _ (TS _ 13) }
-  ':' { PT _ (TS _ 14) }
-  '::' { PT _ (TS _ 15) }
+  ')' { PT _ (TS _ 6) }
+  '*' { PT _ (TS _ 7) }
+  '+' { PT _ (TS _ 8) }
+  ',' { PT _ (TS _ 9) }
+  '-' { PT _ (TS _ 10) }
+  '->' { PT _ (TS _ 11) }
+  '/' { PT _ (TS _ 12) }
+  ':' { PT _ (TS _ 13) }
+  '::' { PT _ (TS _ 14) }
+  ';' { PT _ (TS _ 15) }
   '<' { PT _ (TS _ 16) }
   '<=' { PT _ (TS _ 17) }
   '=' { PT _ (TS _ 18) }
@@ -36,50 +36,51 @@ import Tyche.ErrM
   '>=' { PT _ (TS _ 21) }
   '?' { PT _ (TS _ 22) }
   '[' { PT _ (TS _ 23) }
-  ']' { PT _ (TS _ 24) }
-  '_' { PT _ (TS _ 25) }
-  'and' { PT _ (TS _ 26) }
-  'array' { PT _ (TS _ 27) }
-  'boolean' { PT _ (TS _ 28) }
-  'break' { PT _ (TS _ 29) }
-  'continue' { PT _ (TS _ 30) }
-  'def' { PT _ (TS _ 31) }
-  'distribution' { PT _ (TS _ 32) }
-  'do' { PT _ (TS _ 33) }
-  'each' { PT _ (TS _ 34) }
-  'else' { PT _ (TS _ 35) }
-  'equals' { PT _ (TS _ 36) }
-  'false' { PT _ (TS _ 37) }
-  'float' { PT _ (TS _ 38) }
-  'for' { PT _ (TS _ 39) }
-  'from' { PT _ (TS _ 40) }
-  'if' { PT _ (TS _ 41) }
-  'inout' { PT _ (TS _ 42) }
-  'int' { PT _ (TS _ 43) }
-  'lambda' { PT _ (TS _ 44) }
-  'mod' { PT _ (TS _ 45) }
-  'not' { PT _ (TS _ 46) }
-  'of' { PT _ (TS _ 47) }
-  'or' { PT _ (TS _ 48) }
-  'probability' { PT _ (TS _ 49) }
-  'random' { PT _ (TS _ 50) }
-  'readonly' { PT _ (TS _ 51) }
-  'return' { PT _ (TS _ 52) }
-  'satisfying' { PT _ (TS _ 53) }
-  'skip' { PT _ (TS _ 54) }
-  'string' { PT _ (TS _ 55) }
-  'tested' { PT _ (TS _ 56) }
-  'then' { PT _ (TS _ 57) }
-  'times' { PT _ (TS _ 58) }
-  'to' { PT _ (TS _ 59) }
-  'true' { PT _ (TS _ 60) }
-  'val' { PT _ (TS _ 61) }
-  'var' { PT _ (TS _ 62) }
-  'void' { PT _ (TS _ 63) }
-  'while' { PT _ (TS _ 64) }
-  '{' { PT _ (TS _ 65) }
-  '||' { PT _ (TS _ 66) }
-  '}' { PT _ (TS _ 67) }
+  '[]' { PT _ (TS _ 24) }
+  ']' { PT _ (TS _ 25) }
+  '_' { PT _ (TS _ 26) }
+  'and' { PT _ (TS _ 27) }
+  'array' { PT _ (TS _ 28) }
+  'boolean' { PT _ (TS _ 29) }
+  'break' { PT _ (TS _ 30) }
+  'continue' { PT _ (TS _ 31) }
+  'def' { PT _ (TS _ 32) }
+  'distribution' { PT _ (TS _ 33) }
+  'do' { PT _ (TS _ 34) }
+  'each' { PT _ (TS _ 35) }
+  'else' { PT _ (TS _ 36) }
+  'equals' { PT _ (TS _ 37) }
+  'false' { PT _ (TS _ 38) }
+  'float' { PT _ (TS _ 39) }
+  'for' { PT _ (TS _ 40) }
+  'from' { PT _ (TS _ 41) }
+  'if' { PT _ (TS _ 42) }
+  'inout' { PT _ (TS _ 43) }
+  'int' { PT _ (TS _ 44) }
+  'lambda' { PT _ (TS _ 45) }
+  'mod' { PT _ (TS _ 46) }
+  'not' { PT _ (TS _ 47) }
+  'of' { PT _ (TS _ 48) }
+  'or' { PT _ (TS _ 49) }
+  'probability' { PT _ (TS _ 50) }
+  'random' { PT _ (TS _ 51) }
+  'readonly' { PT _ (TS _ 52) }
+  'return' { PT _ (TS _ 53) }
+  'satisfying' { PT _ (TS _ 54) }
+  'skip' { PT _ (TS _ 55) }
+  'string' { PT _ (TS _ 56) }
+  'tested' { PT _ (TS _ 57) }
+  'then' { PT _ (TS _ 58) }
+  'times' { PT _ (TS _ 59) }
+  'to' { PT _ (TS _ 60) }
+  'true' { PT _ (TS _ 61) }
+  'val' { PT _ (TS _ 62) }
+  'var' { PT _ (TS _ 63) }
+  'void' { PT _ (TS _ 64) }
+  'while' { PT _ (TS _ 65) }
+  '{' { PT _ (TS _ 66) }
+  '||' { PT _ (TS _ 67) }
+  '}' { PT _ (TS _ 68) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -119,8 +120,8 @@ Double :: {
 Program :: {
   (Maybe (Int, Int), Program (Maybe (Int, Int)))
 }
-: Stmt {
-  (fst $1, Tyche.Abs.Program (fst $1)(snd $1)) 
+: '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.Program (Just (tokenLineCol $1)) (snd $2)) 
 }
 
 Arg :: {
@@ -153,7 +154,7 @@ FullIdent :: {
   (Just (tokenLineCol $1), Tyche.Abs.AnonIdent (Just (tokenLineCol $1)))
 }
 
-Stmt5 :: {
+Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
 : 'skip' {
@@ -168,80 +169,42 @@ Stmt5 :: {
 | 'return' Expr {
   (Just (tokenLineCol $1), Tyche.Abs.Ret (Just (tokenLineCol $1)) (snd $2)) 
 }
-| 'return' {
-  (Just (tokenLineCol $1), Tyche.Abs.VRet (Just (tokenLineCol $1)))
-}
 | 'def' FullIdent ':' FullType '=' Expr1 {
   (Just (tokenLineCol $1), Tyche.Abs.VarDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
 }
 | Ident '=' Expr1 {
   (fst $1, Tyche.Abs.Ass (fst $1)(snd $1)(snd $3)) 
 }
-| Stmt6 {
-  (fst $1, snd $1)
+| 'def' FullIdent ':' FullType '(' ListArg ')' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.FnDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $9)) 
+}
+| 'if' Expr 'then' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.Cond (Just (tokenLineCol $1)) (snd $2)(snd $5)) 
+}
+| 'if' Expr 'then' '{' ListStmt '}' 'else' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.CondElse (Just (tokenLineCol $1)) (snd $2)(snd $5)(snd $9)) 
+}
+| 'while' Expr 'do' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.While (Just (tokenLineCol $1)) (snd $2)(snd $5)) 
+}
+| 'for' 'each' Ident 'from' Expr 'do' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.ForList (Just (tokenLineCol $1)) (snd $3)(snd $5)(snd $8)) 
+}
+| 'for' Ident 'from' Expr 'to' Expr 'do' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.ForRange (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $9)) 
 }
 
-Stmt4 :: {
-  (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
+ListStmt :: {
+  (Maybe (Int, Int), [Stmt (Maybe (Int, Int))]) 
 }
-: 'def' FullIdent ':' FullType '(' ListArg ')' Stmt5 {
-  (Just (tokenLineCol $1), Tyche.Abs.FnDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
+: {
+  (Nothing, [])
 }
-| Stmt5 {
-  (fst $1, snd $1)
+| Stmt {
+  (fst $1, (:[]) (snd $1)) 
 }
-
-Stmt1 :: {
-  (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
-}
-: 'if' Expr 'then' Stmt1 {
-  (Just (tokenLineCol $1), Tyche.Abs.Cond (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
-}
-| 'if' Expr 'then' Stmt1 'else' Stmt1 {
-  (Just (tokenLineCol $1), Tyche.Abs.CondElse (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
-}
-| 'while' Expr 'do' Stmt1 {
-  (Just (tokenLineCol $1), Tyche.Abs.While (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
-}
-| 'for' 'each' Ident 'from' Expr 'do' Stmt1 {
-  (Just (tokenLineCol $1), Tyche.Abs.ForList (Just (tokenLineCol $1)) (snd $3)(snd $5)(snd $7)) 
-}
-| 'for' Ident 'from' Expr 'to' Expr 'do' Stmt1 {
-  (Just (tokenLineCol $1), Tyche.Abs.ForRange (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
-}
-| Stmt2 {
-  (fst $1, snd $1)
-}
-
-Stmt :: {
-  (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
-}
-: Stmt1 Stmt {
-  (fst $1, Tyche.Abs.Composition (fst $1)(snd $1)(snd $2)) 
-}
-| Stmt1 {
-  (fst $1, snd $1)
-}
-
-Stmt2 :: {
-  (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
-}
-: Stmt3 {
-  (fst $1, snd $1)
-}
-
-Stmt3 :: {
-  (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
-}
-: Stmt4 {
-  (fst $1, snd $1)
-}
-
-Stmt6 :: {
-  (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
-}
-: '{' Stmt '}' {
-  (Just (tokenLineCol $1), snd $2)
+| Stmt ';' ListStmt {
+  (fst $1, (:) (snd $1)(snd $3)) 
 }
 
 Type :: {
@@ -262,10 +225,10 @@ Type :: {
 | 'float' {
   (Just (tokenLineCol $1), Tyche.Abs.Float (Just (tokenLineCol $1)))
 }
-| '(' FullType ')' {
+| '[' FullType ']' {
   (Just (tokenLineCol $1), Tyche.Abs.List (Just (tokenLineCol $1)) (snd $2)) 
 }
-| '[' FullType ']' {
+| '{' FullType '}' {
   (Just (tokenLineCol $1), Tyche.Abs.Array (Just (tokenLineCol $1)) (snd $2)) 
 }
 | '(' ListArgType ')' '->' FullType {
@@ -332,7 +295,10 @@ ListTypeMod :: {
 Expr9 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Ident {
+: 'void' {
+  (Just (tokenLineCol $1), Tyche.Abs.ELitVoid (Just (tokenLineCol $1)))
+}
+| Ident {
   (fst $1, Tyche.Abs.EVar (fst $1)(snd $1)) 
 }
 | Integer {
@@ -350,7 +316,7 @@ Expr9 :: {
 | Double {
   (fst $1, Tyche.Abs.ELitFloat (fst $1)(snd $1)) 
 }
-| '()' ':' FullType {
+| '[]' ':' FullType {
   (Just (tokenLineCol $1), Tyche.Abs.EEmpList (Just (tokenLineCol $1)) (snd $3)) 
 }
 | Expr9 '(' ListExpr ')' {
@@ -439,10 +405,10 @@ Expr2 :: {
 Expr1 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: '(' ListExpr ')' {
+: '[' ListExpr ']' {
   (Just (tokenLineCol $1), Tyche.Abs.EList (Just (tokenLineCol $1)) (snd $2)) 
 }
-| '[' ListExpr ']' {
+| '{' ListExpr '}' {
   (Just (tokenLineCol $1), Tyche.Abs.EArr (Just (tokenLineCol $1)) (snd $2)) 
 }
 | 'array' ':' FullType '[' Expr ']' {
@@ -461,7 +427,7 @@ Expr :: {
 : Expr1 '?' Expr1 ':' Expr1 {
   (fst $1, Tyche.Abs.EIf (fst $1)(snd $1)(snd $3)(snd $5)) 
 }
-| 'lambda' ':' FullType '(' ListArg ')' '->' Stmt1 {
+| 'lambda' ':' FullType '(' ListArg ')' '->' ListStmt {
   (Just (tokenLineCol $1), Tyche.Abs.ELambda (Just (tokenLineCol $1)) (snd $3)(snd $5)(snd $8)) 
 }
 | 'random' 'from' Expr1 {
@@ -470,11 +436,8 @@ Expr :: {
 | 'random' 'from' Expr1 'distribution' Expr1 {
   (Just (tokenLineCol $1), Tyche.Abs.ERandDist (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
 }
-| 'probability' 'of' Stmt1 'satisfying' Expr1 {
-  (Just (tokenLineCol $1), Tyche.Abs.EProb (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
-}
-| 'probability' 'tested' Expr1 'times' 'of' Stmt1 'satisfying' Expr1 {
-  (Just (tokenLineCol $1), Tyche.Abs.EProbSamp (Just (tokenLineCol $1)) (snd $3)(snd $6)(snd $8)) 
+| 'probability' 'tested' Expr1 'times' 'of' '{' ListStmt '}' 'satisfying' Expr1 {
+  (Just (tokenLineCol $1), Tyche.Abs.EProbSamp (Just (tokenLineCol $1)) (snd $3)(snd $7)(snd $10)) 
 }
 | Expr1 {
   (fst $1, snd $1)

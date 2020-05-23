@@ -1,9 +1,9 @@
 module Tyche.Trans where
 
-import Tyche.Abs
-import Tyche.Types
-import Tyche.ErrM
-import Tyche.Print
+import           Tyche.Abs
+import           Tyche.ErrM
+import           Tyche.Print
+import           Tyche.Types
 
 
 transIdent :: Ident -> ()
@@ -62,7 +62,7 @@ transStmt x tenv venv (LEnv lenv) icont =
         Just iec -> do
           ec <- iec
           transExpr expr tenv venv (LEnv lenv) ec
-    VRet lineInfo -> 
+    VRet lineInfo ->
       case (lenv LReturn) of
         Nothing -> do
           return (\(state, err) -> return (state, ReturnError lineInfo))
@@ -148,7 +148,7 @@ transStmt x tenv venv (LEnv lenv) icont =
               funccont <- funcicont tenv' venv'
               return (\(s, e) -> funccont (state'', NoError lineInfo)))), err))
     Cond lineInfo expr stmt -> do
-      transExpr expr tenv venv (LEnv lenv) (\type1 -> \val1 -> 
+      transExpr expr tenv venv (LEnv lenv) (\type1 -> \val1 ->
         (case val1 of
           BoolVal bval ->
             if bval then do
@@ -160,7 +160,7 @@ transStmt x tenv venv (LEnv lenv) icont =
             return (\(state, err) -> return (state, TypeError lineInfo))
           ))
     CondElse lineInfo expr stmt1 stmt2 -> do
-      transExpr expr tenv venv (LEnv lenv) (\type1 -> \val1 -> 
+      transExpr expr tenv venv (LEnv lenv) (\type1 -> \val1 ->
         (case val1 of
           BoolVal bval ->
             if bval then do
@@ -274,7 +274,7 @@ transExpr x tenv venv (LEnv lenv) econt = do
         Nothing ->
           return (\((next, store), err) -> return ((next, store), TypeError lineInfo))
         Just loc ->
-          return (\((next, store), err) -> 
+          return (\((next, store), err) ->
             case tenv ident of
               Nothing ->
                 return ((next, store), TypeError lineInfo)
@@ -300,7 +300,7 @@ transExpr x tenv venv (LEnv lenv) econt = do
     ECons lineInfo expr1 expr2 ->
       transExpr expr1 tenv venv (LEnv lenv) (\eltype -> \el -> transExpr expr2 tenv venv (LEnv lenv) (\listtype -> \listval ->
         case listval of
-          ListVal list -> 
+          ListVal list ->
             econt (readonlyListT listtype) (ListVal (el:list))
           otherwise ->
             return (\(state, err) -> return (state, TypeError lineInfo))
@@ -355,19 +355,19 @@ transExpr x tenv venv (LEnv lenv) econt = do
         go (e:es) econt' (Just listtype) (ListVal list) =
           transExpr e tenv venv (LEnv lenv) (\valtype -> \val ->
             if matchFullType listtype valtype then
-              go es econt' (Just listtype) (ListVal (val:list)) 
+              go es econt' (Just listtype) (ListVal (val:list))
             else
               return (\(state, err) -> return (state, TypeError lineInfo)))
         go _ _ _ _ =
           return (\(state, err) -> return (state, TypeError lineInfo))
       in
-        go exprs tenv venv (LEnv lenv) econt Nothing NoVal
+        go exprs econt Nothing NoVal
     EArr lineInfo exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
     EArrSize lineInfo fulltype expr ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
-    EApp lineInfo expr exprs ->
-      transExpr expr tenv venv (LEnv lenv) (\functype -> \funcval ->
+    EApp lineInfo expr exprs -> econt readonlyVoidT NoVal
+      {-transExpr expr tenv venv (LEnv lenv) (\functype -> \funcval ->
         case functype of
           Fun _ argtypes fulltype ->
             case funcval of
@@ -380,12 +380,13 @@ transExpr x tenv venv (LEnv lenv) econt = do
                     transExpr e tenv venv (LEnv lenv) (\valtype -> \val ->
                       go es (val:argvals) argvalcont)
                 in
-                  go exprs [] (\argvals ->
-                    func argtypes argvals ())
+                  go exprs [] (\argvals -> do
+                    cont <- econt readonlyVoidT NoVal
+                    func argtypes argvals (return (\tenv' -> \venv' -> return cont)))
               otherwise ->
                 return (\(state, err) -> return (state, TypeError lineInfo))
-          otherwise -> 
-            return (\(state, err) -> return (state, TypeError lineInfo)))
+          otherwise ->
+            return (\(state, err) -> return (state, TypeError lineInfo)))-}
     EArrApp lineInfo expr exprs ->  --TODO
       econt (readonlyBoolT) (BoolVal True)
     EIf lineInfo expr1 expr2 expr3 ->
@@ -510,7 +511,7 @@ transOrOp x v1 v2 =
         otherwise ->
           (readonlyVoidT, NoVal, TypeError lineInfo)
 transAndOp :: AndOp (Maybe (Int, Int)) -> Val -> Val -> (FullType (Maybe (Int, Int)), Val, Error)
-transAndOp x v1 v2 = 
+transAndOp x v1 v2 =
   case x of
     And lineInfo ->
       case (v1, v2) of
@@ -518,4 +519,3 @@ transAndOp x v1 v2 =
           (readonlyBoolT, BoolVal (x1 && x2), NoError lineInfo)
         otherwise ->
           (readonlyVoidT, NoVal, TypeError lineInfo)
-

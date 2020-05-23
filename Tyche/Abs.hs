@@ -8,12 +8,12 @@ module Tyche.Abs where
 
 
 newtype Ident = Ident String deriving (Eq, Ord, Show, Read)
-data Program a = Program a (Stmt a)
+data Program a = Program a [Stmt a]
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Program where
     fmap f x = case x of
-        Program a stmt -> Program (f a) (fmap f stmt)
+        Program a stmts -> Program (f a) (map (fmap f) stmts)
 data Arg a = Arg a (ArgMod a) Ident (FullType a)
   deriving (Eq, Ord, Show, Read)
 
@@ -32,16 +32,14 @@ data Stmt a
     | Break a
     | Continue a
     | Ret a (Expr a)
-    | VRet a
     | VarDef a (FullIdent a) (FullType a) (Expr a)
     | Ass a Ident (Expr a)
-    | FnDef a (FullIdent a) (FullType a) [Arg a] (Stmt a)
-    | Cond a (Expr a) (Stmt a)
-    | CondElse a (Expr a) (Stmt a) (Stmt a)
-    | While a (Expr a) (Stmt a)
-    | ForList a Ident (Expr a) (Stmt a)
-    | ForRange a Ident (Expr a) (Expr a) (Stmt a)
-    | Composition a (Stmt a) (Stmt a)
+    | FnDef a (FullIdent a) (FullType a) [Arg a] [Stmt a]
+    | Cond a (Expr a) [Stmt a]
+    | CondElse a (Expr a) [Stmt a] [Stmt a]
+    | While a (Expr a) [Stmt a]
+    | ForList a Ident (Expr a) [Stmt a]
+    | ForRange a Ident (Expr a) (Expr a) [Stmt a]
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Stmt where
@@ -50,16 +48,14 @@ instance Functor Stmt where
         Break a -> Break (f a)
         Continue a -> Continue (f a)
         Ret a expr -> Ret (f a) (fmap f expr)
-        VRet a -> VRet (f a)
         VarDef a fullident fulltype expr -> VarDef (f a) (fmap f fullident) (fmap f fulltype) (fmap f expr)
         Ass a ident expr -> Ass (f a) ident (fmap f expr)
-        FnDef a fullident fulltype args stmt -> FnDef (f a) (fmap f fullident) (fmap f fulltype) (map (fmap f) args) (fmap f stmt)
-        Cond a expr stmt -> Cond (f a) (fmap f expr) (fmap f stmt)
-        CondElse a expr stmt1 stmt2 -> CondElse (f a) (fmap f expr) (fmap f stmt1) (fmap f stmt2)
-        While a expr stmt -> While (f a) (fmap f expr) (fmap f stmt)
-        ForList a ident expr stmt -> ForList (f a) ident (fmap f expr) (fmap f stmt)
-        ForRange a ident expr1 expr2 stmt -> ForRange (f a) ident (fmap f expr1) (fmap f expr2) (fmap f stmt)
-        Composition a stmt1 stmt2 -> Composition (f a) (fmap f stmt1) (fmap f stmt2)
+        FnDef a fullident fulltype args stmts -> FnDef (f a) (fmap f fullident) (fmap f fulltype) (map (fmap f) args) (map (fmap f) stmts)
+        Cond a expr stmts -> Cond (f a) (fmap f expr) (map (fmap f) stmts)
+        CondElse a expr stmts1 stmts2 -> CondElse (f a) (fmap f expr) (map (fmap f) stmts1) (map (fmap f) stmts2)
+        While a expr stmts -> While (f a) (fmap f expr) (map (fmap f) stmts)
+        ForList a ident expr stmts -> ForList (f a) ident (fmap f expr) (map (fmap f) stmts)
+        ForRange a ident expr1 expr2 stmts -> ForRange (f a) ident (fmap f expr1) (fmap f expr2) (map (fmap f) stmts)
 data Type a
     = Int a
     | Str a
@@ -108,7 +104,8 @@ instance Functor TypeMod where
     fmap f x = case x of
         TModReadonly a -> TModReadonly (f a)
 data Expr a
-    = EVar a Ident
+    = ELitVoid a
+    | EVar a Ident
     | ELitInt a Integer
     | ELitTrue a
     | ELitFalse a
@@ -129,15 +126,15 @@ data Expr a
     | EArrSize a (FullType a) (Expr a)
     | EArrApp a (Expr a) (Expr a)
     | EIf a (Expr a) (Expr a) (Expr a)
-    | ELambda a (FullType a) [Arg a] (Stmt a)
+    | ELambda a (FullType a) [Arg a] [Stmt a]
     | ERand a (Expr a)
     | ERandDist a (Expr a) (Expr a)
-    | EProb a (Stmt a) (Expr a)
-    | EProbSamp a (Expr a) (Stmt a) (Expr a)
+    | EProbSamp a (Expr a) [Stmt a] (Expr a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Expr where
     fmap f x = case x of
+        ELitVoid a -> ELitVoid (f a)
         EVar a ident -> EVar (f a) ident
         ELitInt a integer -> ELitInt (f a) integer
         ELitTrue a -> ELitTrue (f a)
@@ -159,11 +156,10 @@ instance Functor Expr where
         EArrSize a fulltype expr -> EArrSize (f a) (fmap f fulltype) (fmap f expr)
         EArrApp a expr1 expr2 -> EArrApp (f a) (fmap f expr1) (fmap f expr2)
         EIf a expr1 expr2 expr3 -> EIf (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
-        ELambda a fulltype args stmt -> ELambda (f a) (fmap f fulltype) (map (fmap f) args) (fmap f stmt)
+        ELambda a fulltype args stmts -> ELambda (f a) (fmap f fulltype) (map (fmap f) args) (map (fmap f) stmts)
         ERand a expr -> ERand (f a) (fmap f expr)
         ERandDist a expr1 expr2 -> ERandDist (f a) (fmap f expr1) (fmap f expr2)
-        EProb a stmt expr -> EProb (f a) (fmap f stmt) (fmap f expr)
-        EProbSamp a expr1 stmt expr2 -> EProbSamp (f a) (fmap f expr1) (fmap f stmt) (fmap f expr2)
+        EProbSamp a expr1 stmts expr2 -> EProbSamp (f a) (fmap f expr1) (map (fmap f) stmts) (fmap f expr2)
 data AddOp a = Plus a | Minus a
   deriving (Eq, Ord, Show, Read)
 

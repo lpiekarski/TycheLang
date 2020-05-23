@@ -50,13 +50,14 @@ The reserved words used in tyche are the following:
   | ``var`` | ``void`` | ``while`` | 
 
 The symbols used in tyche are the following:
-  | : | , | _ | =
-  | ( | ) | { | }
-  | [ | ] | -> | ()
-  | - | ! | :: | ?
-  | + | * | / | %
-  | < | <= | > | >=
-  | == | != | || | &&
+  | { | } | : | ,
+  | _ | = | ( | )
+  | ; | [ | ] | ->
+  | [] | - | ! | ::
+  | ? | + | * | /
+  | % | < | <= | >
+  | >= | == | != | ||
+  | && |  |  | 
 
 ===Comments===
 Single-line comments begin with #, //, --.Multiple-line comments are  enclosed with /* and */.
@@ -67,41 +68,35 @@ The symbols -> (production),  **|**  (union)
 and **eps** (empty rule) belong to the BNF notation. 
 All other symbols are terminals.
 
-  | //Program// | -> | //Stmt// 
+  | //Program// | -> | ``{`` //[Stmt]// ``}`` 
   | //Arg// | -> | //ArgMod// //Ident// ``:`` //FullType// 
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// 
   |  |  **|**  | //Arg// ``,`` //[Arg]// 
   | //FullIdent// | -> | //Ident// 
   |  |  **|**  | ``_`` 
-  | //Stmt5// | -> | ``skip`` 
+  | //Stmt// | -> | ``skip`` 
   |  |  **|**  | ``break`` 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``return`` //Expr// 
-  |  |  **|**  | ``return`` 
   |  |  **|**  | ``def`` //FullIdent// ``:`` //FullType// ``=`` //Expr1// 
   |  |  **|**  | //Ident// ``=`` //Expr1// 
-  |  |  **|**  | //Stmt6// 
-  | //Stmt4// | -> | ``def`` //FullIdent// ``:`` //FullType// ``(`` //[Arg]// ``)`` //Stmt5// 
-  |  |  **|**  | //Stmt5// 
-  | //Stmt1// | -> | ``if`` //Expr// ``then`` //Stmt1// 
-  |  |  **|**  | ``if`` //Expr// ``then`` //Stmt1// ``else`` //Stmt1// 
-  |  |  **|**  | ``while`` //Expr// ``do`` //Stmt1// 
-  |  |  **|**  | ``for`` ``each`` //Ident// ``from`` //Expr// ``do`` //Stmt1// 
-  |  |  **|**  | ``for`` //Ident// ``from`` //Expr// ``to`` //Expr// ``do`` //Stmt1// 
-  |  |  **|**  | //Stmt2// 
-  | //Stmt// | -> | //Stmt1// //Stmt// 
-  |  |  **|**  | //Stmt1// 
-  | //Stmt2// | -> | //Stmt3// 
-  | //Stmt3// | -> | //Stmt4// 
-  | //Stmt6// | -> | ``{`` //Stmt// ``}`` 
+  |  |  **|**  | ``def`` //FullIdent// ``:`` //FullType// ``(`` //[Arg]// ``)`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``if`` //Expr// ``then`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``if`` //Expr// ``then`` ``{`` //[Stmt]// ``}`` ``else`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``while`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``for`` ``each`` //Ident// ``from`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``for`` //Ident// ``from`` //Expr// ``to`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
+  | //[Stmt]// | -> | **eps**
+  |  |  **|**  | //Stmt// 
+  |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
   | //Type// | -> | ``int`` 
   |  |  **|**  | ``string`` 
   |  |  **|**  | ``boolean`` 
   |  |  **|**  | ``void`` 
   |  |  **|**  | ``float`` 
-  |  |  **|**  | ``(`` //FullType// ``)`` 
   |  |  **|**  | ``[`` //FullType// ``]`` 
+  |  |  **|**  | ``{`` //FullType// ``}`` 
   |  |  **|**  | ``(`` //[ArgType]// ``)`` ``->`` //FullType// 
   | //ArgType// | -> | //ArgMod// //FullType// 
   | //FullType// | -> | //[TypeMod]// //Type// 
@@ -114,13 +109,14 @@ All other symbols are terminals.
   | //TypeMod// | -> | ``readonly`` 
   | //[TypeMod]// | -> | **eps**
   |  |  **|**  | //TypeMod// //[TypeMod]// 
-  | //Expr9// | -> | //Ident// 
+  | //Expr9// | -> | ``void`` 
+  |  |  **|**  | //Ident// 
   |  |  **|**  | //Integer// 
   |  |  **|**  | ``true`` 
   |  |  **|**  | ``false`` 
   |  |  **|**  | //String// 
   |  |  **|**  | //Double// 
-  |  |  **|**  | ``()`` ``:`` //FullType// 
+  |  |  **|**  | ``[]`` ``:`` //FullType// 
   |  |  **|**  | //Expr9// ``(`` //[Expr]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //Expr8// | -> | ``-`` //Expr9// 
@@ -139,17 +135,16 @@ All other symbols are terminals.
   |  |  **|**  | //Expr4// 
   | //Expr2// | -> | //Expr3// //OrOp// //Expr2// 
   |  |  **|**  | //Expr3// 
-  | //Expr1// | -> | ``(`` //[Expr]// ``)`` 
-  |  |  **|**  | ``[`` //[Expr]// ``]`` 
+  | //Expr1// | -> | ``[`` //[Expr]// ``]`` 
+  |  |  **|**  | ``{`` //[Expr]// ``}`` 
   |  |  **|**  | ``array`` ``:`` //FullType// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr2// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr2// 
   | //Expr// | -> | //Expr1// ``?`` //Expr1// ``:`` //Expr1// 
-  |  |  **|**  | ``lambda`` ``:`` //FullType// ``(`` //[Arg]// ``)`` ``->`` //Stmt1// 
+  |  |  **|**  | ``lambda`` ``:`` //FullType// ``(`` //[Arg]// ``)`` ``->`` //[Stmt]// 
   |  |  **|**  | ``random`` ``from`` //Expr1// 
   |  |  **|**  | ``random`` ``from`` //Expr1// ``distribution`` //Expr1// 
-  |  |  **|**  | ``probability`` ``of`` //Stmt1// ``satisfying`` //Expr1// 
-  |  |  **|**  | ``probability`` ``tested`` //Expr1// ``times`` ``of`` //Stmt1// ``satisfying`` //Expr1// 
+  |  |  **|**  | ``probability`` ``tested`` //Expr1// ``times`` ``of`` ``{`` //[Stmt]// ``}`` ``satisfying`` //Expr1// 
   |  |  **|**  | //Expr1// 
   | //[Expr]// | -> | **eps**
   |  |  **|**  | //Expr// 

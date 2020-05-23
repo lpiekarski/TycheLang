@@ -1,10 +1,11 @@
 -- layouts
 layout toplevel ;
+layout "do", "then", "else" ;
 -- programs
 
 entrypoints Program ;
 
-Program.   Program ::= Stmt ;
+Program.   Program ::= "{" [Stmt] "}" ;
 
 Arg.       Arg     ::= ArgMod Ident ":" FullType ;
 separator  Arg "," ;
@@ -16,32 +17,22 @@ AnonIdent. FullIdent ::= "_" ;
 
 -- statements
 
-Skip.        Stmt5 ::= "skip" ;
-Break.       Stmt5 ::= "break" ;
-Continue.    Stmt5 ::= "continue" ;
-Ret.         Stmt5 ::= "return" Expr ;
-VRet.        Stmt5 ::= "return" ;
-VarDef.      Stmt5 ::= "def" FullIdent ":" FullType "=" Expr1 ;
-Ass.         Stmt5 ::= Ident "=" Expr1 ;
+Skip.        Stmt ::= "skip" ;
+Break.       Stmt ::= "break" ;
+Continue.    Stmt ::= "continue" ;
+Ret.         Stmt ::= "return" Expr ;
+VarDef.      Stmt ::= "def" FullIdent ":" FullType "=" Expr1 ;
+Ass.         Stmt ::= Ident "=" Expr1 ;
 
-FnDef.       Stmt4 ::= "def" FullIdent ":" FullType "(" [Arg] ")" Stmt5 ;
+FnDef.       Stmt ::= "def" FullIdent ":" FullType "(" [Arg] ")" "{" [Stmt] "}" ;
 
-Cond.        Stmt1 ::= "if" Expr "then" Stmt1 ;
-CondElse.    Stmt1 ::= "if" Expr "then" Stmt1 "else" Stmt1 ;
-While.       Stmt1 ::= "while" Expr "do" Stmt1 ;
-ForList.     Stmt1 ::= "for" "each" Ident "from" Expr "do" Stmt1 ;
-ForRange.    Stmt1 ::= "for" Ident "from" Expr "to" Expr "do" Stmt1 ;
+Cond.        Stmt ::= "if" Expr "then" "{" [Stmt] "}" ;
+CondElse.    Stmt ::= "if" Expr "then" "{" [Stmt] "}" "else" "{" [Stmt] "}" ;
+While.       Stmt ::= "while" Expr "do" "{" [Stmt] "}" ;
+ForList.     Stmt ::= "for" "each" Ident "from" Expr "do" "{" [Stmt] "}" ;
+ForRange.    Stmt ::= "for" Ident "from" Expr "to" Expr "do" "{" [Stmt] "}" ;
 
---Composition. Stmt  ::= Stmt1 ";" Stmt ;
-Composition. Stmt  ::= Stmt1 Stmt ;
-
-_. Stmt  ::= Stmt1 ;
-_. Stmt1 ::= Stmt2 ;
-_. Stmt2 ::= Stmt3 ;
-_. Stmt3 ::= Stmt4 ;
-_. Stmt4 ::= Stmt5 ;
-_. Stmt5 ::= Stmt6 ;
-_. Stmt6 ::= "{" Stmt "}" ;
+separator Stmt ";" ;
 
 -- types
 
@@ -50,8 +41,8 @@ Str.      Type     ::= "string" ;
 Bool.     Type     ::= "boolean" ;
 Void.     Type     ::= "void" ;
 Float.    Type     ::= "float" ;
-List.     Type     ::= "(" FullType ")" ;
-Array.    Type     ::= "[" FullType "]" ;
+List.     Type     ::= "[" FullType "]" ;
+Array.    Type     ::= "{" FullType "}" ;
 Fun.      Type     ::= "(" [ArgType] ")" "->" FullType ;
 ArgType.  ArgType  ::= ArgMod FullType ;
 FullType. FullType ::= [TypeMod] Type ;
@@ -70,13 +61,14 @@ separator TypeMod "" ;
 
 -- expressions
 
+ELitVoid.  Expr9 ::= "void" ;
 EVar.      Expr9 ::= Ident ;
 ELitInt.   Expr9 ::= Integer ;
 ELitTrue.  Expr9 ::= "true" ;
 ELitFalse. Expr9 ::= "false" ;
 EString.   Expr9 ::= String ;
 ELitFloat. Expr9 ::= Double ;
-EEmpList.  Expr9 ::= "()" ":" FullType ;
+EEmpList.  Expr9 ::= "[]" ":" FullType ;
 EApp.      Expr9 ::= Expr9 "(" [Expr] ")" ;
 
 Neg.       Expr8 ::= "-" Expr9 ;
@@ -95,17 +87,16 @@ EAnd.      Expr3 ::= Expr4 AndOp Expr3 ;
 
 EOr.       Expr2 ::= Expr3 OrOp Expr2 ;
 
-EList.     Expr1 ::= "(" [Expr] ")" ;
-EArr.      Expr1 ::= "[" [Expr] "]" ;
+EList.     Expr1 ::= "[" [Expr] "]" ;
+EArr.      Expr1 ::= "{" [Expr] "}" ;
 EArrSize.  Expr1 ::= "array" ":" FullType "[" Expr "]" ;
 EArrApp.   Expr1 ::= Expr2 "[" Expr "]" ;
 
 EIf.       Expr ::= Expr1 "?" Expr1 ":" Expr1 ;
-ELambda.   Expr ::= "lambda" ":" FullType "(" [Arg] ")" "->" Stmt1 ;
+ELambda.   Expr ::= "lambda" ":" FullType "(" [Arg] ")" "->" [Stmt] ;
 ERand.     Expr ::= "random" "from" Expr1 ;
 ERandDist. Expr ::= "random" "from" Expr1 "distribution" Expr1 ;
-EProb.     Expr ::= "probability" "of" Stmt1 "satisfying" Expr1 ;
-EProbSamp. Expr ::= "probability" "tested" Expr1 "times" "of" Stmt1 "satisfying" Expr1 ;
+EProbSamp. Expr ::= "probability" "tested" Expr1 "times" "of" "{" [Stmt] "}" "satisfying" Expr1 ;
 
 coercions Expr 9 ;
 separator Expr "," ;
