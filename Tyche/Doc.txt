@@ -51,13 +51,12 @@ The reserved words used in tyche are the following:
 
 The symbols used in tyche are the following:
   | { | } | : | ,
-  | _ | = | ( | )
-  | ; | [ | ] | ->
-  | [] | - | ! | ::
-  | ? | + | * | /
-  | % | < | <= | >
-  | >= | == | != | ||
-  | && |  |  | 
+  | = | ( | ) | ;
+  | [ | ] | -> | []
+  | - | ! | :: | ?
+  | + | * | / | %
+  | < | <= | > | >=
+  | == | != | || | &&
 
 ===Comments===
 Single-line comments begin with #, //, --.Multiple-line comments are  enclosed with /* and */.
@@ -73,15 +72,13 @@ All other symbols are terminals.
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// 
   |  |  **|**  | //Arg// ``,`` //[Arg]// 
-  | //FullIdent// | -> | //Ident// 
-  |  |  **|**  | ``_`` 
   | //Stmt// | -> | ``skip`` 
   |  |  **|**  | ``break`` 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``return`` //Expr// 
-  |  |  **|**  | ``def`` //FullIdent// ``:`` //FullType// ``=`` //Expr1// 
+  |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``=`` //Expr1// 
   |  |  **|**  | //Ident// ``=`` //Expr1// 
-  |  |  **|**  | ``def`` //FullIdent// ``:`` //FullType// ``(`` //[Arg]// ``)`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``(`` //[Arg]// ``)`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``then`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``then`` ``{`` //[Stmt]// ``}`` ``else`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``while`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 

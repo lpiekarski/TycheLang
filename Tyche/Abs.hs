@@ -20,21 +20,14 @@ data Arg a = Arg a (ArgMod a) Ident (FullType a)
 instance Functor Arg where
     fmap f x = case x of
         Arg a argmod ident fulltype -> Arg (f a) (fmap f argmod) ident (fmap f fulltype)
-data FullIdent a = FullIdent a Ident | AnonIdent a
-  deriving (Eq, Ord, Show, Read)
-
-instance Functor FullIdent where
-    fmap f x = case x of
-        FullIdent a ident -> FullIdent (f a) ident
-        AnonIdent a -> AnonIdent (f a)
 data Stmt a
     = Skip a
     | Break a
     | Continue a
     | Ret a (Expr a)
-    | VarDef a (FullIdent a) (FullType a) (Expr a)
+    | VarDef a Ident (FullType a) (Expr a)
     | Ass a Ident (Expr a)
-    | FnDef a (FullIdent a) (FullType a) [Arg a] [Stmt a]
+    | FnDef a Ident (FullType a) [Arg a] [Stmt a]
     | Cond a (Expr a) [Stmt a]
     | CondElse a (Expr a) [Stmt a] [Stmt a]
     | While a (Expr a) [Stmt a]
@@ -48,9 +41,9 @@ instance Functor Stmt where
         Break a -> Break (f a)
         Continue a -> Continue (f a)
         Ret a expr -> Ret (f a) (fmap f expr)
-        VarDef a fullident fulltype expr -> VarDef (f a) (fmap f fullident) (fmap f fulltype) (fmap f expr)
+        VarDef a ident fulltype expr -> VarDef (f a) ident (fmap f fulltype) (fmap f expr)
         Ass a ident expr -> Ass (f a) ident (fmap f expr)
-        FnDef a fullident fulltype args stmts -> FnDef (f a) (fmap f fullident) (fmap f fulltype) (map (fmap f) args) (map (fmap f) stmts)
+        FnDef a ident fulltype args stmts -> FnDef (f a) ident (fmap f fulltype) (map (fmap f) args) (map (fmap f) stmts)
         Cond a expr stmts -> Cond (f a) (fmap f expr) (map (fmap f) stmts)
         CondElse a expr stmts1 stmts2 -> CondElse (f a) (fmap f expr) (map (fmap f) stmts1) (map (fmap f) stmts2)
         While a expr stmts -> While (f a) (fmap f expr) (map (fmap f) stmts)

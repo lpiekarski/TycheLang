@@ -9,14 +9,24 @@ import System.IO ( stdin, hGetContents )
 extendFunc :: (Eq a) => (a -> b) -> a -> b -> a -> b
 extendFunc f nx ny x = if nx == x then ny else f x
 
-extendFuncArgs :: TEnv -> [Arg (Maybe (Int, Int))] -> TEnv
-extendFuncArgs te [] = te
-extendFuncArgs te ((Arg _ _ ident ft):args) =
-      extendFuncArgs (extendFunc te ident (Just ft)) args
+extendTEnv :: TEnv -> Ident -> FullType LineInfo -> TEnv
+extendTEnv tenv var fulltype = \v ->
+  if v == var then Just fulltype
+  else tenv v
+
+passWithErrorHandle :: TypeCheckResult -> (a -> TEnv -> FullType LineInfo -> Bool -> Bool -> TypeCheckResult) -> a -> LineInfo -> TypeCheckResult
+passWithErrorHandle x func next lineInfo = case x of
+  Ok (_, tenv, functype, returned, inloop) -> func next tenv functype returned inloop
+  Bad str -> Bad (str ++ "at " ++ (lineInfoString lineInfo) ++ "\n")
+
+extendTEnvArgs :: TEnv -> [Arg (Maybe (Int, Int))] -> TEnv
+extendTEnvArgs te [] = te
+extendTEnvArgs te ((Arg _ _ ident ft):args) =
+      extendTEnvArgs (extendTEnv te ident ft) args
 
 lineInfoString :: Maybe (Int, Int) -> String
 lineInfoString Nothing = ""
-lineInfoString (Just (x, y)) = show x ++ ":" ++ show y
+lineInfoString (Just (x, y)) = "line: " ++ show x ++ ", column: " ++ show y
 
 matchArgTypes :: [ArgType a] -> [ArgType a] -> Bool
 matchArgTypes [] [] = True
@@ -230,9 +240,9 @@ type ECont = FullType (Maybe (Int, Int)) -> Val -> IO Cont
 type VEnv = Var -> Maybe Loc
 data Label = LBreak | LContinue | LReturn | LProb Int Int Int
 data LEnv = LEnv (Label -> Maybe (IO ECont))
-type Scope = (Maybe (FullType (Maybe (Int, Int))), Bool, Int)
-type TypeCheckResult = Err (TEnv, Maybe (FullType (Maybe (Int, Int))), Scope)
-type TEnv = Var -> Maybe (FullType (Maybe (Int, Int)))
+type TypeCheckResult = Err (FullType (Maybe (Int, Int)), TEnv, FullType (Maybe (Int, Int)), Bool, Bool)
+type TEnv = Var -> Maybe (FullType LineInfo)
+type LineInfo = Maybe (Int, Int)
 
 readonlyVoidT = FullType Nothing [TModReadonly Nothing] (Void Nothing)
 voidT = FullType Nothing [] (Void Nothing)

@@ -10,21 +10,16 @@ Program.   Program ::= "{" [Stmt] "}" ;
 Arg.       Arg     ::= ArgMod Ident ":" FullType ;
 separator  Arg "," ;
 
--- identifiers
-
-FullIdent. FullIdent ::= Ident ;
-AnonIdent. FullIdent ::= "_" ;
-
 -- statements
 
 Skip.        Stmt ::= "skip" ;
 Break.       Stmt ::= "break" ;
 Continue.    Stmt ::= "continue" ;
 Ret.         Stmt ::= "return" Expr ;
-VarDef.      Stmt ::= "def" FullIdent ":" FullType "=" Expr1 ;
+VarDef.      Stmt ::= "def" Ident ":" FullType "=" Expr1 ;
 Ass.         Stmt ::= Ident "=" Expr1 ;
 
-FnDef.       Stmt ::= "def" FullIdent ":" FullType "(" [Arg] ")" "{" [Stmt] "}" ;
+FnDef.       Stmt ::= "def" Ident ":" FullType "(" [Arg] ")" "{" [Stmt] "}" ;
 
 Cond.        Stmt ::= "if" Expr "then" "{" [Stmt] "}" ;
 CondElse.    Stmt ::= "if" Expr "then" "{" [Stmt] "}" "else" "{" [Stmt] "}" ;

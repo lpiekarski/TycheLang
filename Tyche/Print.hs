@@ -93,20 +93,15 @@ instance Print (Arg a) where
   prtList _ [] = (concatD [])
   prtList _ [x] = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])
-instance Print (FullIdent a) where
-  prt i e = case e of
-    FullIdent _ id -> prPrec i 0 (concatD [prt 0 id])
-    AnonIdent _ -> prPrec i 0 (concatD [doc (showString "_")])
-
 instance Print (Stmt a) where
   prt i e = case e of
     Skip _ -> prPrec i 0 (concatD [doc (showString "skip")])
     Break _ -> prPrec i 0 (concatD [doc (showString "break")])
     Continue _ -> prPrec i 0 (concatD [doc (showString "continue")])
     Ret _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr])
-    VarDef _ fullident fulltype expr -> prPrec i 0 (concatD [doc (showString "def"), prt 0 fullident, doc (showString ":"), prt 0 fulltype, doc (showString "="), prt 1 expr])
+    VarDef _ id fulltype expr -> prPrec i 0 (concatD [doc (showString "def"), prt 0 id, doc (showString ":"), prt 0 fulltype, doc (showString "="), prt 1 expr])
     Ass _ id expr -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 1 expr])
-    FnDef _ fullident fulltype args stmts -> prPrec i 0 (concatD [doc (showString "def"), prt 0 fullident, doc (showString ":"), prt 0 fulltype, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
+    FnDef _ id fulltype args stmts -> prPrec i 0 (concatD [doc (showString "def"), prt 0 id, doc (showString ":"), prt 0 fulltype, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
     Cond _ expr stmts -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr, doc (showString "then"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
     CondElse _ expr stmts1 stmts2 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr, doc (showString "then"), doc (showString "{"), prt 0 stmts1, doc (showString "}"), doc (showString "else"), doc (showString "{"), prt 0 stmts2, doc (showString "}")])
     While _ expr stmts -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
