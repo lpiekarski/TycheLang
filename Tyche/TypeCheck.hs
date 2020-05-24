@@ -1,8 +1,14 @@
 module Tyche.TypeCheck where
 
 import           Tyche.Abs
+import           Tyche.Bool
+import           Tyche.Converters
+import           Tyche.Env
 import           Tyche.ErrM
+import           Tyche.Helpers
+import           Tyche.Numerical
 import           Tyche.Print
+import           Tyche.TypeMatching
 import           Tyche.Types
 
 typecheckNothing :: Maybe a -> TEnv -> FullType LineInfo -> Bool -> Bool -> TypeCheckResult

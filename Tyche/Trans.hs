@@ -1,7 +1,10 @@
 module Tyche.Trans where
 
 import           Tyche.Abs
+import           Tyche.Bool
 import           Tyche.ErrM
+import           Tyche.Helpers
+import           Tyche.Numerical
 import           Tyche.Print
 import           Tyche.Types
 
