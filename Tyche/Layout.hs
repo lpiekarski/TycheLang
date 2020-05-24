@@ -11,11 +11,11 @@ import Data.Maybe (isNothing, fromJust)
 
 
 topLayout :: Bool
-topLayout = True
+topLayout = False
 
 layoutWords, layoutStopWords :: [String]
-layoutWords     = ["do","else","of"]
-layoutStopWords = []
+layoutWords     = ["do","of"]
+layoutStopWords = ["satisfying","else"]
 
 -- layout separators
 
@@ -257,10 +257,10 @@ sToken p s = PT p (TS s i)
       "random" -> 50
       "readonly" -> 51
       "return" -> 52
-      "satisfying" -> 53
-      "skip" -> 54
-      "string" -> 55
-      "tested" -> 56
+      "sampled" -> 53
+      "satisfying" -> 54
+      "skip" -> 55
+      "string" -> 56
       "times" -> 57
       "to" -> 58
       "true" -> 59

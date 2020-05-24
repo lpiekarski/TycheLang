@@ -65,10 +65,10 @@ import Tyche.ErrM
   'random' { PT _ (TS _ 50) }
   'readonly' { PT _ (TS _ 51) }
   'return' { PT _ (TS _ 52) }
-  'satisfying' { PT _ (TS _ 53) }
-  'skip' { PT _ (TS _ 54) }
-  'string' { PT _ (TS _ 55) }
-  'tested' { PT _ (TS _ 56) }
+  'sampled' { PT _ (TS _ 53) }
+  'satisfying' { PT _ (TS _ 54) }
+  'skip' { PT _ (TS _ 55) }
+  'string' { PT _ (TS _ 56) }
   'times' { PT _ (TS _ 57) }
   'to' { PT _ (TS _ 58) }
   'true' { PT _ (TS _ 59) }
@@ -118,8 +118,8 @@ Double :: {
 Program :: {
   (Maybe (Int, Int), Program (Maybe (Int, Int)))
 }
-: '{' ListStmt '}' {
-  (Just (tokenLineCol $1), Tyche.Abs.Program (Just (tokenLineCol $1)) (snd $2)) 
+: 'do' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.Program (Just (tokenLineCol $1)) (snd $3)) 
 }
 
 Arg :: {
@@ -169,8 +169,8 @@ Stmt :: {
 | 'if' Expr 'do' '{' ListStmt '}' {
   (Just (tokenLineCol $1), Tyche.Abs.Cond (Just (tokenLineCol $1)) (snd $2)(snd $5)) 
 }
-| 'if' Expr 'do' '{' ListStmt '}' 'else' '{' ListStmt '}' {
-  (Just (tokenLineCol $1), Tyche.Abs.CondElse (Just (tokenLineCol $1)) (snd $2)(snd $5)(snd $9)) 
+| 'if' Expr 'do' '{' ListStmt '}' 'else' 'do' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.CondElse (Just (tokenLineCol $1)) (snd $2)(snd $5)(snd $10)) 
 }
 | 'while' Expr 'do' '{' ListStmt '}' {
   (Just (tokenLineCol $1), Tyche.Abs.While (Just (tokenLineCol $1)) (snd $2)(snd $5)) 
@@ -185,10 +185,7 @@ Stmt :: {
 ListStmt :: {
   (Maybe (Int, Int), [Stmt (Maybe (Int, Int))]) 
 }
-: {
-  (Nothing, [])
-}
-| Stmt {
+: Stmt {
   (fst $1, (:[]) (snd $1)) 
 }
 | Stmt ';' ListStmt {
@@ -424,7 +421,7 @@ Expr :: {
 | 'random' 'from' Expr1 'distribution' Expr1 {
   (Just (tokenLineCol $1), Tyche.Abs.ERandDist (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
 }
-| 'probability' 'tested' Expr1 'times' 'of' '{' ListStmt '}' 'satisfying' Expr1 {
+| 'probability' 'sampled' Expr1 'times' 'of' '{' ListStmt '}' 'satisfying' Expr1 {
   (Just (tokenLineCol $1), Tyche.Abs.EProbSamp (Just (tokenLineCol $1)) (snd $3)(snd $7)(snd $10)) 
 }
 | Expr1 {

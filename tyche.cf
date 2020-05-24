@@ -1,13 +1,13 @@
 -- layouts
 
-layout toplevel ;
-layout "do", "else", "of" ;
+layout "do", "of" ;
+layout stop "satisfying", "else" ;
 
 -- programs
 
 entrypoints Program ;
 
-Program.   Program ::= "{" [Stmt] "}" ;
+Program.   Program ::= "do" "{" [Stmt] "}" ;
 
 -- function arguments
 
@@ -26,12 +26,12 @@ Ass.         Stmt ::= Ident "=" Expr1 ;
 FnDef.       Stmt ::= "def" Ident ":" FullType "(" [Arg] ")" "do" "{" [Stmt] "}" ;
 
 Cond.        Stmt ::= "if" Expr "do" "{" [Stmt] "}" ;
-CondElse.    Stmt ::= "if" Expr "do" "{" [Stmt] "}" "else" "{" [Stmt] "}" ;
+CondElse.    Stmt ::= "if" Expr "do" "{" [Stmt] "}" "else" "do" "{" [Stmt] "}" ;
 While.       Stmt ::= "while" Expr "do" "{" [Stmt] "}" ;
 ForList.     Stmt ::= "for" "each" Ident "from" Expr "do" "{" [Stmt] "}" ;
 ForRange.    Stmt ::= "for" Ident "from" Expr "to" Expr "do" "{" [Stmt] "}" ;
 
-separator Stmt ";" ;
+separator nonempty Stmt ";" ;
 
 -- types
 
@@ -95,7 +95,7 @@ EIf.       Expr ::= Expr1 "?" Expr1 ":" Expr1 ;
 ELambda.   Expr ::= "lambda" ":" FullType "(" [Arg] ")" "->" [Stmt] ;
 ERand.     Expr ::= "random" "from" Expr1 ;
 ERandDist. Expr ::= "random" "from" Expr1 "distribution" Expr1 ;
-EProbSamp. Expr ::= "probability" "tested" Expr1 "times" "of" "{" [Stmt] "}" "satisfying" Expr1 ;
+EProbSamp. Expr ::= "probability" "sampled" Expr1 "times" "of" "{" [Stmt] "}" "satisfying" Expr1 ;
 
 coercions Expr 9 ;
 separator Expr "," ;

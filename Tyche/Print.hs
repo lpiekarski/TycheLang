@@ -85,7 +85,7 @@ instance Print Ident where
 
 instance Print (Program a) where
   prt i e = case e of
-    Program _ stmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 stmts, doc (showString "}")])
+    Program _ stmts -> prPrec i 0 (concatD [doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
 
 instance Print (Arg a) where
   prt i e = case e of
@@ -103,11 +103,10 @@ instance Print (Stmt a) where
     Ass _ id expr -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 1 expr])
     FnDef _ id fulltype args stmts -> prPrec i 0 (concatD [doc (showString "def"), prt 0 id, doc (showString ":"), prt 0 fulltype, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
     Cond _ expr stmts -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
-    CondElse _ expr stmts1 stmts2 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts1, doc (showString "}"), doc (showString "else"), doc (showString "{"), prt 0 stmts2, doc (showString "}")])
+    CondElse _ expr stmts1 stmts2 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts1, doc (showString "}"), doc (showString "else"), doc (showString "do"), doc (showString "{"), prt 0 stmts2, doc (showString "}")])
     While _ expr stmts -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
     ForList _ id expr stmts -> prPrec i 0 (concatD [doc (showString "for"), doc (showString "each"), prt 0 id, doc (showString "from"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
     ForRange _ id expr1 expr2 stmts -> prPrec i 0 (concatD [doc (showString "for"), prt 0 id, doc (showString "from"), prt 0 expr1, doc (showString "to"), prt 0 expr2, doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
-  prtList _ [] = (concatD [])
   prtList _ [x] = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ";"), prt 0 xs])
 instance Print (Type a) where
@@ -169,7 +168,7 @@ instance Print (Expr a) where
     ELambda _ fulltype args stmts -> prPrec i 0 (concatD [doc (showString "lambda"), doc (showString ":"), prt 0 fulltype, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "->"), prt 0 stmts])
     ERand _ expr -> prPrec i 0 (concatD [doc (showString "random"), doc (showString "from"), prt 1 expr])
     ERandDist _ expr1 expr2 -> prPrec i 0 (concatD [doc (showString "random"), doc (showString "from"), prt 1 expr1, doc (showString "distribution"), prt 1 expr2])
-    EProbSamp _ expr1 stmts expr2 -> prPrec i 0 (concatD [doc (showString "probability"), doc (showString "tested"), prt 1 expr1, doc (showString "times"), doc (showString "of"), doc (showString "{"), prt 0 stmts, doc (showString "}"), doc (showString "satisfying"), prt 1 expr2])
+    EProbSamp _ expr1 stmts expr2 -> prPrec i 0 (concatD [doc (showString "probability"), doc (showString "sampled"), prt 1 expr1, doc (showString "times"), doc (showString "of"), doc (showString "{"), prt 0 stmts, doc (showString "}"), doc (showString "satisfying"), prt 1 expr2])
   prtList _ [] = (concatD [])
   prtList _ [x] = (concatD [prt 0 x])
   prtList _ (x:xs) = (concatD [prt 0 x, doc (showString ","), prt 0 xs])

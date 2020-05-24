@@ -1,22 +1,23 @@
 module Main where
 
 
-import System.IO ( stdin, hGetContents )
-import System.Environment ( getArgs, getProgName )
-import System.Exit ( exitFailure, exitSuccess )
-import Control.Monad (when)
+import           Control.Monad      (when)
+import           System.Environment (getArgs, getProgName)
+import           System.Exit        (exitFailure, exitSuccess)
+import           System.IO          (hGetContents, stdin)
 
-import Tyche.Lex
-import Tyche.Par
-import Tyche.Trans
-import Tyche.Print
-import Tyche.Abs
-import Tyche.RunProgram
+import           Tyche.Abs
+import           Tyche.Layout
+import           Tyche.Lex
+import           Tyche.Par
+import           Tyche.Print
+import           Tyche.RunProgram
+import           Tyche.Trans
 
-import Tyche.ErrM
+import           Tyche.ErrM
 
 
-lexer = myLexer
+lexer = resolveLayout True . myLexer
 
 runFile :: FilePath -> IO ()
 runFile f = readFile f >>= run
@@ -43,11 +44,5 @@ main = do
   args <- getArgs
   case args of
     ["--help"] -> usage
-    [] -> getContents >>= run
-    fs -> mapM_ runFile fs
-
-
-
-
-
-
+    []         -> getContents >>= run
+    fs         -> mapM_ runFile fs

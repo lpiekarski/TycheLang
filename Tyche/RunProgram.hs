@@ -16,7 +16,7 @@ import           Tyche.ErrM
 
 runProgram :: Program (Maybe (Int, Int)) -> IO ()
 runProgram prog = do
-  putStrLn $ show prog
+  putStrLn $ printTree prog
   case typecheckProgram prog of
     Ok _ -> do
       {-tp <- transProgram prog

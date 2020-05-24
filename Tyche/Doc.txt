@@ -44,8 +44,8 @@ The reserved words used in tyche are the following:
   | ``float`` | ``for`` | ``from`` | ``if``
   | ``inout`` | ``int`` | ``lambda`` | ``mod``
   | ``not`` | ``of`` | ``or`` | ``probability``
-  | ``random`` | ``readonly`` | ``return`` | ``satisfying``
-  | ``skip`` | ``string`` | ``tested`` | ``times``
+  | ``random`` | ``readonly`` | ``return`` | ``sampled``
+  | ``satisfying`` | ``skip`` | ``string`` | ``times``
   | ``to`` | ``true`` | ``val`` | ``var``
   | ``void`` | ``while`` |  | 
 
@@ -67,7 +67,7 @@ The symbols -> (production),  **|**  (union)
 and **eps** (empty rule) belong to the BNF notation. 
 All other symbols are terminals.
 
-  | //Program// | -> | ``{`` //[Stmt]// ``}`` 
+  | //Program// | -> | ``do`` ``{`` //[Stmt]// ``}`` 
   | //Arg// | -> | //ArgMod// //Ident// ``:`` //FullType// 
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// 
@@ -80,12 +80,11 @@ All other symbols are terminals.
   |  |  **|**  | //Ident// ``=`` //Expr1// 
   |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``(`` //[Arg]// ``)`` ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
-  |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` ``else`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` ``else`` ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``while`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``for`` ``each`` //Ident// ``from`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``for`` //Ident// ``from`` //Expr// ``to`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
-  | //[Stmt]// | -> | **eps**
-  |  |  **|**  | //Stmt// 
+  | //[Stmt]// | -> | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
   | //Type// | -> | ``int`` 
   |  |  **|**  | ``string`` 
@@ -141,7 +140,7 @@ All other symbols are terminals.
   |  |  **|**  | ``lambda`` ``:`` //FullType// ``(`` //[Arg]// ``)`` ``->`` //[Stmt]// 
   |  |  **|**  | ``random`` ``from`` //Expr1// 
   |  |  **|**  | ``random`` ``from`` //Expr1// ``distribution`` //Expr1// 
-  |  |  **|**  | ``probability`` ``tested`` //Expr1// ``times`` ``of`` ``{`` //[Stmt]// ``}`` ``satisfying`` //Expr1// 
+  |  |  **|**  | ``probability`` ``sampled`` //Expr1// ``times`` ``of`` ``{`` //[Stmt]// ``}`` ``satisfying`` //Expr1// 
   |  |  **|**  | //Expr1// 
   | //[Expr]// | -> | **eps**
   |  |  **|**  | //Expr// 
