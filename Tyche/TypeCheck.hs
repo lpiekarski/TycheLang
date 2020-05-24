@@ -66,13 +66,17 @@ typecheckStmt x tenv functype returned inloop = case x of
               else
                 Bad ("Unable to match types in assignment. Expected `" ++ (printTree fulltype) ++ "`, got `" ++ (printTree exprtype) ++ "`\n\tat Assignment Statement " ++ (lineInfoString lineinfo) ++ "\n")
   FnDef lineinfo ident fulltype args stmts ->
-    case typecheckStmts stmts (extendTEnv (extendTEnvArgs tenv args) ident fulltype) fulltype False False of
-      Bad str -> Bad (str ++ "\tat Function Definition " ++ (lineInfoString lineinfo) ++ "\n")
-      Ok (_, _, _, returned', _) ->
-        if returned' then
-          Ok (voidT, tenv, functype, returned, inloop)
-        else
-          Bad ("Function returns no value (return statement is missing)\n\tat Function Definition " ++ (lineInfoString lineinfo) ++ "\n")
+    let
+      tenvForInsideFunc = extendTEnv (extendTEnvArgs tenv args) ident (FullType lineinfo [] (Fun lineinfo (argsToArgTypes args) fulltype))
+      tenvForAfterFunc = extendTEnv tenv ident (FullType lineinfo [] (Fun lineinfo (argsToArgTypes args) fulltype))
+    in
+      case typecheckStmts stmts tenvForInsideFunc fulltype False False of
+        Bad str -> Bad (str ++ "\tat Function Definition " ++ (lineInfoString lineinfo) ++ "\n")
+        Ok (_, _, _, returned', _) ->
+          if returned' then
+            Ok (voidT, tenvForAfterFunc, functype, returned, inloop)
+          else
+            Bad ("Function returns no value (return statement is missing)\n\tat Function Definition " ++ (lineInfoString lineinfo) ++ "\n")
   Cond lineinfo expr stmts ->
     case typecheckExpr expr tenv functype returned inloop of
       Bad str -> Bad (str ++ "\tat If Statement " ++ (lineInfoString lineinfo) ++ "\n")
@@ -207,7 +211,7 @@ typecheckExpr x tenv functype returned inloop = case x of
         case ftype of
           FullType _ _ (Fun _ argtypes fulltype) ->
             let
-              checkArgTypesWithExprs [] [] = Ok (voidT, tenv, functype, returned, inloop)
+              checkArgTypesWithExprs [] [] = Ok (fulltype, tenv, functype, returned, inloop)
               checkArgTypesWithExprs [] e = Bad ("Too many arguments. Expected " ++ (show $ length argtypes) ++ ", got " ++ (show $ length exprs) ++ "\n\tat Function Application" ++ (lineInfoString lineinfo) ++ "\n")
               checkArgTypesWithExprs at [] = Bad ("Too few arguments. Expected " ++ (show $ length argtypes) ++ ", got " ++ (show $ length exprs) ++ "\n\tat Function Application" ++ (lineInfoString lineinfo) ++ "\n")
               checkArgTypesWithExprs (at:ats) (e:es) =
@@ -221,23 +225,240 @@ typecheckExpr x tenv functype returned inloop = case x of
             in
               checkArgTypesWithExprs argtypes exprs
           otherwise -> Bad ("Expected function, got `" ++ (printTree ftype) ++ "`\n\tat Function Application " ++ (lineInfoString lineinfo) ++ "\n")
-  Neg _ expr                    -> Ok (voidT, tenv, functype, returned, inloop)
-  Not _ expr                    -> Ok (voidT, tenv, functype, returned, inloop)
-  ECons _ expr1 expr2           -> Ok (voidT, tenv, functype, returned, inloop)
-  EMul _ expr1 mulop expr2      -> Ok (voidT, tenv, functype, returned, inloop)
-  EAdd _ expr1 addop expr2      -> Ok (voidT, tenv, functype, returned, inloop)
-  ERel _ expr1 relop expr2      -> Ok (voidT, tenv, functype, returned, inloop)
-  EAnd _ expr1 andop expr2      -> Ok (voidT, tenv, functype, returned, inloop)
-  EOr _ expr1 orop expr2        -> Ok (voidT, tenv, functype, returned, inloop)
-  EList _ exprs                 -> Ok (voidT, tenv, functype, returned, inloop)
-  EArr _ exprs                  -> Ok (voidT, tenv, functype, returned, inloop)
-  EArrSize _ fulltype expr      -> Ok (voidT, tenv, functype, returned, inloop)
-  EArrApp _ expr1 expr2         -> Ok (voidT, tenv, functype, returned, inloop)
-  EIf _ expr1 expr2 expr3       -> Ok (voidT, tenv, functype, returned, inloop)
-  ELambda _ fulltype args stmts -> Ok (voidT, tenv, functype, returned, inloop)
-  ERand _ expr                  -> Ok (voidT, tenv, functype, returned, inloop)
-  ERandDist _ expr1 expr2       -> Ok (voidT, tenv, functype, returned, inloop)
-  EProbSamp _ expr1 stmts expr2 -> Ok (voidT, tenv, functype, returned, inloop)
+  Neg lineinfo expr ->
+    case typecheckExpr expr tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Negation Expression " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (exprtype, _, _, _, _) ->
+        if isNumeric exprtype then
+          Ok (exprtype, tenv, functype, returned, inloop)
+        else
+          Bad ("Can't apply negation to the element of type `" ++ (printTree exprtype) ++ "`\n\tat Negation Expression " ++ (lineInfoString lineinfo) ++ "\n")
+  Not lineinfo expr ->
+    case typecheckExpr expr tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Logical Negation " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (exprtype, _, _, _, _) ->
+        if matchFullType exprtype boolT then
+          Ok (exprtype, tenv, functype, returned, inloop)
+        else
+          Bad ("Can't apply logical negation to the element of type `" ++ (printTree exprtype) ++ "`\n\tat Logical Negation " ++ (lineInfoString lineinfo) ++ "\n")
+  ECons lineinfo expr1 expr2 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Cons Expression (element expression) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        case typecheckExpr expr2 tenv functype returned inloop of
+          Bad str -> Bad (str ++ "\tat Cons Expression (list expression) " ++ (lineInfoString lineinfo) ++ "\n")
+          Ok (expr2type, _, _, _, _) ->
+            if isList expr2type then
+              if matchFullType expr1type (listElementType expr2type) then
+                Ok (expr2type, tenv, functype, returned, inloop)
+              else
+                Bad ("Type `" ++ (printTree expr1type) ++ "` is not a valid element type for list `" ++ (printTree expr2type) ++ "`\n\tat Cons Expression " ++ (lineInfoString lineinfo) ++ "\n")
+            else
+              Bad ("Expected list, got `" ++ (printTree expr2type) ++ "`\n\tat Cons Expression " ++ (lineInfoString lineinfo) ++ "\n")
+  EMul lineinfo expr1 mulop expr2 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Multiplication (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if isNumeric expr1type then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat Multiplication (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+              if isNumeric expr2type then
+                Ok (unifyNumericTypes expr1type expr2type, tenv, functype, returned, inloop)
+              else
+                Bad ("Can't multiply non-numeric expression of type `" ++ (printTree expr2type) ++ "`\n\tat Multiplication (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Can't multiply non-numeric expression of type `" ++ (printTree expr1type) ++ "`\n\tat Multiplication (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+  EAdd lineinfo expr1 addop expr2      ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Addition (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if isNumeric expr1type then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat Addition (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+              if isNumeric expr2type then
+                Ok (unifyNumericTypes expr1type expr2type, tenv, functype, returned, inloop)
+              else
+                Bad ("Can't add non-numeric expression of type `" ++ (printTree expr2type) ++ "`\n\tat Addition (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Can't add non-numeric expression of type `" ++ (printTree expr1type) ++ "`\n\tat Addition (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+  ERel lineinfo expr1 relop expr2 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Comparison (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if isNumeric expr1type then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat Comparison (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+              if isNumeric expr2type then
+                Ok (boolT, tenv, functype, returned, inloop)
+              else
+                Bad ("Can't compare non-numeric expression of type `" ++ (printTree expr2type) ++ "`\n\tat Comparison (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Can't compare non-numeric expression of type `" ++ (printTree expr1type) ++ "`\n\tat Comparison (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+  EAnd lineinfo expr1 andop expr2 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Conjunction (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if isBool expr1type then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat Conjunction (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+              if isBool expr2type then
+                Ok (boolT, tenv, functype, returned, inloop)
+              else
+                Bad ("Can't apply `and` to non-boolean expression of type `" ++ (printTree expr2type) ++ "`\n\tat Conjunction (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Can't apply `and` to non-boolean expression of type `" ++ (printTree expr1type) ++ "`\n\tat Conjunction (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+  EOr lineinfo expr1 orop expr2 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Alternative (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if isBool expr1type then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat Alternative (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+              if isBool expr2type then
+                Ok (boolT, tenv, functype, returned, inloop)
+              else
+                Bad ("Can't apply `or` to non-boolean expression of type `" ++ (printTree expr2type) ++ "`\n\tat Alternative (right argument) " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Can't apply `or` to non-boolean expression of type `" ++ (printTree expr1type) ++ "`\n\tat Alternative (left argument) " ++ (lineInfoString lineinfo) ++ "\n")
+  EList lineinfo exprs ->
+    let
+      checkExprs (e:nil) =
+        case typecheckExpr e tenv functype returned inloop of
+          Bad str -> Bad (str ++ "\tat List Expression " ++ (lineInfoString lineinfo) ++ "\n")
+          Ok (etype, _, _, _, _) -> Ok (etype, tenv, functype, returned, inloop)
+      checkExprs (e:es) =
+        case typecheckExpr e tenv functype returned inloop of
+          Bad str -> Bad (str ++ "\tat List Expression " ++ (lineInfoString lineinfo) ++ "\n")
+          Ok (etype, _, _, _, _) ->
+            case checkExprs es of
+              Bad str -> Bad (str ++ "\tat List Expression " ++ (lineInfoString lineinfo) ++ "\n")
+              Ok (e2type, _, _, _, _) ->
+                if matchFullType etype e2type then
+                  Ok (etype, tenv, functype, returned, inloop)
+                else
+                  Bad ("List expression elements have different types: `" ++ (printTree etype) ++ "` and `" ++ (printTree e2type) ++ "`\n\tat List Expression " ++ (lineInfoString lineinfo) ++ "\n")
+    in
+      case checkExprs exprs of
+        Bad str -> Bad str
+        Ok (listelementtype, _, _, _, _) -> Ok (listT listelementtype, tenv, functype, returned, inloop)
+  EArr lineinfo exprs ->
+    let
+      checkExprs (e:nil) =
+        case typecheckExpr e tenv functype returned inloop of
+          Bad str -> Bad (str ++ "\tat Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
+          Ok (etype, _, _, _, _) -> Ok (etype, tenv, functype, returned, inloop)
+      checkExprs (e:es) =
+        case typecheckExpr e tenv functype returned inloop of
+          Bad str -> Bad (str ++ "\tat Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
+          Ok (etype, _, _, _, _) ->
+            case checkExprs es of
+              Bad str -> Bad (str ++ "\tat Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
+              Ok (e2type, _, _, _, _) ->
+                if matchFullType etype e2type then
+                  Ok (etype, tenv, functype, returned, inloop)
+                else
+                  Bad ("Array expression elements have different types: `" ++ (printTree etype) ++ "` and `" ++ (printTree e2type) ++ "`\n\tat Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
+    in
+      case checkExprs exprs of
+        Bad str -> Bad str
+        Ok (arrayelementtype, _, _, _, _) -> Ok (arrayT arrayelementtype, tenv, functype, returned, inloop)
+  EArrSize lineinfo fulltype expr ->
+    case typecheckExpr expr tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Default Value Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (exprtype, _, _, _, _) ->
+        if isInt exprtype then
+          Ok (arrayT fulltype, tenv, functype, returned, inloop)
+        else
+          Bad ("Expected expression type `" ++ (printTree intT) ++ "`, got `" ++ (printTree exprtype) ++ "`\n\tat Default Value Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
+  EArrApp lineinfo expr1 expr2 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Array Application (array expression) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if isArray expr1type then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat Array Application (index expression) " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+             if isInt expr2type then
+               Ok (arrayElementType expr1type, tenv, functype, returned, inloop)
+             else
+               Bad ("Expected `" ++ (printTree intT) ++ "`, got `" ++ (printTree expr2type) ++ "`\n\tat Array Application (index expression) " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Expected array, got `" ++ (printTree expr1type) ++ "`\n\tat Array Application (array expression) " ++ (lineInfoString lineinfo) ++ "\n")
+  EIf lineinfo expr1 expr2 expr3 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat If-else Expression (condition) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if matchFullType expr1type boolT then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat If-else Expression (if branch) " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+              case typecheckExpr expr3 tenv functype returned inloop of
+                Bad str -> Bad (str ++ "\tat If-else Expression (else branch) " ++ (lineInfoString lineinfo) ++ "\n")
+                Ok (expr3type, _, _, _, _) ->
+                  if matchFullType expr2type expr3type then
+                    Ok (expr2type, tenv, functype, returned, inloop)
+                  else
+                    Bad ("If branches have different types: `" ++ (printTree expr2type) ++ "` and `" ++ (printTree expr3type) ++ "`\n\tat If-else Expression " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Expected `" ++ (printTree boolT) ++ "`, got `" ++ (printTree expr1type) ++ "`\n\tat If-else Expression (condition) " ++ (lineInfoString lineinfo) ++ "\n")
+  ELambda lineinfo fulltype args stmts ->
+    let
+      tenvInsideFunc = extendTEnvArgs tenv args
+    in
+      case typecheckStmts stmts tenvInsideFunc fulltype False False of
+        Bad str -> Bad (str ++ "\tat Lambda expression (inside the function body) " ++ (lineInfoString lineinfo) ++ "\n")
+        Ok (_, _, _, returned', _) ->
+          if returned' then
+            Ok (FullType lineinfo [] (Fun lineinfo (argsToArgTypes args) fulltype), tenv, functype, returned, inloop)
+          else
+            Bad ("Function is missing return statement\n\tat Lambda expression (inside the function body) " ++ (lineInfoString lineinfo) ++ "\n")
+  ERand lineinfo expr ->
+    case typecheckExpr expr tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Random Expression " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (exprtype, _, _, _, _) ->
+        if isArray exprtype || isList exprtype then
+          Ok (elementType exprtype, tenv, functype, returned, inloop)
+        else
+          Bad ("Expected an Array or a List, got `" ++ (printTree exprtype) ++ "`\n\tat Random Expression " ++ (lineInfoString lineinfo) ++ "\n")
+  ERandDist lineinfo expr1 expr2 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if isArray expr1type || isList expr1type then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+              if isArray expr2type || isList expr2type then
+                if matchFullType (elementType expr2type) floatT then
+                  Ok (elementType expr1type, tenv, functype, returned, inloop)
+                else
+                  Bad ("Expected element type `" ++ (printTree floatT) ++ "`, got `" ++ (printTree (elementType expr2type)) ++ "`\n\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
+              else
+                Bad ("Expected an Array or a List, got `" ++ (printTree expr2type) ++ "`\n\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Expected an Array or a List, got `" ++ (printTree expr1type) ++ "`\n\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
+  EProbSamp lineinfo expr1 stmts expr2 ->
+    case typecheckExpr expr1 tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Sampled Probability (number of samples expression) " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (expr1type, _, _, _, _) ->
+        if matchFullType expr1type intT then
+          case typecheckStmts stmts tenv voidT False False of
+            Bad str -> Bad (str ++ "\tat Sampled Probability (statement block) " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (_, tenv', _, _, _) ->
+              case typecheckExpr expr2 tenv' functype returned inloop of
+                Bad str -> Bad (str ++ "\tat Sampled Probability (state condition) " ++ (lineInfoString lineinfo) ++ "\n")
+                Ok (expr2type, _, _, _, _) ->
+                  if matchFullType expr2type boolT then
+                    Ok (floatT, tenv, functype, returned, inloop)
+                  else
+                    Bad ("Expected `" ++ (printTree boolT) ++ "`, got `" ++ (printTree expr2type) ++ "`\n\tat Sampled Probability (state condition) " ++ (lineInfoString lineinfo) ++ "\n")
+        else
+          Bad ("Expected `" ++ (printTree intT) ++ "`, got `" ++ (printTree expr1type) ++ "`\n\tat Sampled Probability (number of samples expression) " ++ (lineInfoString lineinfo) ++ "\n")
 typecheckAddOp :: AddOp LineInfo -> TEnv -> FullType LineInfo -> Bool -> Bool -> TypeCheckResult
 typecheckAddOp x tenv functype returned inloop = case x of
   Plus _  -> Ok (voidT, tenv, functype, returned, inloop)

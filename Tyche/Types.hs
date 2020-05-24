@@ -99,6 +99,19 @@ isVoid ft = case ft of
   FullType _ _ (Void _) -> True
   otherwise -> False
 
+isNumeric :: FullType a -> Bool
+isNumeric ft = case ft of
+  FullType _ _ (Float _) -> True
+  FullType _ _ (Int _) -> True
+  otherwise -> False
+
+unifyNumericTypes :: FullType LineInfo -> FullType LineInfo -> FullType LineInfo
+unifyNumericTypes ft1 ft2 =
+  if isFloat ft1 || isFloat ft2 then
+    floatT
+  else
+    intT
+
 isFunction :: FullType a -> Bool
 isFunction ft = case ft of
   FullType _ _ (Fun _ _ _) -> True
@@ -254,6 +267,7 @@ readonlyFloatT = FullType Nothing [TModReadonly Nothing] (Float Nothing)
 floatT = FullType Nothing [] (Float Nothing)
 readonlyListT fulltype = FullType Nothing [TModReadonly Nothing] (List Nothing fulltype)
 listT fulltype = FullType Nothing [] (List Nothing fulltype)
+arrayT fulltype = FullType Nothing [] (Array Nothing fulltype)
 
 {-typeOf :: Val -> FullType (Maybe (Int, Int))
 typeOf IntVal _ = readonlyIntT
