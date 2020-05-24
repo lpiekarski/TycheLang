@@ -1,13 +1,19 @@
 module Tyche.Types where
 
-import Tyche.ErrM
-import Tyche.Abs
+import           Tyche.Abs
+import           Tyche.ErrM
 
-import Data.Array
-import System.IO ( stdin, hGetContents )
+import           Data.Array
+import           Data.Fixed
+import           System.IO  (hGetContents, stdin)
 
 extendFunc :: (Eq a) => (a -> b) -> a -> b -> a -> b
 extendFunc f nx ny x = if nx == x then ny else f x
+
+extendVEnv :: VEnv -> Ident -> Loc -> VEnv
+extendVEnv venv var loc = \x ->
+  if x == var then Just loc
+  else venv x
 
 extendTEnv :: TEnv -> Ident -> FullType LineInfo -> TEnv
 extendTEnv tenv var fulltype = \v ->
@@ -25,7 +31,7 @@ extendTEnvArgs te ((Arg _ _ ident ft):args) =
       extendTEnvArgs (extendTEnv te ident ft) args
 
 lineInfoString :: Maybe (Int, Int) -> String
-lineInfoString Nothing = "unknown location"
+lineInfoString Nothing       = "unknown location"
 lineInfoString (Just (x, y)) = "line: " ++ show x ++ ", column: " ++ show y
 
 matchArgTypes :: [ArgType a] -> [ArgType a] -> Bool
@@ -51,7 +57,7 @@ matchType t1 t2 = case (t1, t2) of
 matchFullType :: FullType a -> FullType a -> Bool
 matchFullType ft1 ft2 = case (ft1, ft2) of
   (FullType _ _ t1, FullType _ _ t2) -> matchType t1 t2
-  otherwise -> False
+  otherwise                          -> False
 
 argsToArgTypes :: [Arg a] -> [ArgType a]
 argsToArgTypes [] = []
@@ -64,7 +70,7 @@ isReadonly ft = case ft of
     let
       isRo x = case x of
         TModReadonly _ -> True
-        otherwise -> False
+        otherwise      -> False
     in
       any isRo tms
   otherwise -> False
@@ -72,38 +78,38 @@ isReadonly ft = case ft of
 isArray :: FullType a -> Bool
 isArray ft = case ft of
   FullType _ _ (Array _ _) -> True
-  otherwise -> False
+  otherwise                -> False
 
 isList :: FullType a -> Bool
 isList ft = case ft of
   FullType _ _ (List _ _) -> True
-  otherwise -> False
+  otherwise               -> False
 
 isBool :: FullType a -> Bool
 isBool ft = case ft of
   FullType _ _ (Bool _) -> True
-  otherwise -> False
+  otherwise             -> False
 
 isInt :: FullType a -> Bool
 isInt ft = case ft of
   FullType _ _ (Int _) -> True
-  otherwise -> False
+  otherwise            -> False
 
 isFloat :: FullType a -> Bool
 isFloat ft = case ft of
   FullType _ _ (Float _) -> True
-  otherwise -> False
+  otherwise              -> False
 
 isVoid :: FullType a -> Bool
 isVoid ft = case ft of
   FullType _ _ (Void _) -> True
-  otherwise -> False
+  otherwise             -> False
 
 isNumeric :: FullType a -> Bool
 isNumeric ft = case ft of
   FullType _ _ (Float _) -> True
-  FullType _ _ (Int _) -> True
-  otherwise -> False
+  FullType _ _ (Int _)   -> True
+  otherwise              -> False
 
 unifyNumericTypes :: FullType LineInfo -> FullType LineInfo -> FullType LineInfo
 unifyNumericTypes ft1 ft2 =
@@ -115,7 +121,7 @@ unifyNumericTypes ft1 ft2 =
 isFunction :: FullType a -> Bool
 isFunction ft = case ft of
   FullType _ _ (Fun _ _ _) -> True
-  otherwise -> False
+  otherwise                -> False
 
 arrayElementType :: FullType a -> FullType a
 arrayElementType (FullType _ _ (Array _ res)) = res
@@ -124,7 +130,7 @@ listElementType :: FullType a -> FullType a
 listElementType (FullType _ _ (List _ res)) = res
 
 elementType :: FullType a -> FullType a
-elementType (FullType _ _ (List _ res)) = res
+elementType (FullType _ _ (List _ res))  = res
 elementType (FullType _ _ (Array _ res)) = res
 
 newLoc :: Store -> (Loc, Store)
@@ -136,7 +142,7 @@ saveInStore (l, s) loc val = (l, \loc' -> if loc' == loc then val else s loc')
 addBreakLabel :: LEnv -> IO ECont -> LEnv
 addBreakLabel (LEnv lenv) econt =
   LEnv (\label -> case label of
-    LBreak -> Just econt
+    LBreak    -> Just econt
     otherwise -> lenv label)
 
 addContinueLabel :: LEnv -> IO ECont -> LEnv
@@ -165,13 +171,8 @@ printStore store =
     go store 0
 
 
-printState :: State -> IO ()
-printState (store, err) = do
-  putStrLn "store:"
-  printStore store
-  putStrLn "error:"
-  putStrLn (show err)
-  return ()
+printError :: Error -> IO ()
+printError err = putStrLn $ show err
 
 argsToFullTypes :: [Arg (Maybe (Int, Int))] -> [FullType (Maybe (Int, Int))]
 argsToFullTypes args =
@@ -214,44 +215,55 @@ argsToArgVals args venv (state@((_, storef), _)) =
     go [] r =
       reverse r
     go (a:as) r = case argToArgVal a venv state of
-        Nothing -> go as r
+        Nothing  -> go as r
         Just res -> go as (res:r)
   in
     go args []
 
 type Loc = Int
-data ArgVal = Variable Loc Ident | Value Val Ident | Inout Ident Ident
-data Val = IntVal Integer | FloatVal Double | BoolVal Bool | StringVal String | ListVal [Val] | ArrayVal (Array Int Val) | FuncVal ([ArgType (Maybe (Int, Int))] -> [ArgVal] -> IO ICont -> IO Cont) | NoVal
+data ArgVal = Variable Loc Ident
+    | Value Val Ident
+    | Inout Ident Ident
+data Val = IntVal Integer
+    | FloatVal Double
+    | BoolVal Bool
+    | StringVal String
+    | ListVal [Val]
+    | ArrayVal (Array Int Val)
+    | FuncVal ([ArgType LineInfo] -> [ArgVal] -> IO ICont -> IO Cont)
+    | NoVal
 instance Show Val where
   show val = case val of
-    IntVal integer -> "int " ++ (show integer)
+    IntVal integer  -> "int " ++ (show integer)
     FloatVal double -> "float " ++ (show double)
-    BoolVal bool -> "bool " ++ (show bool)
-    StringVal str -> "string " ++ str
-    ListVal l -> "list " ++ (show l)
-    ArrayVal (_) -> "array"
-    FuncVal (_) -> "function"
-    NoVal -> "empty"
-type Var = Ident
+    BoolVal bool    -> "bool " ++ (show bool)
+    StringVal str   -> "string " ++ str
+    ListVal l       -> "list " ++ (show l)
+    ArrayVal (_)    -> "array"
+    FuncVal (_)     -> "function"
+    NoVal           -> "empty"
 type Store = (Loc, Loc -> Val)
-data Error =
-  NoError (Maybe (Int, Int)) |
-  DivisionBy0 (Maybe (Int, Int)) |
-  TypeError (Maybe (Int, Int)) |
-  BreakError (Maybe (Int, Int)) |
-  ContinueError (Maybe (Int, Int)) |
-  ReturnError (Maybe (Int, Int)) |
-  LoopError (Maybe (Int, Int))
-  deriving (Show)
+type StackTrace = [(Maybe Ident, FullType LineInfo)]
+data Error = NoError StackTrace
+    | DivisionBy0 StackTrace
+    | TypeError StackTrace
+    | BreakError StackTrace
+    | ContinueError StackTrace
+    | ReturnError StackTrace
+    | LoopError StackTrace
+    deriving (Show)
 type State = (Store, Error)
 type Cont = State -> IO State
-type ICont = TEnv -> VEnv -> IO Cont
-type ECont = FullType (Maybe (Int, Int)) -> Val -> IO Cont
-type VEnv = Var -> Maybe Loc
-data Label = LBreak | LContinue | LReturn | LProb Int Int Int
+type ICont = VEnv -> IO Cont
+type ECont = Val -> IO Cont
+type VEnv = Ident -> Maybe Loc
+data Label = LBreak
+    | LContinue
+    | LReturn
+    | LProb Int Int Int
 data LEnv = LEnv (Label -> Maybe (IO ECont))
-type TypeCheckResult = Err (FullType (Maybe (Int, Int)), TEnv, FullType (Maybe (Int, Int)), Bool, Bool)
-type TEnv = Var -> Maybe (FullType LineInfo)
+type TypeCheckResult = Err (FullType LineInfo, TEnv, FullType LineInfo, Bool, Bool)
+type TEnv = Ident -> Maybe (FullType LineInfo)
 type LineInfo = Maybe (Int, Int)
 
 readonlyVoidT = FullType Nothing [TModReadonly Nothing] (Void Nothing)
@@ -280,10 +292,88 @@ FuncVal (Cont -> Cont)
 NoVal-}
 
 negateNum :: Val -> Val
-negateNum (IntVal v) = IntVal (-v)
+negateNum (IntVal v)   = IntVal (-v)
 negateNum (FloatVal v) = FloatVal (-v)
-negateNum v = v
+negateNum v            = v
+
+addNumericals :: Val -> Val -> Val
+addNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> IntVal (x1 + x2)
+  (IntVal x1, FloatVal x2)   -> FloatVal ((fromIntegral x1) + x2)
+  (FloatVal x1, IntVal x2)   -> FloatVal (x1 + (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> FloatVal (x1 + x2)
+
+substractNumericals :: Val -> Val -> Val
+substractNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> IntVal (x1 - x2)
+  (IntVal x1, FloatVal x2)   -> FloatVal ((fromIntegral x1) - x2)
+  (FloatVal x1, IntVal x2)   -> FloatVal (x1 - (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> FloatVal (x1 - x2)
+
+multiplyNumericals :: Val -> Val -> Val
+multiplyNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> IntVal (x1 * x2)
+  (IntVal x1, FloatVal x2)   -> FloatVal ((fromIntegral x1) * x2)
+  (FloatVal x1, IntVal x2)   -> FloatVal (x1 * (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> FloatVal (x1 * x2)
+
+divideNumericals :: Val -> Val -> Val
+divideNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> IntVal (x1 `div` x2)
+  (IntVal x1, FloatVal x2)   -> FloatVal ((fromIntegral x1) / x2)
+  (FloatVal x1, IntVal x2)   -> FloatVal (x1 / (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> FloatVal (x1 / x2)
+
+
+modNumericals :: Val -> Val -> Val
+modNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> IntVal (x1 `mod` x2)
+  (IntVal x1, FloatVal x2)   -> FloatVal ((fromIntegral x1) `mod'` x2)
+  (FloatVal x1, IntVal x2)   -> FloatVal (x1 `mod'` (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> FloatVal (x1 `mod'` x2)
+
+neNumericals :: Val -> Val -> Val
+neNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> BoolVal (x1 /= x2)
+  (IntVal x1, FloatVal x2)   -> BoolVal ((fromIntegral x1) /= x2)
+  (FloatVal x1, IntVal x2)   -> BoolVal (x1 /= (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> BoolVal (x1 /= x2)
+
+equNumericals :: Val -> Val -> Val
+equNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> BoolVal (x1 == x2)
+  (IntVal x1, FloatVal x2)   -> BoolVal ((fromIntegral x1) == x2)
+  (FloatVal x1, IntVal x2)   -> BoolVal (x1 == (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> BoolVal (x1 == x2)
+
+geNumericals :: Val -> Val -> Val
+geNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> BoolVal (x1 >= x2)
+  (IntVal x1, FloatVal x2)   -> BoolVal ((fromIntegral x1) >= x2)
+  (FloatVal x1, IntVal x2)   -> BoolVal (x1 >= (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> BoolVal (x1 >= x2)
+
+leNumericals :: Val -> Val -> Val
+leNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> BoolVal (x1 <= x2)
+  (IntVal x1, FloatVal x2)   -> BoolVal ((fromIntegral x1) <= x2)
+  (FloatVal x1, IntVal x2)   -> BoolVal (x1 <= (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> BoolVal (x1 <= x2)
+
+gthNumericals :: Val -> Val -> Val
+gthNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> BoolVal (x1 > x2)
+  (IntVal x1, FloatVal x2)   -> BoolVal ((fromIntegral x1) > x2)
+  (FloatVal x1, IntVal x2)   -> BoolVal (x1 > (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> BoolVal (x1 > x2)
+
+lthNumericals :: Val -> Val -> Val
+lthNumericals v1 v2 = case (v1, v2) of
+  (IntVal x1, IntVal x2)     -> BoolVal (x1 < x2)
+  (IntVal x1, FloatVal x2)   -> BoolVal ((fromIntegral x1) < x2)
+  (FloatVal x1, IntVal x2)   -> BoolVal (x1 < (fromIntegral x2))
+  (FloatVal x1, FloatVal x2) -> BoolVal (x1 < x2)
 
 negateBool :: Val -> Val
 negateBool (BoolVal v) = BoolVal (not v)
-negateBool v = v
+negateBool v           = v
