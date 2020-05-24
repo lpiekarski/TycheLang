@@ -1,11 +1,15 @@
 -- layouts
+
 layout toplevel ;
-layout "do", "then", "else" ;
+layout "do", "else", "of" ;
+
 -- programs
 
 entrypoints Program ;
 
 Program.   Program ::= "{" [Stmt] "}" ;
+
+-- function arguments
 
 Arg.       Arg     ::= ArgMod Ident ":" FullType ;
 separator  Arg "," ;
@@ -19,10 +23,10 @@ Ret.         Stmt ::= "return" Expr ;
 VarDef.      Stmt ::= "def" Ident ":" FullType "=" Expr1 ;
 Ass.         Stmt ::= Ident "=" Expr1 ;
 
-FnDef.       Stmt ::= "def" Ident ":" FullType "(" [Arg] ")" "{" [Stmt] "}" ;
+FnDef.       Stmt ::= "def" Ident ":" FullType "(" [Arg] ")" "do" "{" [Stmt] "}" ;
 
-Cond.        Stmt ::= "if" Expr "then" "{" [Stmt] "}" ;
-CondElse.    Stmt ::= "if" Expr "then" "{" [Stmt] "}" "else" "{" [Stmt] "}" ;
+Cond.        Stmt ::= "if" Expr "do" "{" [Stmt] "}" ;
+CondElse.    Stmt ::= "if" Expr "do" "{" [Stmt] "}" "else" "{" [Stmt] "}" ;
 While.       Stmt ::= "while" Expr "do" "{" [Stmt] "}" ;
 ForList.     Stmt ::= "for" "each" Ident "from" Expr "do" "{" [Stmt] "}" ;
 ForRange.    Stmt ::= "for" Ident "from" Expr "to" Expr "do" "{" [Stmt] "}" ;

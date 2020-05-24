@@ -1,5 +1,5 @@
 module Tyche.Trans where
-
+{-
 import           Tyche.Abs
 import           Tyche.ErrM
 import           Tyche.Print
@@ -519,3 +519,4 @@ transAndOp x v1 v2 =
           (readonlyBoolT, BoolVal (x1 && x2), NoError lineInfo)
         otherwise ->
           (readonlyVoidT, NoVal, TypeError lineInfo)
+-}

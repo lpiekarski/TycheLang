@@ -9,7 +9,7 @@ import           Tyche.Abs
 import           Tyche.Lex
 import           Tyche.Par
 import           Tyche.Print
-import           Tyche.Trans
+--import           Tyche.Trans
 import           Tyche.TypeCheck
 
 import           Tyche.ErrM
@@ -19,16 +19,16 @@ runProgram prog = do
   putStrLn $ show prog
   case typecheckProgram prog of
     Ok _ -> do
-      tp <- transProgram prog
+      {-tp <- transProgram prog
       case tp of
         Ok () -> return ()
         Bad str -> do
           putStr "Runtime Error: "
           putStr str
           putStrLn ""
-          return ()
+          return ()-}
+      putStrLn "OK"
     Bad str -> do
-      putStr "TypeCheck Error: "
+      putStr "Type Error:\n"
       putStr str
-      putStrLn ""
       return ()

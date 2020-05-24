@@ -69,17 +69,16 @@ import Tyche.ErrM
   'skip' { PT _ (TS _ 54) }
   'string' { PT _ (TS _ 55) }
   'tested' { PT _ (TS _ 56) }
-  'then' { PT _ (TS _ 57) }
-  'times' { PT _ (TS _ 58) }
-  'to' { PT _ (TS _ 59) }
-  'true' { PT _ (TS _ 60) }
-  'val' { PT _ (TS _ 61) }
-  'var' { PT _ (TS _ 62) }
-  'void' { PT _ (TS _ 63) }
-  'while' { PT _ (TS _ 64) }
-  '{' { PT _ (TS _ 65) }
-  '||' { PT _ (TS _ 66) }
-  '}' { PT _ (TS _ 67) }
+  'times' { PT _ (TS _ 57) }
+  'to' { PT _ (TS _ 58) }
+  'true' { PT _ (TS _ 59) }
+  'val' { PT _ (TS _ 60) }
+  'var' { PT _ (TS _ 61) }
+  'void' { PT _ (TS _ 62) }
+  'while' { PT _ (TS _ 63) }
+  '{' { PT _ (TS _ 64) }
+  '||' { PT _ (TS _ 65) }
+  '}' { PT _ (TS _ 66) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -164,13 +163,13 @@ Stmt :: {
 | Ident '=' Expr1 {
   (fst $1, Tyche.Abs.Ass (fst $1)(snd $1)(snd $3)) 
 }
-| 'def' Ident ':' FullType '(' ListArg ')' '{' ListStmt '}' {
-  (Just (tokenLineCol $1), Tyche.Abs.FnDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $9)) 
+| 'def' Ident ':' FullType '(' ListArg ')' 'do' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.FnDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $10)) 
 }
-| 'if' Expr 'then' '{' ListStmt '}' {
+| 'if' Expr 'do' '{' ListStmt '}' {
   (Just (tokenLineCol $1), Tyche.Abs.Cond (Just (tokenLineCol $1)) (snd $2)(snd $5)) 
 }
-| 'if' Expr 'then' '{' ListStmt '}' 'else' '{' ListStmt '}' {
+| 'if' Expr 'do' '{' ListStmt '}' 'else' '{' ListStmt '}' {
   (Just (tokenLineCol $1), Tyche.Abs.CondElse (Just (tokenLineCol $1)) (snd $2)(snd $5)(snd $9)) 
 }
 | 'while' Expr 'do' '{' ListStmt '}' {

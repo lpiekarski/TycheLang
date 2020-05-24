@@ -45,9 +45,9 @@ The reserved words used in tyche are the following:
   | ``inout`` | ``int`` | ``lambda`` | ``mod``
   | ``not`` | ``of`` | ``or`` | ``probability``
   | ``random`` | ``readonly`` | ``return`` | ``satisfying``
-  | ``skip`` | ``string`` | ``tested`` | ``then``
-  | ``times`` | ``to`` | ``true`` | ``val``
-  | ``var`` | ``void`` | ``while`` | 
+  | ``skip`` | ``string`` | ``tested`` | ``times``
+  | ``to`` | ``true`` | ``val`` | ``var``
+  | ``void`` | ``while`` |  | 
 
 The symbols used in tyche are the following:
   | { | } | : | ,
@@ -78,9 +78,9 @@ All other symbols are terminals.
   |  |  **|**  | ``return`` //Expr// 
   |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``=`` //Expr1// 
   |  |  **|**  | //Ident// ``=`` //Expr1// 
-  |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``(`` //[Arg]// ``)`` ``{`` //[Stmt]// ``}`` 
-  |  |  **|**  | ``if`` //Expr// ``then`` ``{`` //[Stmt]// ``}`` 
-  |  |  **|**  | ``if`` //Expr// ``then`` ``{`` //[Stmt]// ``}`` ``else`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``(`` //[Arg]// ``)`` ``do`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` ``else`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``while`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``for`` ``each`` //Ident// ``from`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``for`` //Ident// ``from`` //Expr// ``to`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 

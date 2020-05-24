@@ -17,7 +17,7 @@ extendTEnv tenv var fulltype = \v ->
 passWithErrorHandle :: TypeCheckResult -> (a -> TEnv -> FullType LineInfo -> Bool -> Bool -> TypeCheckResult) -> a -> LineInfo -> TypeCheckResult
 passWithErrorHandle x func next lineInfo = case x of
   Ok (_, tenv, functype, returned, inloop) -> func next tenv functype returned inloop
-  Bad str -> Bad (str ++ "at " ++ (lineInfoString lineInfo) ++ "\n")
+  Bad str -> Bad str
 
 extendTEnvArgs :: TEnv -> [Arg (Maybe (Int, Int))] -> TEnv
 extendTEnvArgs te [] = te
@@ -25,7 +25,7 @@ extendTEnvArgs te ((Arg _ _ ident ft):args) =
       extendTEnvArgs (extendTEnv te ident ft) args
 
 lineInfoString :: Maybe (Int, Int) -> String
-lineInfoString Nothing = ""
+lineInfoString Nothing = "unknown location"
 lineInfoString (Just (x, y)) = "line: " ++ show x ++ ", column: " ++ show y
 
 matchArgTypes :: [ArgType a] -> [ArgType a] -> Bool
@@ -104,21 +104,15 @@ isFunction ft = case ft of
   FullType _ _ (Fun _ _ _) -> True
   otherwise -> False
 
-arrayElementType :: FullType a -> Maybe (FullType a)
-arrayElementType ft = case ft of
-  FullType _ _ (Array _ res) -> Just res
-  otherwise -> Nothing
+arrayElementType :: FullType a -> FullType a
+arrayElementType (FullType _ _ (Array _ res)) = res
 
-listElementType :: FullType a -> Maybe (FullType a)
-listElementType ft = case ft of
-  FullType _ _ (List _ res) -> Just res
-  otherwise -> Nothing
+listElementType :: FullType a -> FullType a
+listElementType (FullType _ _ (List _ res)) = res
 
-elementType :: FullType a -> Maybe (FullType a)
-elementType ft = case ft of
-  FullType _ _ (List _ res) -> Just res
-  FullType _ _ (Array _ res) -> Just res
-  otherwise -> Nothing
+elementType :: FullType a -> FullType a
+elementType (FullType _ _ (List _ res)) = res
+elementType (FullType _ _ (Array _ res)) = res
 
 newLoc :: Store -> (Loc, Store)
 newLoc (next, s) = (next, (next + 1, s))
@@ -198,6 +192,9 @@ argToArgVal arg venv ((_, storef), _) =
         AModInOut _ ->
           Nothing
 
+argTypeToFullType :: ArgType LineInfo -> FullType LineInfo
+argTypeToFullType (ArgType _ _ res) = res
+
 argsToArgVals :: [Arg (Maybe (Int, Int))] -> VEnv -> State -> [ArgVal]
 argsToArgVals args venv (state@((_, storef), _)) =
   let
@@ -247,6 +244,7 @@ type LineInfo = Maybe (Int, Int)
 readonlyVoidT = FullType Nothing [TModReadonly Nothing] (Void Nothing)
 voidT = FullType Nothing [] (Void Nothing)
 readonlyBoolT = FullType Nothing [TModReadonly Nothing] (Bool Nothing)
+boolT :: FullType LineInfo
 boolT = FullType Nothing [] (Bool Nothing)
 readonlyIntT = FullType Nothing [TModReadonly Nothing] (Int Nothing)
 intT = FullType Nothing [] (Int Nothing)

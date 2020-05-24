@@ -14,7 +14,7 @@ topLayout :: Bool
 topLayout = True
 
 layoutWords, layoutStopWords :: [String]
-layoutWords     = ["do","then","else"]
+layoutWords     = ["do","else","of"]
 layoutStopWords = []
 
 -- layout separators
@@ -261,17 +261,16 @@ sToken p s = PT p (TS s i)
       "skip" -> 54
       "string" -> 55
       "tested" -> 56
-      "then" -> 57
-      "times" -> 58
-      "to" -> 59
-      "true" -> 60
-      "val" -> 61
-      "var" -> 62
-      "void" -> 63
-      "while" -> 64
-      "{" -> 65
-      "||" -> 66
-      "}" -> 67
+      "times" -> 57
+      "to" -> 58
+      "true" -> 59
+      "val" -> 60
+      "var" -> 61
+      "void" -> 62
+      "while" -> 63
+      "{" -> 64
+      "||" -> 65
+      "}" -> 66
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.
