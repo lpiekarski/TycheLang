@@ -2,10 +2,12 @@ module Tyche.Trans where
 
 import           Tyche.Abs
 import           Tyche.Bool
+import           Tyche.Env
 import           Tyche.ErrM
 import           Tyche.Helpers
 import           Tyche.Numerical
 import           Tyche.Print
+import           Tyche.State
 import           Tyche.Types
 
 
@@ -16,10 +18,10 @@ transProgram :: Program LineInfo -> IO (Err ())
 transProgram x = case x of
   Program lineinfo stmts -> do
     cont <- transStmts stmts (\v -> Nothing) (LEnv (\v -> Nothing)) (return (\venv -> return (\state -> return state)))
-    (finalStore, finalError) <- cont ((0, \l -> NoVal), NoError [(Nothing, FullType Nothing [] (Fun Nothing [] voidT))])
+    (finalStore, finalError) <- cont ((0, \l -> NoVal), (NoError, [(Nothing, FullType Nothing [] (Fun Nothing [] voidT))]))
     case finalError of
-      NoError _ -> return (Ok ())
-      otherwise -> return (Bad (show finalError))
+      (NoError, _) -> return (Ok ())
+      otherwise    -> return (Bad (show finalError))
 transArg :: Arg LineInfo -> ()
 transArg x = case x of
   Arg _ argmod ident fulltype -> ()
@@ -38,21 +40,37 @@ transStmt x venv (LEnv lenv) ioicont = case x of
   Skip _ -> do
     icont <- ioicont
     icont venv
-  Break _ -> do
-    icont <- ioicont
-    icont venv
-  Continue _ -> do
-    icont <- ioicont
-    icont venv
-  Ret _ expr -> do
-    icont <- ioicont
-    icont venv
-  VarDef _ ident fulltype expr -> do
-    icont <- ioicont
-    icont venv
-  Ass _ ident expr -> do
-    icont <- ioicont
-    icont venv
+  Break _ -> case lenv LBreak of
+    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (BreakError, stacktrace)))
+    Just breakioecont -> do
+      breakecont <- breakioecont
+      breakecont NoVal
+  Continue _ -> case lenv LContinue of
+    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ContinueError, stacktrace)))
+    Just continueioecont -> do
+      continueecont <- continueioecont
+      continueecont NoVal
+  Ret _ expr -> case lenv LReturn of
+    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ReturnError, stacktrace)))
+    Just returnioecont -> do
+      returnecont <- returnioecont
+      transExpr expr venv (LEnv lenv) returnecont
+  VarDef _ ident fulltype expr ->
+    transExpr expr venv (LEnv lenv) (\val -> return (\(store, err) -> do
+      let (varloc, storeaftervardef) = newLoc store
+      let venvaftervardef = extendFunc venv ident (Just varloc)
+      let storeaftervalsave = saveInStore storeaftervardef varloc val
+      icont <- ioicont
+      cont <- icont venvaftervardef
+      cont (storeaftervalsave, err)))
+  Ass _ ident expr ->
+    transExpr expr venv (LEnv lenv) (\val -> return (\(store, err@(errtype, stacktrace)) ->
+      case venv ident of
+        Nothing -> return (store, (TypeError, stacktrace))
+        Just loc -> do
+          icont <- ioicont
+          cont <- icont venv
+          cont (saveInStore store loc val, err)))
   FnDef _ ident fulltype args stmts -> do
     icont <- ioicont
     icont venv
@@ -125,32 +143,32 @@ transExpr x venv (LEnv lenv) econt = case x of
   EProbSamp _ expr1 stmts expr2 -> econt NoVal
 transAddOp :: AddOp LineInfo -> Val -> Val -> (Val, Error)
 transAddOp x v1 v2 = case x of
-  Plus _  -> (addNumericals v1 v2, NoError [])
-  Minus _ -> (substractNumericals v1 v2, NoError [])
+  Plus _  -> (addNumericals v1 v2, (NoError, []))
+  Minus _ -> (substractNumericals v1 v2, (NoError, []))
 transMulOp :: MulOp LineInfo -> Val -> Val -> (Val, Error)
 transMulOp x v1 v2 = case x of
-  Times _ -> (multiplyNumericals v1 v2, NoError [])
+  Times _ -> (multiplyNumericals v1 v2, (NoError, []))
   Div _   -> case v2 of
-    FloatVal 0 -> (NoVal, DivisionBy0 [])
-    IntVal 0   -> (NoVal, DivisionBy0 [])
-    otherwise  -> (divideNumericals v1 v2, NoError [])
+    FloatVal 0 -> (NoVal, (DivisionBy0, []))
+    IntVal 0   -> (NoVal, (DivisionBy0, []))
+    otherwise  -> (divideNumericals v1 v2, (NoError, []))
   Mod _   -> case v2 of
-    FloatVal 0 -> (NoVal, DivisionBy0 [])
-    IntVal 0   -> (NoVal, DivisionBy0 [])
-    otherwise  -> (modNumericals v1 v2, NoError [])
+    FloatVal 0 -> (NoVal, (DivisionBy0, []))
+    IntVal 0   -> (NoVal, (DivisionBy0, []))
+    otherwise  -> (modNumericals v1 v2, (NoError, []))
 transRelOp :: RelOp LineInfo -> Val -> Val -> (Val, Error)
 transRelOp x v1 v2 = case x of
-  LTH _ -> (lthNumericals v1 v2, NoError [])
-  LE _  -> (leNumericals v1 v2, NoError [])
-  GTH _ -> (gthNumericals v1 v2, NoError [])
-  GE _  -> (geNumericals v1 v2, NoError [])
-  EQU _ -> (equNumericals v1 v2, NoError [])
-  NE _  -> (neNumericals v1 v2, NoError [])
+  LTH _ -> (lthNumericals v1 v2, (NoError, []))
+  LE _  -> (leNumericals v1 v2, (NoError, []))
+  GTH _ -> (gthNumericals v1 v2, (NoError, []))
+  GE _  -> (geNumericals v1 v2, (NoError, []))
+  EQU _ -> (equNumericals v1 v2, (NoError, []))
+  NE _  -> (neNumericals v1 v2, (NoError, []))
 transOrOp :: OrOp LineInfo -> Val -> Val -> (Val, Error)
 transOrOp x v1 v2 = case x of
   Or _ -> case (v1, v2) of
-    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 || x2), NoError [])
+    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 || x2), (NoError, []))
 transAndOp :: AndOp LineInfo -> Val -> Val -> (Val, Error)
 transAndOp x v1 v2 = case x of
   And _ -> case (v1, v2) of
-    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 && x2), NoError [])
+    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 && x2), (NoError, []))
