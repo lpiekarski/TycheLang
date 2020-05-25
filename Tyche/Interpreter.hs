@@ -34,7 +34,6 @@ usage = do
   putStrLn $ unlines
     [ "usage: Call with one of the following argument combinations:"
     , "  --help          Display this help message."
-    , "  (no arguments)  Parse content from stdin."
     , "  (files)         Parse content of files."
     ]
   exitFailure
@@ -44,5 +43,4 @@ main = do
   args <- getArgs
   case args of
     ["--help"] -> usage
-    []         -> getContents >>= run
     fs         -> mapM_ runFile fs

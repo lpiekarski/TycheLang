@@ -19,13 +19,11 @@ printStore store =
   in
     go store 0 ""
 
-
-printError :: Error -> String
-printError (errtype, stacktrace) =
+printStackTrace :: StackTrace -> String
+printStackTrace stacktrace =
   let
     go [] acc = acc
     go ((Nothing, fulltype):stfs) acc = go stfs (acc ++ "unnamed function: " ++ (printTree fulltype) ++ "\n")
     go ((Just ident, fulltype):stfs) acc = go stfs (acc ++ (printTree ident) ++ (printTree fulltype) ++ "\n")
-  in case errtype of
-    NoErr         -> ""
-    ErrMsg errmsg -> errmsg ++ "\n" ++ (go stacktrace "")
+  in
+    go stacktrace ""

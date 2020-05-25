@@ -21,14 +21,14 @@ extendTEnvArgs te [] = te
 extendTEnvArgs te ((Arg _ _ ident ft):args) =
       extendTEnvArgs (extendTEnv te ident ft) args
 
-addBreakLabel :: LEnv -> IO ECont -> LEnv
-addBreakLabel (LEnv lenv) econt =
-  LEnv (\label -> case label of
+addBreakLabel :: LEnv -> ECont -> LEnv
+addBreakLabel lenv econt = \label ->
+  case label of
     LBreak    -> Just econt
-    otherwise -> lenv label)
+    otherwise -> lenv label
 
-addContinueLabel :: LEnv -> IO ECont -> LEnv
-addContinueLabel (LEnv lenv) econt =
-  LEnv (\label -> case label of
+addContinueLabel :: LEnv -> ECont -> LEnv
+addContinueLabel lenv econt = \label ->
+  case label of
     LContinue -> Just econt
-    otherwise -> lenv label)
+    otherwise -> lenv label

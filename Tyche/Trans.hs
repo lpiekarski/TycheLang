@@ -16,160 +16,131 @@ import           Data.Array
 transIdent :: Ident -> ()
 transIdent x = case x of
   Ident string -> ()
-transProgram :: Program LineInfo -> IO (Err ())
-transProgram x = case x of
+transProgram :: Program LineInfo -> Input -> Ans
+transProgram x input = case x of
   Program lineinfo stmts -> do
-    let defaultvenv = \v -> Nothing
-    let defaultlenv = LEnv (\v -> Nothing)
-    let defaultioicont = return (\venv -> return (\state -> return state))
-    let defaultstore = (0, \l -> NoVal)
+    let defaultvenv = \ident -> Nothing
+    let defaultlenv = \label -> Nothing
+    let defaultstore = (0, \loc -> NoVal)
     let defaultstacktrace = [(Nothing, FullType Nothing [] (Fun Nothing [] voidT))]
-    let defaulterr = (NoErr, defaultstacktrace)
-    let defaultstate = (defaultstore, defaulterr)
-    cont <- transStmts stmts defaultvenv defaultlenv defaultioicont
-    (finalstore, finalerr) <- cont defaultstate
-    putStr $ printStore finalstore
-    case finalerr of
-      (NoErr, _) -> return (Ok ())
-      otherwise  -> return (Bad (printError finalerr))
+    let defaultans = (NoErr, defaultstacktrace, EOO)
+    let defaulticont =  (\venv -> (\state -> defaultans))
+    let defaultstate = (defaultstore, defaultstacktrace, input)
+    let cont = transStmts stmts defaultvenv defaultlenv defaulticont
+    cont defaultstate
 transArg :: Arg LineInfo -> ()
 transArg x = case x of
   Arg _ argmod ident fulltype -> ()
-transStmts :: [Stmt LineInfo] -> VEnv -> LEnv -> IO ICont -> IO Cont
-transStmts x venv (LEnv lenv) ioicont = case x of
-  [] -> do
-    icont <- ioicont
-    icont venv
-  stmt:stmts ->
-    let
-      afterioicont = (return (\aftervenv -> transStmts stmts aftervenv (LEnv lenv) ioicont))
-    in
-      transStmt stmt venv (LEnv lenv) afterioicont
-transStmt :: Stmt LineInfo -> VEnv -> LEnv -> IO ICont -> IO Cont
-transStmt x venv (LEnv lenv) ioicont = case x of
-  Skip _ -> do
-    icont <- ioicont
-    icont venv
+transStmts :: [Stmt LineInfo] -> VEnv -> LEnv -> ICont -> Cont
+transStmts x venv lenv icont = case x of
+  [] -> icont venv
+  stmt:stmts -> transStmt stmt venv lenv (\aftervenv -> transStmts stmts aftervenv lenv icont)
+transStmt :: Stmt LineInfo -> VEnv -> LEnv -> ICont -> Cont
+transStmt x venv lenv icont = case x of
+  Skip _ -> icont venv
   Break _ -> case lenv LBreak of
-    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ErrMsg "Break statement outside the loop", stacktrace)))
-    Just breakioecont -> do
-      breakecont <- breakioecont
-      breakecont NoVal
+    Nothing         -> errMsg "Break statement outside the loop"
+    Just breakecont -> breakecont NoVal
   Continue _ -> case lenv LContinue of
-    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ErrMsg "Continue statement outside the loop", stacktrace)))
-    Just continueioecont -> do
-      continueecont <- continueioecont
-      continueecont NoVal
+    Nothing            ->  errMsg "Continue statement outside the loop"
+    Just continueecont -> continueecont NoVal
   Ret _ expr -> case lenv LReturn of
-    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ErrMsg "Return statement outside the function", stacktrace)))
-    Just returnioecont -> transExpr expr venv (LEnv lenv) returnioecont
+    Nothing          ->  errMsg "Return statement outside the function"
+    Just returnecont -> transExpr expr venv lenv returnecont
   VarDef _ ident fulltype expr ->
-    transExpr expr venv (LEnv lenv) (return (\val -> return (\(store, err) -> do
+    transExpr expr venv lenv (\val -> \(store, stacktrace, input) -> do
       let (varloc, storeaftervardef) = newLoc store
       let venvaftervardef = extendFunc venv ident (Just varloc)
       let storeaftervalsave = saveInStore storeaftervardef varloc val
-      icont <- ioicont
-      cont <- icont venvaftervardef
-      cont (storeaftervalsave, err))))
+      let cont = icont venvaftervardef
+      cont (storeaftervalsave, stacktrace, input))
   Ass _ ident expr ->
-    transExpr expr venv (LEnv lenv) (return (\val -> return (\(store, err@(errtype, stacktrace)) ->
+    transExpr expr venv lenv (\val -> (\(store, stacktrace, input) ->
       case venv ident of
-        Nothing -> return (store, (ErrMsg "Assigning value to undefined variable", stacktrace))
+        Nothing -> errMsg "Assigning value to undefined variable" (store, stacktrace, input)
         Just loc -> do
-          icont <- ioicont
-          cont <- icont venv
-          cont (saveInStore store loc val, err))))
-  FnDef _ ident fulltype args stmts -> return (\(store, err) -> do
+          let cont = icont venv
+          cont (saveInStore store loc val, stacktrace, input)))
+  FnDef _ ident fulltype args stmts -> \(store, stacktrace, input) -> do
     let (funcvarloc, storeafterfuncvardef) = newLoc store
     let venvafterfuncvardef = extendFunc venv ident (Just funcvarloc)
     let funcval = FuncVal (transStmts stmts venvafterfuncvardef)
     let storeafterfuncvarsave = saveInStore storeafterfuncvardef funcvarloc funcval
-    icont <- ioicont
-    cont <- icont venvafterfuncvardef
-    cont (storeafterfuncvarsave, err))
+    let cont = icont venvafterfuncvardef
+    cont (storeafterfuncvarsave, stacktrace, input)
   Cond _ expr stmts ->
-    transExpr expr venv (LEnv lenv) (return (\val ->
+    transExpr expr venv lenv (\val ->
       case val of
         BoolVal boolval ->
-          if boolval then
-            transStmts stmts venv (LEnv lenv) ioicont
-          else do
-            icont <- ioicont
-            icont venv
-        otherwise -> return (\(state, (errtype, stacktrace)) -> return (state, (ErrMsg "Value inside If expression is not bool", stacktrace)))))
+          if boolval then transStmts stmts venv lenv icont
+          else icont venv
+        otherwise -> errMsg "Value inside If expression is not bool")
   CondElse _ expr stmts1 stmts2 ->
-    transExpr expr venv (LEnv lenv) (return (\val ->
+    transExpr expr venv lenv (\val ->
       case val of
         BoolVal boolval ->
-          if boolval then
-            transStmts stmts1 venv (LEnv lenv) ioicont
-          else
-            transStmts stmts2 venv (LEnv lenv) ioicont
-        otherwise -> return (\(state, (errtype, stacktrace)) -> return (state, (ErrMsg "Value inside If expression is not bool", stacktrace)))))
+          if boolval then transStmts stmts1 venv lenv icont
+          else transStmts stmts2 venv lenv icont
+        otherwise -> errMsg "Value inside If expression is not bool")
   While _ expr stmts ->
-    transExpr expr venv (LEnv lenv) (return (\val ->
+    transExpr expr venv lenv (\val ->
       case val of
         BoolVal boolval ->
           if boolval then do
-            let loopiocont = transStmt x venv (LEnv lenv) ioicont
-            let loopioicont = return (\loopvenv -> loopiocont)
-            icont <- ioicont
-            let (LEnv breaklenv) = addBreakLabel (LEnv lenv) (return (\val -> icont venv))
-            let (LEnv breakcontinuelenv) = addContinueLabel (LEnv breaklenv) (return (\val -> loopiocont))
-            transStmts stmts venv (LEnv breakcontinuelenv) loopioicont
-          else do
-            icont <- ioicont
+            let loopcont = transStmt x venv lenv icont
+            let loopicont = \loopvenv -> loopcont
+            let breaklenv = addBreakLabel lenv (\val -> icont venv)
+            let lenvbreakcontinuelenv = addContinueLabel breaklenv (\val -> loopcont)
+            transStmts stmts venv lenvbreakcontinuelenv loopicont
+          else
             icont venv
-        otherwise -> return (\(state, (errtype, stacktrace)) -> return (state, (ErrMsg "Value inside While expression is not bool", stacktrace)))))
+        otherwise -> errMsg "Value inside While expression is not bool")
   ForList _ ident expr stmts -> do -- TODO fix loop variable leaking out of the loop
-    transExpr expr venv (LEnv lenv) (return (\val ->
+    transExpr expr venv lenv (\val ->
       let
         list = case val of
           ListVal l  -> l
           ArrayVal a -> elems a
           otherwise  -> []
-      in return (\(store, err) -> do
+      in (\(store, stacktrace, input) -> do
         let (loopvarloc, storewithloopvardef) = newLoc store
         let venvwithloopvar = extendFunc venv ident (Just loopvarloc)
-        icont <- ioicont
-        let (LEnv breaklenv) = addBreakLabel (LEnv lenv) (return (\val -> icont venv))
+        let breaklenv = addBreakLabel lenv (\val -> icont venv)
         let
-          iterate :: [Val] -> VEnv -> IO Cont -> IO Cont
-          iterate [] itervenv iteriocont = iteriocont
-          iterate (listel:listels) itervenv iteriocont = return (\(iterstore, itererr) -> do
+          iterate :: [Val] -> VEnv -> Cont -> Cont
+          iterate [] itervenv itercont = itercont
+          iterate (listel:listels) itervenv itercont = (\(iterstore, iterstacktrace, iterinput) -> do
             let storewithloopvarvalue = saveInStore iterstore loopvarloc listel
-            let (LEnv breakcontinuelenv) = addContinueLabel (LEnv breaklenv) (return (\val -> iterate listels itervenv iteriocont))
-            let afterioicont = return (\aftervenv -> iterate listels aftervenv iteriocont)
-            itercont <- transStmts stmts venvwithloopvar (LEnv breakcontinuelenv) afterioicont
-            itercont (storewithloopvarvalue, itererr))
-        icont <- ioicont
-        startitericont <- iterate list venv (icont venv)
-        startitericont (store, err))))
+            let lenvbreakcontinuelenv = addContinueLabel breaklenv (\val -> iterate listels itervenv itercont)
+            let aftericont = \aftervenv -> iterate listels aftervenv itercont
+            let itercont = transStmts stmts venvwithloopvar lenvbreakcontinuelenv aftericont
+            itercont (storewithloopvarvalue, iterstacktrace, iterinput))
+        let startitericont = iterate list venv (icont venv)
+        startitericont (store, stacktrace, input)))
   ForRange _ ident expr1 expr2 stmts ->
-    transExpr expr1 venv (LEnv lenv) (return (\val1 ->
-      transExpr expr2 venv (LEnv lenv) (return (\val2 ->
+    transExpr expr1 venv lenv (\val1 ->
+      transExpr expr2 venv lenv (\val2 ->
         case (val1, val2) of
-          (IntVal intval1, IntVal intval2) -> return (\(store, err) -> do
+          (IntVal intval1, IntVal intval2) -> (\(store, stacktrace, input) -> do
             let (loopvarloc, storewithloopvardef) = newLoc store
             let venvwithloopvar = extendFunc venv ident (Just loopvarloc)
-            icont <- ioicont
-            let (LEnv breaklenv) = addBreakLabel (LEnv lenv) (return (\val -> icont venv))
+            let breaklenv = addBreakLabel lenv (\val -> icont venv)
             let
-              iterate :: Integer -> Integer -> Integer -> VEnv -> IO ICont -> IO Cont
-              iterate iterval targetval direction itervenv iterioicont =
+              iterate :: Integer -> Integer -> Integer -> VEnv -> ICont -> Cont
+              iterate iterval targetval direction itervenv itericont =
                 if iterval - direction == targetval then do
-                  itericont <- iterioicont
+                  let itericont = itericont
                   itericont itervenv
-                else return (\(iterstore, itererr) -> do
+                else \(iterstore, iterstacktrace, iterinput) -> do
                   let storewithloopvarvalue = saveInStore iterstore loopvarloc (IntVal iterval)
-                  let (LEnv breakcontinuelenv) = addContinueLabel (LEnv breaklenv) (return (\val -> iterate (iterval + direction) targetval direction itervenv iterioicont))
-                  let afterioicont = return (\aftervenv -> iterate (iterval + direction) targetval direction aftervenv iterioicont)
-                  itercont <- transStmts stmts venvwithloopvar (LEnv breakcontinuelenv) afterioicont
-                  itercont (storewithloopvarvalue, itererr))
-            startitericont <- iterate intval1 intval2 (if intval1 < intval2 then 1 else -1) venv ioicont
-            startitericont (store, err))
-          otherwise -> return (\(state, (errtype, stacktrace)) -> return (state, (ErrMsg "Expected int value", stacktrace)))
-      ))))
+                  let lenvbreakcontinuelenv = addContinueLabel breaklenv (\val -> iterate (iterval + direction) targetval direction itervenv itericont)
+                  let aftericont = \aftervenv -> iterate (iterval + direction) targetval direction aftervenv itericont
+                  let itercont = transStmts stmts venvwithloopvar lenvbreakcontinuelenv aftericont
+                  itercont (storewithloopvarvalue, iterstacktrace, iterinput)
+            let startitericont = iterate intval1 intval2 (if intval1 < intval2 then 1 else -1) venv icont
+            startitericont (store, stacktrace, input))
+          otherwise -> errMsg "Expected int value"
+      ))
 transType :: Type LineInfo -> ()
 transType x = case x of
   Int _                   -> ()
@@ -194,170 +165,110 @@ transArgMod x = case x of
 transTypeMod :: TypeMod LineInfo -> ()
 transTypeMod x = case x of
   TModReadonly _ -> ()
-transExpr :: Expr LineInfo -> VEnv -> LEnv -> IO ECont -> IO Cont
-transExpr x venv (LEnv lenv) ioecont = case x of
-  ELitVoid _ -> do
-    econt <- ioecont
-    econt NoVal
+transExpr :: Expr LineInfo -> VEnv -> LEnv -> ECont -> Cont
+transExpr x venv lenv econt = case x of
+  ELitVoid _ -> econt NoVal
   EVar _ ident -> case venv ident of
-    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ErrMsg ("Undefined variable " ++ (printTree ident)), stacktrace)))
-    Just loc -> return (\(store@(next, storef), err) -> do
-      econt <- ioecont
-      cont <- econt (storef loc)
-      cont (store, err))
-  ELitInt _ integer -> do
-    econt <- ioecont
-    econt (IntVal integer)
-  ELitTrue _ -> do
-    econt <- ioecont
-    econt (BoolVal True)
-  ELitFalse _ -> do
-    econt <- ioecont
-    econt (BoolVal False)
-  EString _ string -> do
-    econt <- ioecont
-    econt (StringVal string)
-  ELitFloat _ double -> do
-    econt <- ioecont
-    econt (FloatVal double)
-  EEmpList _ fulltype -> do
-    econt <- ioecont
-    econt (ListVal [])
-  EApp _ expr exprs -> do -- TODO
-    econt <- ioecont
-    econt NoVal
-  Neg _ expr ->
-    transExpr expr venv (LEnv lenv) (return (\val -> do
-      econt <- ioecont
-      econt (negateNumerical val)))
-  Not _ expr ->
-    transExpr expr venv (LEnv lenv) (return (\val -> do
-      econt <- ioecont
-      econt (negateBool val)))
+    Nothing -> errMsg ("Undefined variable " ++ (printTree ident))
+    Just loc -> \(store@(next, storef), stacktrace, input) -> do
+      let cont = econt (storef loc)
+      cont (store, stacktrace, input)
+  ELitInt _ integer -> econt (IntVal integer)
+  ELitTrue _ -> econt (BoolVal True)
+  ELitFalse _ -> econt (BoolVal False)
+  EString _ string -> econt (StringVal string)
+  ELitFloat _ double -> econt (FloatVal double)
+  EEmpList _ fulltype -> econt (ListVal [])
+  EApp _ expr exprs -> econt NoVal
+  Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
+  Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))
   ECons _ expr1 expr2 ->
-    transExpr expr1 venv (LEnv lenv) (return (\val1 ->
-      transExpr expr2 venv (LEnv lenv) (return (\val2 ->
+    transExpr expr1 venv lenv (\val1 ->
+      transExpr expr2 venv lenv (\val2 ->
         case val2 of
-          ListVal list -> do
-            econt <- ioecont
-            econt (ListVal (val1:list))
-          otherwise -> return (\(store, (errtype, stacktrace)) -> return (store, (ErrMsg "Expected list value", stacktrace)))
-      ))))
+          ListVal list -> econt (ListVal (val1:list))
+          otherwise    -> errMsg "Expected list value"))
   EMul _ expr1 mulop expr2 ->
-    transExpr expr1 venv (LEnv lenv) (return (\val1 ->
-      transExpr expr2 venv (LEnv lenv) (return (\val2 ->
+    transExpr expr1 venv lenv (\val1 ->
+      transExpr expr2 venv lenv (\val2 ->
         case transMulOp mulop val1 val2 of
-          (resval, (NoErr, _)) -> do
-            econt <- ioecont
-            econt resval
-          (_, (mulerrtype, _)) -> return (\(state, (errtype, stacktrace)) -> return (state,(mulerrtype, stacktrace)))
-      ))))
+          (resval, NoErr) -> econt resval
+          (_, ErrMsg str) -> errMsg str))
   EAdd _ expr1 addop expr2 ->
-    transExpr expr1 venv (LEnv lenv) (return (\val1 ->
-      transExpr expr2 venv (LEnv lenv) (return (\val2 ->
+    transExpr expr1 venv lenv (\val1 ->
+      transExpr expr2 venv lenv (\val2 ->
         case transAddOp addop val1 val2 of
-          (resval, (NoErr, _)) -> do
-            econt <- ioecont
-            econt resval
-          (_, (adderrtype, _)) -> return (\(state, (errtype, stacktrace)) -> return (state,(adderrtype, stacktrace)))
-      ))))
+          (resval, NoErr) -> econt resval
+          (_, ErrMsg str) -> errMsg str))
   ERel _ expr1 relop expr2 ->
-    transExpr expr1 venv (LEnv lenv) (return (\val1 ->
-      transExpr expr2 venv (LEnv lenv) (return (\val2 ->
+    transExpr expr1 venv lenv (\val1 ->
+      transExpr expr2 venv lenv (\val2 ->
         case transRelOp relop val1 val2 of
-          (resval, (NoErr, _)) -> do
-            econt <- ioecont
-            econt resval
-          (_, (relerrtype, _)) -> return (\(state, (errtype, stacktrace)) -> return (state,(relerrtype, stacktrace)))
-      ))))
+          (resval, NoErr) -> econt resval
+          (_, ErrMsg str) -> errMsg str))
   EAnd _ expr1 andop expr2 ->
-    transExpr expr1 venv (LEnv lenv) (return (\val1 ->
+    transExpr expr1 venv lenv (\val1 ->
       case val1 of
         BoolVal boolval1 ->
           if boolval1 then
-            transExpr expr2 venv (LEnv lenv) (return (\val2 ->
+            transExpr expr2 venv lenv (\val2 ->
               case transAndOp andop val1 val2 of
-                (resval, (NoErr, _)) -> do
-                  econt <-ioecont
-                  econt resval
-                (_, (anderrtype, _)) -> return (\(state, (errtype, stacktrace)) -> return (state,(anderrtype, stacktrace)))
-            ))
-          else do
-            econt <- ioecont
+                (resval, NoErr) -> econt resval
+                (_, ErrMsg str) -> errMsg str)
+          else
             econt (BoolVal False)
-        otherwise -> return (\(state, (errtype, stacktrace)) -> return (state,(ErrMsg "Expected bool value", stacktrace)))
-      ))
+        otherwise -> errMsg "Expected bool value")
   EOr _ expr1 orop expr2 ->
-    transExpr expr1 venv (LEnv lenv) (return (\val1 ->
-      transExpr expr2 venv (LEnv lenv) (return (\val2 ->
+    transExpr expr1 venv lenv (\val1 ->
+      transExpr expr2 venv lenv (\val2 ->
         case transOrOp orop val1 val2 of
-          (resval, (NoErr, _)) -> do
-            econt <- ioecont
-            econt resval
-          (_, (orerrtype, _)) -> return (\(state, (errtype, stacktrace)) -> return (state,(orerrtype, stacktrace)))
-      ))))
+          (resval, NoErr) -> econt resval
+          (_, ErrMsg str) -> errMsg str))
   EList _ exprs ->
     let
-      buildList :: [Expr LineInfo] -> IO ECont -> Val -> IO Cont
-      buildList [] buildioecont (ListVal acc) = do
-        buildecont <- buildioecont
+      buildList :: [Expr LineInfo] ->  ECont -> Val ->  Cont
+      buildList [] buildecont (ListVal acc) =
         buildecont (ListVal (reverse acc))
-      buildList (e:es) buildioecont (ListVal acc) =
-        transExpr e venv (LEnv lenv) (return (\val -> buildList es buildioecont (ListVal (val:acc))))
+      buildList (e:es) buildecont (ListVal acc) =
+        transExpr e venv lenv (\val -> buildList es buildecont (ListVal (val:acc)))
     in
-      buildList exprs ioecont (ListVal [])
-  EArr _ exprs                  -> do
-    econt <- ioecont
-    econt NoVal
-  EArrSize _ fulltype expr      -> do
-    econt <- ioecont
-    econt NoVal
-  EArrApp _ expr1 expr2 -> do
-    econt <- ioecont
-    econt NoVal
-  EIf _ expr1 expr2 expr3       -> do
-    econt <- ioecont
-    econt NoVal
-  ELambda _ fulltype args stmts -> do
-    econt <- ioecont
-    econt NoVal
-  ERand _ expr                  -> do
-    econt <- ioecont
-    econt NoVal
-  ERandDist _ expr1 expr2 -> do
-    econt <- ioecont
-    econt NoVal
-  EProbSamp _ expr1 stmts expr2 -> do
-    econt <- ioecont
-    econt NoVal
-transAddOp :: AddOp LineInfo -> Val -> Val -> (Val, Error)
+      buildList exprs econt (ListVal [])
+  EArr _ exprs -> econt NoVal
+  EArrSize _ fulltype expr -> econt NoVal
+  EArrApp _ expr1 expr2 -> econt NoVal
+  EIf _ expr1 expr2 expr3       -> econt NoVal
+  ELambda _ fulltype args stmts -> econt NoVal
+  ERand _ expr                  -> econt NoVal
+  ERandDist _ expr1 expr2 -> econt NoVal
+  EProbSamp _ expr1 stmts expr2 -> econt NoVal
+transAddOp :: AddOp LineInfo -> Val -> Val -> (Val, ErrorType)
 transAddOp x v1 v2 = case x of
-  Plus _  -> (addNumericals v1 v2, (NoErr, []))
-  Minus _ -> (substractNumericals v1 v2, (NoErr, []))
-transMulOp :: MulOp LineInfo -> Val -> Val -> (Val, Error)
+  Plus _  -> (addNumericals v1 v2, NoErr)
+  Minus _ -> (substractNumericals v1 v2, NoErr)
+transMulOp :: MulOp LineInfo -> Val -> Val -> (Val, ErrorType)
 transMulOp x v1 v2 = case x of
-  Times _ -> (multiplyNumericals v1 v2, (NoErr, []))
+  Times _ -> (multiplyNumericals v1 v2, NoErr)
   Div _   -> case v2 of
-    FloatVal 0 -> (NoVal, (ErrMsg "Encountered division by 0", []))
-    IntVal 0   -> (NoVal, (ErrMsg "Encountered division by 0", []))
-    otherwise  -> (divideNumericals v1 v2, (NoErr, []))
+    FloatVal 0 -> (NoVal, ErrMsg "Encountered division by 0")
+    IntVal 0   -> (NoVal, ErrMsg "Encountered division by 0")
+    otherwise  -> (divideNumericals v1 v2, NoErr)
   Mod _   -> case v2 of
-    FloatVal 0 -> (NoVal, (ErrMsg "Encountered division by 0", []))
-    IntVal 0   -> (NoVal, (ErrMsg "Encountered division by 0", []))
-    otherwise  -> (modNumericals v1 v2, (NoErr, []))
-transRelOp :: RelOp LineInfo -> Val -> Val -> (Val, Error)
+    FloatVal 0 -> (NoVal, ErrMsg "Encountered division by 0")
+    IntVal 0   -> (NoVal, ErrMsg "Encountered division by 0")
+    otherwise  -> (modNumericals v1 v2, NoErr)
+transRelOp :: RelOp LineInfo -> Val -> Val -> (Val, ErrorType)
 transRelOp x v1 v2 = case x of
-  LTH _ -> (lthNumericals v1 v2, (NoErr, []))
-  LE _  -> (leNumericals v1 v2, (NoErr, []))
-  GTH _ -> (gthNumericals v1 v2, (NoErr, []))
-  GE _  -> (geNumericals v1 v2, (NoErr, []))
-  EQU _ -> (equNumericals v1 v2, (NoErr, []))
-  NE _  -> (neNumericals v1 v2, (NoErr, []))
-transOrOp :: OrOp LineInfo -> Val -> Val -> (Val, Error)
+  LTH _ -> (lthNumericals v1 v2, NoErr)
+  LE _  -> (leNumericals v1 v2, NoErr)
+  GTH _ -> (gthNumericals v1 v2, NoErr)
+  GE _  -> (geNumericals v1 v2, NoErr)
+  EQU _ -> (equNumericals v1 v2, NoErr)
+  NE _  -> (neNumericals v1 v2, NoErr)
+transOrOp :: OrOp LineInfo -> Val -> Val -> (Val, ErrorType)
 transOrOp x v1 v2 = case x of
   Or _ -> case (v1, v2) of
-    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 || x2), (NoErr, []))
-transAndOp :: AndOp LineInfo -> Val -> Val -> (Val, Error)
+    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 || x2), NoErr)
+transAndOp :: AndOp LineInfo -> Val -> Val -> (Val, ErrorType)
 transAndOp x v1 v2 = case x of
   And _ -> case (v1, v2) of
-    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 && x2), (NoErr, []))
+    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 && x2), NoErr)

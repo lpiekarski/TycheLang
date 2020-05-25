@@ -19,13 +19,11 @@ runProgram :: Program LineInfo -> IO ()
 runProgram prog = do
   case typecheckProgram prog of
     Ok _ -> do
-      tp <- transProgram prog
-      case tp of
-        Ok () -> return ()
-        Bad str -> do
-          putStr "Runtime Error:\n"
-          putStr str
-          return ()
+      interact (\inputstr -> do
+        let (err, stacktrace, output) = transProgram prog (stringToInput inputstr)
+        (outputToString output) ++ (case err of
+          NoErr      -> ""
+          ErrMsg str -> "\nRuntime Error:\n" ++ str ++ "\n"))
     Bad str -> do
       putStr "Static Error:\n"
       putStr str

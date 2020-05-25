@@ -6,7 +6,27 @@ import           Tyche.ErrM
 import           Data.Array
 import           System.IO  (hGetContents, stdin)
 
+stringToInput :: String -> Input
+stringToInput str =
+  let
+    go [] acc     = acc
+    go (c:cs) acc = go cs (Input c acc)
+  in
+    go (reverse str) EOI
+
+outputToString :: Output -> String
+outputToString output =
+  let
+    go EOO acc          = acc
+    go (Output c o) acc = go o (c:acc)
+  in
+    go output ""
+
 type Loc = Int
+data Input = Input Char Input
+    | EOI
+data Output = Output Char Output
+    | EOO
 data ArgVal = Variable Loc Ident
     | Value Val Ident
     | Inout Ident Ident
@@ -16,7 +36,7 @@ data Val = IntVal Integer
     | StringVal String
     | ListVal [Val]
     | ArrayVal (Array Int Val)
-    | FuncVal (LEnv -> IO ICont -> IO Cont)
+    | FuncVal (LEnv -> ICont -> Cont)
     | NoVal
 instance Show Val where
   show val = case val of
@@ -32,20 +52,23 @@ type Store = (Loc, Loc -> Val)
 type StackTrace = [(Maybe Ident, FullType LineInfo)]
 data ErrorType = NoErr
     | ErrMsg String
-type Error = (ErrorType, StackTrace)
-type State = (Store, Error)
-type Cont = State -> IO State
-type ICont = VEnv -> IO Cont
-type ECont = Val -> IO Cont
+type State = (Store, StackTrace, Input)
+type Ans = (ErrorType, StackTrace, Output)
+type Cont = State -> Ans
+type ICont = VEnv -> Cont
+type ECont = Val -> Cont
 type VEnv = Ident -> Maybe Loc
 data Label = LBreak
     | LContinue
     | LReturn
     | LProb Int Int Int
-data LEnv = LEnv (Label -> Maybe (IO ECont))
+type LEnv = (Label -> Maybe (ECont))
 type TypeCheckResult = Err (FullType LineInfo, TEnv, FullType LineInfo, Bool, Bool)
 type TEnv = Ident -> Maybe (FullType LineInfo)
 type LineInfo = Maybe (Int, Int)
+
+errMsg :: String -> State -> Ans
+errMsg str (store, stacktrace, input) = (ErrMsg str, stacktrace, EOO)
 
 readonlyVoidT = FullType Nothing [TModReadonly Nothing] (Void Nothing)
 voidT = FullType Nothing [] (Void Nothing)
