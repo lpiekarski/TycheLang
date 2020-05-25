@@ -25,7 +25,7 @@ instance Show Val where
     BoolVal bool    -> "bool " ++ (show bool)
     StringVal str   -> "string " ++ str
     ListVal l       -> "list " ++ (show l)
-    ArrayVal a      -> "array" ++ (show a)
+    ArrayVal a      -> "array " ++ (show a)
     FuncVal (_)     -> "function"
     NoVal           -> "void"
 type Store = (Loc, Loc -> Val)

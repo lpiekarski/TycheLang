@@ -134,17 +134,16 @@ transStmt x venv (LEnv lenv) ioicont = case x of
         icont <- ioicont
         let (LEnv breaklenv) = addBreakLabel (LEnv lenv) (return (\val -> icont venv))
         let
-          iterate :: [Val] -> VEnv -> IO ICont -> IO Cont
-          iterate [] itervenv iterioicont = do
-            itericont <- iterioicont
-            itericont itervenv
-          iterate (listel:listels) itervenv iterioicont = return (\(iterstore, itererr) -> do
+          iterate :: [Val] -> VEnv -> IO Cont -> IO Cont
+          iterate [] itervenv iteriocont = iteriocont
+          iterate (listel:listels) itervenv iteriocont = return (\(iterstore, itererr) -> do
             let storewithloopvarvalue = saveInStore iterstore loopvarloc listel
-            let (LEnv breakcontinuelenv) = addContinueLabel (LEnv breaklenv) (return (\val -> iterate listels itervenv iterioicont))
-            let afterioicont = return (\aftervenv -> iterate listels aftervenv iterioicont)
+            let (LEnv breakcontinuelenv) = addContinueLabel (LEnv breaklenv) (return (\val -> iterate listels itervenv iteriocont))
+            let afterioicont = return (\aftervenv -> iterate listels aftervenv iteriocont)
             itercont <- transStmts stmts venvwithloopvar (LEnv breakcontinuelenv) afterioicont
             itercont (storewithloopvarvalue, itererr))
-        startitericont <- iterate list venv ioicont
+        icont <- ioicont
+        startitericont <- iterate list venv (icont venv)
         startitericont (store, err))))
   ForRange _ ident expr1 expr2 stmts ->
     transExpr expr1 venv (LEnv lenv) (return (\val1 ->
