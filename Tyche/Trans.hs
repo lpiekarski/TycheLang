@@ -17,11 +17,18 @@ transIdent x = case x of
 transProgram :: Program LineInfo -> IO (Err ())
 transProgram x = case x of
   Program lineinfo stmts -> do
-    cont <- transStmts stmts (\v -> Nothing) (LEnv (\v -> Nothing)) (return (\venv -> return (\state -> return state)))
-    (finalStore, finalError) <- cont ((0, \l -> NoVal), (NoError, [(Nothing, FullType Nothing [] (Fun Nothing [] voidT))]))
-    case finalError of
-      (NoError, _) -> return (Ok ())
-      otherwise    -> return (Bad (show finalError))
+    let defaultvenv = \v -> Nothing
+    let defaultlenv = LEnv (\v -> Nothing)
+    let defaultioicont = return (\venv -> return (\state -> return state))
+    let defaultstore = (0, \l -> NoVal)
+    let defaultstacktrace = [(Nothing, FullType Nothing [] (Fun Nothing [] voidT))]
+    let defaulterr = (NoErr, defaultstacktrace)
+    let defaultstate = (defaultstore, defaulterr)
+    cont <- transStmts stmts defaultvenv defaultlenv defaultioicont
+    (finalstore, finalerr) <- cont defaultstate
+    case finalerr of
+      (NoErr, _) -> return (Ok ())
+      otherwise  -> return (Bad (printError finalerr))
 transArg :: Arg LineInfo -> ()
 transArg x = case x of
   Arg _ argmod ident fulltype -> ()
@@ -41,17 +48,17 @@ transStmt x venv (LEnv lenv) ioicont = case x of
     icont <- ioicont
     icont venv
   Break _ -> case lenv LBreak of
-    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (BreakError, stacktrace)))
+    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ErrMsg "Break statement outside the loop", stacktrace)))
     Just breakioecont -> do
       breakecont <- breakioecont
       breakecont NoVal
   Continue _ -> case lenv LContinue of
-    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ContinueError, stacktrace)))
+    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ErrMsg "Continue statement outside the loop", stacktrace)))
     Just continueioecont -> do
       continueecont <- continueioecont
       continueecont NoVal
   Ret _ expr -> case lenv LReturn of
-    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ReturnError, stacktrace)))
+    Nothing -> return (\(store, (errtype, stacktrace)) -> return (store, (ErrMsg "Return statement outside the function", stacktrace)))
     Just returnioecont -> do
       returnecont <- returnioecont
       transExpr expr venv (LEnv lenv) returnecont
@@ -66,7 +73,7 @@ transStmt x venv (LEnv lenv) ioicont = case x of
   Ass _ ident expr ->
     transExpr expr venv (LEnv lenv) (\val -> return (\(store, err@(errtype, stacktrace)) ->
       case venv ident of
-        Nothing -> return (store, (TypeError, stacktrace))
+        Nothing -> return (store, (ErrMsg "Assigning value to undefined variable", stacktrace))
         Just loc -> do
           icont <- ioicont
           cont <- icont venv
@@ -80,9 +87,21 @@ transStmt x venv (LEnv lenv) ioicont = case x of
   CondElse _ expr stmts1 stmts2 -> do
     icont <- ioicont
     icont venv
-  While _ expr stmts -> do
-    icont <- ioicont
-    icont venv
+  While _ expr stmts ->
+    transExpr expr venv (LEnv lenv) (\val ->
+      case val of
+        BoolVal boolval ->
+          if boolval then do
+            let loopiocont = transStmt x venv (LEnv lenv) ioicont
+            let loopioicont = return (\loopvenv -> loopiocont)
+            icont <- ioicont
+            let (LEnv breaklenv) = addBreakLabel (LEnv lenv) (return (\val -> icont venv))
+            let (LEnv breakcontinuelenv) = addContinueLabel (LEnv breaklenv) (return (\val -> loopiocont))
+            transStmts stmts venv (LEnv breakcontinuelenv) loopioicont
+          else do
+            icont <- ioicont
+            icont venv
+        otherwise -> return (\(state, (errtype, stacktrace)) -> return (state, (ErrMsg "Value inside While expression is not bool", stacktrace))))
   ForList _ ident expr stmts -> do
     icont <- ioicont
     icont venv
@@ -143,32 +162,32 @@ transExpr x venv (LEnv lenv) econt = case x of
   EProbSamp _ expr1 stmts expr2 -> econt NoVal
 transAddOp :: AddOp LineInfo -> Val -> Val -> (Val, Error)
 transAddOp x v1 v2 = case x of
-  Plus _  -> (addNumericals v1 v2, (NoError, []))
-  Minus _ -> (substractNumericals v1 v2, (NoError, []))
+  Plus _  -> (addNumericals v1 v2, (NoErr, []))
+  Minus _ -> (substractNumericals v1 v2, (NoErr, []))
 transMulOp :: MulOp LineInfo -> Val -> Val -> (Val, Error)
 transMulOp x v1 v2 = case x of
-  Times _ -> (multiplyNumericals v1 v2, (NoError, []))
+  Times _ -> (multiplyNumericals v1 v2, (NoErr, []))
   Div _   -> case v2 of
-    FloatVal 0 -> (NoVal, (DivisionBy0, []))
-    IntVal 0   -> (NoVal, (DivisionBy0, []))
-    otherwise  -> (divideNumericals v1 v2, (NoError, []))
+    FloatVal 0 -> (NoVal, (ErrMsg "Encountered division by 0", []))
+    IntVal 0   -> (NoVal, (ErrMsg "Encountered division by 0", []))
+    otherwise  -> (divideNumericals v1 v2, (NoErr, []))
   Mod _   -> case v2 of
-    FloatVal 0 -> (NoVal, (DivisionBy0, []))
-    IntVal 0   -> (NoVal, (DivisionBy0, []))
-    otherwise  -> (modNumericals v1 v2, (NoError, []))
+    FloatVal 0 -> (NoVal, (ErrMsg "Encountered division by 0", []))
+    IntVal 0   -> (NoVal, (ErrMsg "Encountered division by 0", []))
+    otherwise  -> (modNumericals v1 v2, (NoErr, []))
 transRelOp :: RelOp LineInfo -> Val -> Val -> (Val, Error)
 transRelOp x v1 v2 = case x of
-  LTH _ -> (lthNumericals v1 v2, (NoError, []))
-  LE _  -> (leNumericals v1 v2, (NoError, []))
-  GTH _ -> (gthNumericals v1 v2, (NoError, []))
-  GE _  -> (geNumericals v1 v2, (NoError, []))
-  EQU _ -> (equNumericals v1 v2, (NoError, []))
-  NE _  -> (neNumericals v1 v2, (NoError, []))
+  LTH _ -> (lthNumericals v1 v2, (NoErr, []))
+  LE _  -> (leNumericals v1 v2, (NoErr, []))
+  GTH _ -> (gthNumericals v1 v2, (NoErr, []))
+  GE _  -> (geNumericals v1 v2, (NoErr, []))
+  EQU _ -> (equNumericals v1 v2, (NoErr, []))
+  NE _  -> (neNumericals v1 v2, (NoErr, []))
 transOrOp :: OrOp LineInfo -> Val -> Val -> (Val, Error)
 transOrOp x v1 v2 = case x of
   Or _ -> case (v1, v2) of
-    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 || x2), (NoError, []))
+    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 || x2), (NoErr, []))
 transAndOp :: AndOp LineInfo -> Val -> Val -> (Val, Error)
 transAndOp x v1 v2 = case x of
   And _ -> case (v1, v2) of
-    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 && x2), (NoError, []))
+    (BoolVal x1, BoolVal x2) -> (BoolVal (x1 && x2), (NoErr, []))

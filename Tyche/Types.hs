@@ -30,14 +30,8 @@ instance Show Val where
     NoVal           -> "empty"
 type Store = (Loc, Loc -> Val)
 type StackTrace = [(Maybe Ident, FullType LineInfo)]
-data ErrorType = NoError
-    | DivisionBy0
-    | TypeError
-    | BreakError
-    | ContinueError
-    | ReturnError
-    | LoopError
-    deriving (Show)
+data ErrorType = NoErr
+    | ErrMsg String
 type Error = (ErrorType, StackTrace)
 type State = (Store, Error)
 type Cont = State -> IO State
