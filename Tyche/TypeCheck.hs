@@ -138,9 +138,12 @@ typecheckStmt x tenv functype returned inloop = case x of
             Bad str -> Bad (str ++ "\tat For-each Statement (inside the second expression) " ++ (lineInfoString lineinfo) ++ "\n")
             Ok (expr2type, _, _, _, _) ->
               if matchFullType expr2type intT then
-                case typecheckStmts stmts tenv functype returned True of
-                  Bad str -> Bad (str ++ "\tat For-each Statement (inside the loop) " ++ (lineInfoString lineinfo) ++ "\n")
-                  Ok (_, _, _, returned', _) -> Ok (voidT, tenv, functype, returned || returned', inloop)
+                let
+                  tenvWithLoopVariable = (extendTEnv tenv ident readonlyIntT)
+                in
+                  case typecheckStmts stmts tenvWithLoopVariable functype returned True of
+                    Bad str -> Bad (str ++ "\tat For-each Statement (inside the loop) " ++ (lineInfoString lineinfo) ++ "\n")
+                    Ok (_, _, _, returned', _) -> Ok (voidT, tenv, functype, returned || returned', inloop)
               else
                 Bad ("Expected expression type `" ++ (printTree intT) ++ "`, got `" ++ (printTree expr2type) ++ "`\n\tat For-range Statement (inside the second expression) " ++ (lineInfoString lineinfo) ++ "\n")
         else

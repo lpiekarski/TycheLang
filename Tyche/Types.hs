@@ -25,9 +25,9 @@ instance Show Val where
     BoolVal bool    -> "bool " ++ (show bool)
     StringVal str   -> "string " ++ str
     ListVal l       -> "list " ++ (show l)
-    ArrayVal (_)    -> "array"
+    ArrayVal a      -> "array" ++ (show a)
     FuncVal (_)     -> "function"
-    NoVal           -> "empty"
+    NoVal           -> "void"
 type Store = (Loc, Loc -> Val)
 type StackTrace = [(Maybe Ident, FullType LineInfo)]
 data ErrorType = NoErr
