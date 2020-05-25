@@ -22,7 +22,7 @@ transProgram x input = case x of
     let defaultvenv = \ident -> Nothing
     let defaultlenv = \label -> Nothing
     let defaultstore = (0, \loc -> NoVal)
-    let defaultstacktrace = [(Nothing, FullType Nothing [] (Fun Nothing [] voidT))]
+    let defaultstacktrace = [FullType Nothing [] (Fun Nothing [] voidT)]
     let defaultans = (NoErr, defaultstacktrace, EOO)
     let defaulticont =  (\venv -> (\state -> defaultans))
     let defaultstate = (defaultstore, defaultstacktrace, input)
@@ -179,7 +179,11 @@ transExpr x venv lenv econt = case x of
   EString _ string -> econt (StringVal string)
   ELitFloat _ double -> econt (FloatVal double)
   EEmpList _ fulltype -> econt (ListVal [])
-  EApp _ expr exprs -> econt NoVal
+  EApp _ expr exprs ->
+    transExpr expr venv lenv (\val ->
+      case val of
+        FuncVal func -> \(store, stacktrace, input) -> (func lenv (\venv -> econt NoVal)) (store, (typeOf val):stacktrace, input)
+        otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))
   ECons _ expr1 expr2 ->

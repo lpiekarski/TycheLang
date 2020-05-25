@@ -22,6 +22,17 @@ outputToString output =
   in
     go output ""
 
+typeOf :: Val -> FullType LineInfo
+typeOf val = case val of
+  IntVal _     -> intT
+  FloatVal _   -> floatT
+  BoolVal _    -> boolT
+  StringVal _  -> stringT
+  ListVal list -> voidT
+  ArrayVal arr -> voidT
+  FuncVal func -> voidT
+  NoVal        -> voidT
+
 type Loc = Int
 data Input = Input Char Input
     | EOI
@@ -49,7 +60,7 @@ instance Show Val where
     FuncVal (_)     -> "function"
     NoVal           -> "void"
 type Store = (Loc, Loc -> Val)
-type StackTrace = [(Maybe Ident, FullType LineInfo)]
+type StackTrace = [FullType LineInfo]
 data ErrorType = NoErr
     | ErrMsg String
 type State = (Store, StackTrace, Input)

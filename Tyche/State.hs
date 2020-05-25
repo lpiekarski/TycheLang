@@ -22,8 +22,7 @@ printStore store =
 printStackTrace :: StackTrace -> String
 printStackTrace stacktrace =
   let
-    go [] acc = acc
-    go ((Nothing, fulltype):stfs) acc = go stfs (acc ++ "unnamed function: " ++ (printTree fulltype) ++ "\n")
-    go ((Just ident, fulltype):stfs) acc = go stfs (acc ++ (printTree ident) ++ (printTree fulltype) ++ "\n")
+    go [] acc              = acc
+    go (fulltype:stfs) acc = go stfs (acc ++ (printTree fulltype) ++ "\n")
   in
     go stacktrace ""
