@@ -81,12 +81,25 @@ transStmt x venv (LEnv lenv) ioicont = case x of
   FnDef _ ident fulltype args stmts -> do
     icont <- ioicont
     icont venv
-  Cond _ expr stmts -> do
-    icont <- ioicont
-    icont venv
-  CondElse _ expr stmts1 stmts2 -> do
-    icont <- ioicont
-    icont venv
+  Cond _ expr stmts ->
+    transExpr expr venv (LEnv lenv) (\val ->
+      case val of
+        BoolVal boolval ->
+          if boolval then
+            transStmts stmts venv (LEnv lenv) ioicont
+          else do
+            icont <- ioicont
+            icont venv
+        otherwise -> return (\(state, (errtype, stacktrace)) -> return (state, (ErrMsg "Value inside If expression is not bool", stacktrace))))
+  CondElse _ expr stmts1 stmts2 ->
+    transExpr expr venv (LEnv lenv) (\val ->
+      case val of
+        BoolVal boolval ->
+          if boolval then
+            transStmts stmts1 venv (LEnv lenv) ioicont
+          else
+            transStmts stmts2 venv (LEnv lenv) ioicont
+        otherwise -> return (\(state, (errtype, stacktrace)) -> return (state, (ErrMsg "Value inside If expression is not bool", stacktrace))))
   While _ expr stmts ->
     transExpr expr venv (LEnv lenv) (\val ->
       case val of
