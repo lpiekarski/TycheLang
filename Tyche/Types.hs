@@ -16,7 +16,7 @@ data Val = IntVal Integer
     | StringVal String
     | ListVal [Val]
     | ArrayVal (Array Int Val)
-    | FuncVal ([ArgType LineInfo] -> [ArgVal] -> IO ICont -> IO Cont)
+    | FuncVal (LEnv -> IO ICont -> IO Cont)
     | NoVal
 instance Show Val where
   show val = case val of
