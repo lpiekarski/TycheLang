@@ -39,13 +39,13 @@ transStmt :: Stmt LineInfo -> VEnv -> LEnv -> ICont -> Cont
 transStmt x venv lenv icont = case x of
   Skip _ -> icont venv
   Break _ -> case lenv LBreak of
-    Nothing         -> errMsg "Break statement outside the loop"
+    Nothing         -> errMsg "Break statement outside the loop\n"
     Just breakecont -> breakecont NoVal
   Continue _ -> case lenv LContinue of
-    Nothing            ->  errMsg "Continue statement outside the loop"
+    Nothing            ->  errMsg "Continue statement outside the loop\n"
     Just continueecont -> continueecont NoVal
   Ret _ expr -> case lenv LReturn of
-    Nothing          ->  errMsg "Return statement outside the function"
+    Nothing          ->  errMsg "Return statement outside the function\n"
     Just returnecont -> transExpr expr venv lenv returnecont
   VarDef _ ident fulltype expr ->
     transExpr expr venv lenv (\val -> \(store, stacktrace, input) -> do
@@ -57,7 +57,7 @@ transStmt x venv lenv icont = case x of
   Ass _ ident expr ->
     transExpr expr venv lenv (\val -> (\(store, stacktrace, input) ->
       case venv ident of
-        Nothing -> errMsg "Assigning value to undefined variable" (store, stacktrace, input)
+        Nothing -> errMsg "Assigning value to undefined variable\n" (store, stacktrace, input)
         Just loc -> do
           let cont = icont venv
           cont (saveInStore store loc val, stacktrace, input)))
@@ -74,14 +74,14 @@ transStmt x venv lenv icont = case x of
         BoolVal boolval ->
           if boolval then transStmts stmts venv lenv icont
           else icont venv
-        otherwise -> errMsg "Value inside If expression is not bool")
+        otherwise -> errMsg "Value inside If expression is not bool\n")
   CondElse _ expr stmts1 stmts2 ->
     transExpr expr venv lenv (\val ->
       case val of
         BoolVal boolval ->
           if boolval then transStmts stmts1 venv lenv icont
           else transStmts stmts2 venv lenv icont
-        otherwise -> errMsg "Value inside If expression is not bool")
+        otherwise -> errMsg "Value inside If expression is not bool\n")
   While _ expr stmts ->
     transExpr expr venv lenv (\val ->
       case val of
@@ -94,7 +94,7 @@ transStmt x venv lenv icont = case x of
             transStmts stmts venv lenvbreakcontinuelenv loopicont
           else
             icont venv
-        otherwise -> errMsg "Value inside While expression is not bool")
+        otherwise -> errMsg "Value inside While expression is not bool\n")
   ForList _ ident expr stmts -> do -- TODO fix loop variable leaking out of the loop
     transExpr expr venv lenv (\val ->
       let
@@ -139,7 +139,7 @@ transStmt x venv lenv icont = case x of
                   itercont (storewithloopvarvalue, iterstacktrace, iterinput)
             let startitericont = iterate intval1 intval2 (if intval1 < intval2 then 1 else -1) venv icont
             startitericont (store, stacktrace, input))
-          otherwise -> errMsg "Expected int value"
+          otherwise -> errMsg "Expected int value\n"
       ))
 transType :: Type LineInfo -> ()
 transType x = case x of
@@ -187,7 +187,7 @@ transExpr x venv lenv econt = case x of
       transExpr expr2 venv lenv (\val2 ->
         case val2 of
           ListVal list -> econt (ListVal (val1:list))
-          otherwise    -> errMsg "Expected list value"))
+          otherwise    -> errMsg "Expected list value\n"))
   EMul _ expr1 mulop expr2 ->
     transExpr expr1 venv lenv (\val1 ->
       transExpr expr2 venv lenv (\val2 ->
@@ -217,7 +217,7 @@ transExpr x venv lenv econt = case x of
                 (_, ErrMsg str) -> errMsg str)
           else
             econt (BoolVal False)
-        otherwise -> errMsg "Expected bool value")
+        otherwise -> errMsg "Expected bool value\n")
   EOr _ expr1 orop expr2 ->
     transExpr expr1 venv lenv (\val1 ->
       transExpr expr2 venv lenv (\val2 ->
@@ -249,12 +249,12 @@ transMulOp :: MulOp LineInfo -> Val -> Val -> (Val, ErrorType)
 transMulOp x v1 v2 = case x of
   Times _ -> (multiplyNumericals v1 v2, NoErr)
   Div _   -> case v2 of
-    FloatVal 0 -> (NoVal, ErrMsg "Encountered division by 0")
-    IntVal 0   -> (NoVal, ErrMsg "Encountered division by 0")
+    FloatVal 0 -> (NoVal, ErrMsg "Encountered division by 0\n")
+    IntVal 0   -> (NoVal, ErrMsg "Encountered division by 0\n")
     otherwise  -> (divideNumericals v1 v2, NoErr)
   Mod _   -> case v2 of
-    FloatVal 0 -> (NoVal, ErrMsg "Encountered division by 0")
-    IntVal 0   -> (NoVal, ErrMsg "Encountered division by 0")
+    FloatVal 0 -> (NoVal, ErrMsg "Encountered division by 0\n")
+    IntVal 0   -> (NoVal, ErrMsg "Encountered division by 0\n")
     otherwise  -> (modNumericals v1 v2, NoErr)
 transRelOp :: RelOp LineInfo -> Val -> Val -> (Val, ErrorType)
 transRelOp x v1 v2 = case x of

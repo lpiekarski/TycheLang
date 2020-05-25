@@ -6,14 +6,14 @@ import           System.Exit        (exitFailure, exitSuccess)
 import           System.IO          (hGetContents, stdin)
 
 import           Tyche.Abs
+import           Tyche.ErrM
 import           Tyche.Lex
 import           Tyche.Par
 import           Tyche.Print
+import           Tyche.State
 import           Tyche.Trans
 import           Tyche.TypeCheck
 import           Tyche.Types
-
-import           Tyche.ErrM
 
 runProgram :: Program LineInfo -> IO ()
 runProgram prog = do
@@ -23,8 +23,8 @@ runProgram prog = do
         let (err, stacktrace, output) = transProgram prog (stringToInput inputstr)
         (outputToString output) ++ (case err of
           NoErr      -> ""
-          ErrMsg str -> "\nRuntime Error:\n" ++ str ++ "\n"))
+          ErrMsg str -> "\nRuntime Error: " ++ str ++ "\n" ++ (printStackTrace stacktrace)))
     Bad str -> do
-      putStr "Static Error:\n"
+      putStr "\nStatic Error:\n"
       putStr str
       return ()
