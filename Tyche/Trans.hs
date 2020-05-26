@@ -186,7 +186,7 @@ transExpr x venv lenv econt = case x of
                   exprsToArgVals es ats ({-av:-}acc) avcont
               )
           in
-          \(store, input) -> (func []{-(exprsToArgVals exprs argtypes [] )-} venv lenv (\v -> econt NoVal)) (store, input)
+          \(store, input) -> (func []{-(exprsToArgVals exprs argtypes [] )-} venv (addReturnLabel lenv econt) (\v -> econt NoVal)) (store, input)
         otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))

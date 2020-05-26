@@ -32,3 +32,9 @@ addContinueLabel lenv econt = \label ->
   case label of
     LContinue -> Just econt
     otherwise -> lenv label
+
+addReturnLabel :: LEnv -> ECont -> LEnv
+addReturnLabel lenv econt = \label ->
+  case label of
+    LReturn   -> Just econt
+    otherwise -> lenv label
