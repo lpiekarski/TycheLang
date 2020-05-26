@@ -2,9 +2,10 @@ module Tyche.Types where
 
 import           Tyche.Abs
 import           Tyche.ErrM
+import           Tyche.Print
 
 import           Data.Array
-import           System.IO  (hGetContents, stdin)
+import           System.IO   (hGetContents, stdin)
 {-
 stringToInput :: String -> Input
 stringToInput str =
@@ -29,14 +30,14 @@ outputToString output =
 -}
 typeOf :: Val -> FullType LineInfo
 typeOf val = case val of
-  IntVal _     -> intT
-  FloatVal _   -> floatT
-  BoolVal _    -> boolT
-  StringVal _  -> stringT
-  ListVal list -> voidT
-  ArrayVal arr -> voidT
-  FuncVal func -> voidT
-  NoVal        -> voidT
+  IntVal _              -> intT
+  FloatVal _            -> floatT
+  BoolVal _             -> boolT
+  StringVal _           -> stringT
+  ListVal list          -> voidT
+  ArrayVal arr          -> voidT
+  FuncVal argtypes func -> voidT
+  NoVal                 -> voidT
 
 type Loc = Int
 type Input = String
@@ -50,7 +51,8 @@ data Val = IntVal Integer
     | StringVal String
     | ListVal [Val]
     | ArrayVal (Array Int Val)
-    | FuncVal (VEnv -> LEnv -> ICont -> Cont)
+    | FuncVal [ArgType LineInfo]
+          ([ArgVal] -> VEnv -> LEnv -> ICont -> Cont)
     | NoVal
 instance Show Val where
   show val = case val of
@@ -60,9 +62,16 @@ instance Show Val where
     StringVal str   -> "string " ++ str
     ListVal l       -> "list " ++ (show l)
     ArrayVal a      -> "array " ++ (show a)
-    FuncVal (_)     -> "function"
+    FuncVal argtypes (_)     ->
+      let
+        printArgTypes [] acc = acc
+        printArgTypes (at:nil) acc = acc ++ (printTree at)
+        printArgTypes (at:ats) acc =
+          printArgTypes ats (acc ++ (printTree at) ++ ", ")
+      in
+        "function (" ++ (printArgTypes argtypes "") ++ ")"
     NoVal           -> "void"
-type Store = (Loc, Loc -> Val)
+type Store          = (Loc, Loc -> Val)
 data ErrorType = NoErr
     | ErrMsg String
 type State = (Store, Input)

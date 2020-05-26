@@ -73,7 +73,7 @@ transStmt x venv lenv icont = case x of
   FnDef _ ident fulltype args stmts -> \(store, input) -> do
     let (funcvarloc, storeafterfuncvardef) = newLoc store
     let venvafterfuncvardef = extendFunc venv ident (Just funcvarloc)
-    let funcval = FuncVal (\callvenv -> transStmts stmts venvafterfuncvardef)
+    let funcval = FuncVal (\funcargs -> \callvenv -> transStmts stmts venvafterfuncvardef)
     let storeafterfuncvarsave = saveInStore storeafterfuncvardef funcvarloc funcval
     let cont = icont venvafterfuncvardef
     cont (storeafterfuncvarsave, input)
@@ -191,7 +191,7 @@ transExpr x venv lenv econt = case x of
   EApp _ expr exprs ->
     transExpr expr venv lenv (\val ->
       case val of
-        FuncVal func -> \(store, input) -> (func venv lenv (\v -> econt NoVal)) (store, input)
+        FuncVal argtypes func -> \(store, input) -> (func (exprsToArgs exprs) venv lenv (\v -> econt NoVal)) (store, input)
         otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))
