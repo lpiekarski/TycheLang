@@ -5,22 +5,19 @@ import           Tyche.ErrM
 
 import           Data.Array
 import           System.IO  (hGetContents, stdin)
-
+{-
 stringToInput :: String -> Input
 stringToInput str =
   let
     go [] acc     = acc
     go (c:cs) acc = go cs (Input c acc)
   in
-    go (reverse str) EOI
+    go str EOI
 
 stringToOutput :: String -> Output -> Output
-stringToOutput str acc =
-  let
-    go [] acc     = acc
-    go (c:cs) acc = go cs (Output c acc)
-  in
-    go (reverse str) acc
+stringToOutput str acc = case str of
+  []   -> acc
+  c:cs -> stringToOutput cs (Output c acc)
 
 outputToString :: Output -> String
 outputToString output =
@@ -29,7 +26,7 @@ outputToString output =
     go (Output c o) acc = go o (c:acc)
   in
     go output ""
-
+-}
 typeOf :: Val -> FullType LineInfo
 typeOf val = case val of
   IntVal _     -> intT
@@ -42,10 +39,8 @@ typeOf val = case val of
   NoVal        -> voidT
 
 type Loc = Int
-data Input = Input Char Input
-    | EOI
-data Output = Output Char Output
-    | EOO
+type Input = String
+type Output = String
 data ArgVal = Variable Loc Ident
     | Value Val Ident
     | Inout Ident Ident
@@ -55,7 +50,7 @@ data Val = IntVal Integer
     | StringVal String
     | ListVal [Val]
     | ArrayVal (Array Int Val)
-    | FuncVal (LEnv -> ICont -> Cont)
+    | FuncVal (VEnv -> LEnv -> ICont -> Cont)
     | NoVal
 instance Show Val where
   show val = case val of
@@ -87,7 +82,7 @@ type TEnv = Ident -> Maybe (FullType LineInfo)
 type LineInfo = Maybe (Int, Int)
 
 errMsg :: String -> State -> Ans
-errMsg str (store, stacktrace, input) = (ErrMsg str, stacktrace, EOO)
+errMsg str (store, stacktrace, input) = (ErrMsg str, stacktrace, "")
 
 readonlyVoidT = FullType Nothing [TModReadonly Nothing] (Void Nothing)
 voidT = FullType Nothing [] (Void Nothing)

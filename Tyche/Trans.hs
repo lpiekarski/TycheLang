@@ -24,7 +24,7 @@ transProgram x input = case x of
     let defaultlenv = \label -> Nothing
     let defaultstore = (0, \loc -> NoVal)
     let defaultstacktrace = []
-    let defaultans = (NoErr, defaultstacktrace, EOO)
+    let defaultans = (NoErr, defaultstacktrace, "")
     let defaulticont =  (\venv -> (\state -> defaultans))
     let
       addInternals :: [(Ident, FullType LineInfo, Val)] -> VEnv -> Store -> (VEnv, Store)
@@ -74,7 +74,7 @@ transStmt x venv lenv icont = case x of
   FnDef _ ident fulltype args stmts -> \(store, stacktrace, input) -> do
     let (funcvarloc, storeafterfuncvardef) = newLoc store
     let venvafterfuncvardef = extendFunc venv ident (Just funcvarloc)
-    let funcval = FuncVal (transStmts stmts venvafterfuncvardef)
+    let funcval = FuncVal (\callvenv -> transStmts stmts venvafterfuncvardef)
     let storeafterfuncvarsave = saveInStore storeafterfuncvardef funcvarloc funcval
     let cont = icont venvafterfuncvardef
     cont (storeafterfuncvarsave, stacktrace, input)
@@ -192,7 +192,7 @@ transExpr x venv lenv econt = case x of
   EApp _ expr exprs ->
     transExpr expr venv lenv (\val ->
       case val of
-        FuncVal func -> \(store, stacktrace, input) -> (func lenv (\venv -> econt NoVal)) (store, (expr):stacktrace, input)
+        FuncVal func -> \(store, stacktrace, input) -> (func venv lenv (\v -> econt NoVal)) (store, (expr):stacktrace, input)
         otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))
