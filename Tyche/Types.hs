@@ -60,7 +60,7 @@ instance Show Val where
     FuncVal (_)     -> "function"
     NoVal           -> "void"
 type Store = (Loc, Loc -> Val)
-type StackTrace = [FullType LineInfo]
+type StackTrace = [Expr LineInfo]
 data ErrorType = NoErr
     | ErrMsg String
 type State = (Store, StackTrace, Input)

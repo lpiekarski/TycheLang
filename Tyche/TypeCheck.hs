@@ -6,6 +6,7 @@ import           Tyche.Converters
 import           Tyche.Env
 import           Tyche.ErrM
 import           Tyche.Helpers
+import           Tyche.Internal     (internals)
 import           Tyche.Numerical
 import           Tyche.Print
 import           Tyche.TypeMatching
@@ -24,7 +25,13 @@ typecheckStmts x tenv functype returned inloop = case x of
 typecheckProgram :: Program LineInfo -> TypeCheckResult
 typecheckProgram x = case x of
   Program _ stmts ->
-    typecheckStmts stmts (\v -> Nothing) voidT False False
+    let
+      defineInternals :: TEnv -> [(Ident, FullType LineInfo, Val)] -> TEnv
+      defineInternals tenv [] = tenv
+      defineInternals tenv ((ident, fulltype, _):ints) =
+        defineInternals (extendTEnv tenv ident fulltype) ints
+    in
+      typecheckStmts stmts (defineInternals (\v -> Nothing) internals) voidT False False
 typecheckArg :: Arg LineInfo -> TEnv -> FullType LineInfo -> Bool -> Bool -> TypeCheckResult
 typecheckArg x tenv functype returned inloop = case x of
   Arg _ argmod ident fulltype -> Ok (voidT, tenv, functype, returned, inloop)

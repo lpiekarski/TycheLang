@@ -5,6 +5,7 @@ import           Tyche.Bool
 import           Tyche.Env
 import           Tyche.ErrM
 import           Tyche.Helpers
+import           Tyche.Internal  (internals)
 import           Tyche.Numerical
 import           Tyche.Print
 import           Tyche.State
@@ -22,11 +23,20 @@ transProgram x input = case x of
     let defaultvenv = \ident -> Nothing
     let defaultlenv = \label -> Nothing
     let defaultstore = (0, \loc -> NoVal)
-    let defaultstacktrace = [FullType Nothing [] (Fun Nothing [] voidT)]
+    let defaultstacktrace = []
     let defaultans = (NoErr, defaultstacktrace, EOO)
     let defaulticont =  (\venv -> (\state -> defaultans))
-    let defaultstate = (defaultstore, defaultstacktrace, input)
-    let cont = transStmts stmts defaultvenv defaultlenv defaulticont
+    let
+      addInternals :: [(Ident, FullType LineInfo, Val)] -> VEnv -> Store -> (VEnv, Store)
+      addInternals [] venv store = (venv, store)
+      addInternals ((ident, _, val):ints) venv store = do
+          let (varloc, storeaftervardef) = newLoc store
+          let venvaftervardef = extendFunc venv ident (Just varloc)
+          let storeaftervalsave = saveInStore storeaftervardef varloc val
+          addInternals ints venvaftervardef storeaftervalsave
+    let (venvwithinternals, storewithinternals) = addInternals internals defaultvenv defaultstore
+    let defaultstate = (storewithinternals, defaultstacktrace, input)
+    let cont = transStmts stmts venvwithinternals defaultlenv defaulticont
     cont defaultstate
 transArg :: Arg LineInfo -> ()
 transArg x = case x of
@@ -182,7 +192,7 @@ transExpr x venv lenv econt = case x of
   EApp _ expr exprs ->
     transExpr expr venv lenv (\val ->
       case val of
-        FuncVal func -> \(store, stacktrace, input) -> (func lenv (\venv -> econt NoVal)) (store, (typeOf val):stacktrace, input)
+        FuncVal func -> \(store, stacktrace, input) -> (func lenv (\venv -> econt NoVal)) (store, (expr):stacktrace, input)
         otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))
