@@ -21,11 +21,11 @@ runProgram prog = do
     Ok _ -> do
         interact (\inputstr ->
           let
-            (err, stacktrace, output) = transProgram prog inputstr
+            (err, output) = transProgram prog inputstr
           in
             output ++ (case err of
               NoErr      -> ""
-              ErrMsg str -> "\nRuntime Error: " ++ str ++ "\n" ++ (printStackTrace stacktrace)))
+              ErrMsg str -> "\nRuntime Error: " ++ str))
     Bad str -> do
       putStr "\nStatic Error:\n"
       putStr str

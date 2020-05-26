@@ -18,11 +18,3 @@ printStore store =
       else go (next, s) (i + 1) (acc ++ (show i) ++ ": " ++ (show (s i)) ++ "\n")
   in
     go store 0 ""
-
-printStackTrace :: StackTrace -> String
-printStackTrace stacktrace =
-  let
-    go [] acc              = acc
-    go (fulltype:stfs) acc = go stfs (acc ++ (printTree fulltype) ++ "\n")
-  in
-    go stacktrace ""

@@ -21,13 +21,13 @@ internal_zero =
 internal_print =
   ( Ident "print"
   , readonlyFunctionT [varArgT readonlyStringT] voidT
-  , FuncVal (\venv -> \lenv -> \icont -> \(store, stacktrace, input) -> do
-    let (outerr, outstacktrace, output) = icont venv (store, stacktrace, input)
-    (outerr, outstacktrace, ("xd" ++ output))
+  , FuncVal (\venv -> \lenv -> \icont -> \(store, input) -> do
+    let (outerr, output) = icont venv (store, input)
+    (outerr, ("xd" ++ output))
   ))
 
 internal_exit =
   ( Ident "exit"
   , readonlyFunctionT [] voidT
-  , FuncVal (\venv -> \lenv -> \icont -> \(store, stacktrace, input) -> (NoErr, stacktrace, ""))
+  , FuncVal (\venv -> \lenv -> \icont -> \(store, input) -> (NoErr, ""))
   )

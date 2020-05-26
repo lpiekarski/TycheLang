@@ -21,7 +21,7 @@ argsToFullTypes args =
     go args []
 
 argToArgVal :: Arg (Maybe (Int, Int)) -> VEnv -> State -> Maybe ArgVal
-argToArgVal arg venv ((_, storef), _, _) =
+argToArgVal arg venv ((_, storef), _) =
   case arg of
     Arg lineInfo argmod ident fulltype ->
       case argmod of
@@ -44,7 +44,7 @@ argTypeToFullType :: ArgType LineInfo -> FullType LineInfo
 argTypeToFullType (ArgType _ _ res) = res
 
 argsToArgVals :: [Arg (Maybe (Int, Int))] -> VEnv -> State -> [ArgVal]
-argsToArgVals args venv (state@((_, storef), _, _)) =
+argsToArgVals args venv (state@((_, storef), _)) =
   let
     go [] r =
       reverse r

@@ -63,11 +63,10 @@ instance Show Val where
     FuncVal (_)     -> "function"
     NoVal           -> "void"
 type Store = (Loc, Loc -> Val)
-type StackTrace = [Expr LineInfo]
 data ErrorType = NoErr
     | ErrMsg String
-type State = (Store, StackTrace, Input)
-type Ans = (ErrorType, StackTrace, Output)
+type State = (Store, Input)
+type Ans = (ErrorType, Output)
 type Cont = State -> Ans
 type ICont = VEnv -> Cont
 type ECont = Val -> Cont
@@ -82,7 +81,7 @@ type TEnv = Ident -> Maybe (FullType LineInfo)
 type LineInfo = Maybe (Int, Int)
 
 errMsg :: String -> State -> Ans
-errMsg str (store, stacktrace, input) = (ErrMsg str, stacktrace, "")
+errMsg str (store, input) = (ErrMsg str, "")
 
 readonlyVoidT = FullType Nothing [TModReadonly Nothing] (Void Nothing)
 voidT = FullType Nothing [] (Void Nothing)

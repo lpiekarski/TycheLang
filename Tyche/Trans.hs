@@ -23,8 +23,7 @@ transProgram x input = case x of
     let defaultvenv = \ident -> Nothing
     let defaultlenv = \label -> Nothing
     let defaultstore = (0, \loc -> NoVal)
-    let defaultstacktrace = []
-    let defaultans = (NoErr, defaultstacktrace, "")
+    let defaultans = (NoErr, "")
     let defaulticont =  (\venv -> (\state -> defaultans))
     let
       addInternals :: [(Ident, FullType LineInfo, Val)] -> VEnv -> Store -> (VEnv, Store)
@@ -35,7 +34,7 @@ transProgram x input = case x of
           let storeaftervalsave = saveInStore storeaftervardef varloc val
           addInternals ints venvaftervardef storeaftervalsave
     let (venvwithinternals, storewithinternals) = addInternals internals defaultvenv defaultstore
-    let defaultstate = (storewithinternals, defaultstacktrace, input)
+    let defaultstate = (storewithinternals, input)
     let cont = transStmts stmts venvwithinternals defaultlenv defaulticont
     cont defaultstate
 transArg :: Arg LineInfo -> ()
@@ -58,26 +57,26 @@ transStmt x venv lenv icont = case x of
     Nothing          ->  errMsg "Return statement outside the function\n"
     Just returnecont -> transExpr expr venv lenv returnecont
   VarDef _ ident fulltype expr ->
-    transExpr expr venv lenv (\val -> \(store, stacktrace, input) -> do
+    transExpr expr venv lenv (\val -> \(store, input) -> do
       let (varloc, storeaftervardef) = newLoc store
       let venvaftervardef = extendFunc venv ident (Just varloc)
       let storeaftervalsave = saveInStore storeaftervardef varloc val
       let cont = icont venvaftervardef
-      cont (storeaftervalsave, stacktrace, input))
+      cont (storeaftervalsave, input))
   Ass _ ident expr ->
-    transExpr expr venv lenv (\val -> (\(store, stacktrace, input) ->
+    transExpr expr venv lenv (\val -> (\(store, input) ->
       case venv ident of
-        Nothing -> errMsg "Assigning value to undefined variable\n" (store, stacktrace, input)
+        Nothing -> errMsg "Assigning value to undefined variable\n" (store, input)
         Just loc -> do
           let cont = icont venv
-          cont (saveInStore store loc val, stacktrace, input)))
-  FnDef _ ident fulltype args stmts -> \(store, stacktrace, input) -> do
+          cont (saveInStore store loc val, input)))
+  FnDef _ ident fulltype args stmts -> \(store, input) -> do
     let (funcvarloc, storeafterfuncvardef) = newLoc store
     let venvafterfuncvardef = extendFunc venv ident (Just funcvarloc)
     let funcval = FuncVal (\callvenv -> transStmts stmts venvafterfuncvardef)
     let storeafterfuncvarsave = saveInStore storeafterfuncvardef funcvarloc funcval
     let cont = icont venvafterfuncvardef
-    cont (storeafterfuncvarsave, stacktrace, input)
+    cont (storeafterfuncvarsave, input)
   Cond _ expr stmts ->
     transExpr expr venv lenv (\val ->
       case val of
@@ -105,33 +104,33 @@ transStmt x venv lenv icont = case x of
           else
             icont venv
         otherwise -> errMsg "Value inside While expression is not bool\n")
-  ForList _ ident expr stmts -> do -- TODO fix loop variable leaking out of the loop
+  ForList _ ident expr stmts -> do
     transExpr expr venv lenv (\val ->
       let
         list = case val of
           ListVal l  -> l
           ArrayVal a -> elems a
           otherwise  -> []
-      in (\(store, stacktrace, input) -> do
+      in (\(store, input) -> do
         let (loopvarloc, storewithloopvardef) = newLoc store
         let venvwithloopvar = extendFunc venv ident (Just loopvarloc)
         let breaklenv = addBreakLabel lenv (\val -> icont venv)
         let
           iterate :: [Val] -> VEnv -> Cont -> Cont
           iterate [] itervenv itercont = itercont
-          iterate (listel:listels) itervenv itercont = (\(iterstore, iterstacktrace, iterinput) -> do
+          iterate (listel:listels) itervenv itercont = (\(iterstore, iterinput) -> do
             let storewithloopvarvalue = saveInStore iterstore loopvarloc listel
             let lenvbreakcontinuelenv = addContinueLabel breaklenv (\val -> iterate listels itervenv itercont)
             let aftericont = \aftervenv -> iterate listels aftervenv itercont
             let itercont = transStmts stmts venvwithloopvar lenvbreakcontinuelenv aftericont
-            itercont (storewithloopvarvalue, iterstacktrace, iterinput))
+            itercont (storewithloopvarvalue, iterinput))
         let startitericont = iterate list venv (icont venv)
-        startitericont (store, stacktrace, input)))
+        startitericont (store, input)))
   ForRange _ ident expr1 expr2 stmts ->
     transExpr expr1 venv lenv (\val1 ->
       transExpr expr2 venv lenv (\val2 ->
         case (val1, val2) of
-          (IntVal intval1, IntVal intval2) -> (\(store, stacktrace, input) -> do
+          (IntVal intval1, IntVal intval2) -> (\(store, input) -> do
             let (loopvarloc, storewithloopvardef) = newLoc store
             let venvwithloopvar = extendFunc venv ident (Just loopvarloc)
             let breaklenv = addBreakLabel lenv (\val -> icont venv)
@@ -141,14 +140,14 @@ transStmt x venv lenv icont = case x of
                 if iterval - direction == targetval then do
                   let itericont = itericont
                   itericont itervenv
-                else \(iterstore, iterstacktrace, iterinput) -> do
+                else \(iterstore, iterinput) -> do
                   let storewithloopvarvalue = saveInStore iterstore loopvarloc (IntVal iterval)
                   let lenvbreakcontinuelenv = addContinueLabel breaklenv (\val -> iterate (iterval + direction) targetval direction itervenv itericont)
                   let aftericont = \aftervenv -> iterate (iterval + direction) targetval direction aftervenv itericont
                   let itercont = transStmts stmts venvwithloopvar lenvbreakcontinuelenv aftericont
-                  itercont (storewithloopvarvalue, iterstacktrace, iterinput)
+                  itercont (storewithloopvarvalue, iterinput)
             let startitericont = iterate intval1 intval2 (if intval1 < intval2 then 1 else -1) venv icont
-            startitericont (store, stacktrace, input))
+            startitericont (store, input))
           otherwise -> errMsg "Expected int value\n"
       ))
 transType :: Type LineInfo -> ()
@@ -180,9 +179,9 @@ transExpr x venv lenv econt = case x of
   ELitVoid _ -> econt NoVal
   EVar _ ident -> case venv ident of
     Nothing -> errMsg ("Undefined variable " ++ (printTree ident))
-    Just loc -> \(store@(next, storef), stacktrace, input) -> do
+    Just loc -> \(store@(next, storef), input) -> do
       let cont = econt (storef loc)
-      cont (store, stacktrace, input)
+      cont (store, input)
   ELitInt _ integer -> econt (IntVal integer)
   ELitTrue _ -> econt (BoolVal True)
   ELitFalse _ -> econt (BoolVal False)
@@ -192,7 +191,7 @@ transExpr x venv lenv econt = case x of
   EApp _ expr exprs ->
     transExpr expr venv lenv (\val ->
       case val of
-        FuncVal func -> \(store, stacktrace, input) -> (func venv lenv (\v -> econt NoVal)) (store, (expr):stacktrace, input)
+        FuncVal func -> \(store, input) -> (func venv lenv (\v -> econt NoVal)) (store, input)
         otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))
