@@ -14,6 +14,14 @@ stringToInput str =
   in
     go (reverse str) EOI
 
+stringToOutput :: String -> Output -> Output
+stringToOutput str acc =
+  let
+    go [] acc     = acc
+    go (c:cs) acc = go cs (Output c acc)
+  in
+    go (reverse str) acc
+
 outputToString :: Output -> String
 outputToString output =
   let
@@ -95,6 +103,11 @@ floatT = FullType Nothing [] (Float Nothing)
 readonlyListT fulltype = FullType Nothing [TModReadonly Nothing] (List Nothing fulltype)
 listT fulltype = FullType Nothing [] (List Nothing fulltype)
 arrayT fulltype = FullType Nothing [] (Array Nothing fulltype)
+valArgT = ArgType Nothing (AModVal Nothing)
+varArgT = ArgType Nothing (AModVar Nothing)
+inoutArgT = ArgType Nothing (AModVar Nothing)
+readonlyFunctionT args fulltype = FullType Nothing [TModReadonly Nothing] (Fun Nothing args fulltype)
+functionT args fulltype = FullType Nothing [] (Fun Nothing args fulltype)
 
 isReadonly :: FullType a -> Bool
 isReadonly ft = case ft of

@@ -7,8 +7,26 @@ type InternalDef = (Ident, FullType LineInfo, Val)
 
 internals :: [InternalDef]
 internals =
-  [ zero
+  [ internal_zero
+  , internal_print
+  , internal_exit
   ]
 
-zero :: InternalDef
-zero = (Ident "zero", intT, IntVal 0)
+internal_zero =
+  ( Ident "zero"
+  , readonlyIntT
+  , IntVal 0
+  )
+
+internal_print =
+  ( Ident "print"
+  , readonlyFunctionT [varArgT readonlyStringT] voidT
+  , FuncVal (\lenv -> \icont -> \(store, stacktrace, input) ->
+    (NoErr, stacktrace, (stringToOutput "xd" EOO{-(icont )-}))
+  ))
+
+internal_exit =
+  ( Ident "exit"
+  , readonlyFunctionT [] voidT
+  , FuncVal (\lenv -> \icont -> \(store, stacktrace, input) -> (NoErr, stacktrace, EOO))
+  )
