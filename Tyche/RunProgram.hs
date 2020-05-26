@@ -7,13 +7,35 @@ import           System.IO          (hGetContents, stdin)
 
 import           Tyche.Abs
 import           Tyche.ErrM
+import           Tyche.Layout
 import           Tyche.Lex
 import           Tyche.Par
 import           Tyche.Print
 import           Tyche.State
-import           Tyche.Trans
+import           Tyche.TransProgram
 import           Tyche.TypeCheck
 import           Tyche.Types
+
+lexer = resolveLayout True . myLexer
+
+runFile :: FilePath -> IO ()
+runFile f = readFile f >>= run
+
+run :: String -> IO ()
+run s = let ts = lexer s in case pProgram ts of
+           Bad s    -> do putStrLn s
+                          exitFailure
+           Ok  prog -> do runProgram prog
+                          exitSuccess
+
+usage :: IO ()
+usage = do
+  putStrLn $ unlines
+    [ "usage: Call with one of the following argument combinations:"
+    , "  --help          Display this help message."
+    , "  (files)         Parse content of files."
+    ]
+  exitFailure
 
 runProgram :: Program LineInfo -> IO ()
 runProgram prog = do

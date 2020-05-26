@@ -2,10 +2,10 @@ module Tyche.Trans where
 
 import           Tyche.Abs
 import           Tyche.Bool
+import           Tyche.Converters
 import           Tyche.Env
 import           Tyche.ErrM
 import           Tyche.Helpers
-import           Tyche.Internal  (internals)
 import           Tyche.Numerical
 import           Tyche.Print
 import           Tyche.State
@@ -17,26 +17,6 @@ import           Data.Array
 transIdent :: Ident -> ()
 transIdent x = case x of
   Ident string -> ()
-transProgram :: Program LineInfo -> Input -> Ans
-transProgram x input = case x of
-  Program lineinfo stmts -> do
-    let defaultvenv = \ident -> Nothing
-    let defaultlenv = \label -> Nothing
-    let defaultstore = (0, \loc -> NoVal)
-    let defaultans = (NoErr, "")
-    let defaulticont =  (\venv -> (\state -> defaultans))
-    let
-      addInternals :: [(Ident, FullType LineInfo, Val)] -> VEnv -> Store -> (VEnv, Store)
-      addInternals [] venv store = (venv, store)
-      addInternals ((ident, _, val):ints) venv store = do
-          let (varloc, storeaftervardef) = newLoc store
-          let venvaftervardef = extendFunc venv ident (Just varloc)
-          let storeaftervalsave = saveInStore storeaftervardef varloc val
-          addInternals ints venvaftervardef storeaftervalsave
-    let (venvwithinternals, storewithinternals) = addInternals internals defaultvenv defaultstore
-    let defaultstate = (storewithinternals, input)
-    let cont = transStmts stmts venvwithinternals defaultlenv defaulticont
-    cont defaultstate
 transArg :: Arg LineInfo -> ()
 transArg x = case x of
   Arg _ argmod ident fulltype -> ()
@@ -73,7 +53,7 @@ transStmt x venv lenv icont = case x of
   FnDef _ ident fulltype args stmts -> \(store, input) -> do
     let (funcvarloc, storeafterfuncvardef) = newLoc store
     let venvafterfuncvardef = extendFunc venv ident (Just funcvarloc)
-    let funcval = FuncVal (\funcargs -> \callvenv -> transStmts stmts venvafterfuncvardef)
+    let funcval = FuncVal (argsToArgTypes args) (\funcargs -> \callvenv -> transStmts stmts venvafterfuncvardef)
     let storeafterfuncvarsave = saveInStore storeafterfuncvardef funcvarloc funcval
     let cont = icont venvafterfuncvardef
     cont (storeafterfuncvarsave, input)
@@ -191,7 +171,22 @@ transExpr x venv lenv econt = case x of
   EApp _ expr exprs ->
     transExpr expr venv lenv (\val ->
       case val of
-        FuncVal argtypes func -> \(store, input) -> (func (exprsToArgs exprs) venv lenv (\v -> econt NoVal)) (store, input)
+        FuncVal argtypes func ->
+          let
+            exprsToArgVals :: [Expr LineInfo] -> [ArgType LineInfo] -> [ArgVal] -> ([ArgVal] -> Cont) -> Cont
+            exprsToArgVals [] [] acc avcont = avcont (reverse acc)
+            exprsToArgVals (e:es) ((ArgType _ argmod fulltype):ats) acc avcont =
+              transExpr e venv lenv (\val ->
+                {-let
+                  av = case argmod of
+                    AModVar _ -> Variable loc ident
+                    AModVal _ -> Value val ident
+                    AModInOut _ ->
+                in-}
+                  exprsToArgVals es ats ({-av:-}acc) avcont
+              )
+          in
+          \(store, input) -> (func []{-(exprsToArgVals exprs argtypes [] )-} venv lenv (\v -> econt NoVal)) (store, input)
         otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))

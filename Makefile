@@ -1,5 +1,5 @@
 all:
-	ghc --make Tyche/Interpreter.hs -o interpreter
+	ghc --make Tyche/Main.hs -o interpreter
 grammar:
 	happy -gca Tyche/Par.y
 	alex -g Tyche/Lex.x

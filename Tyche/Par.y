@@ -12,6 +12,33 @@ import Tyche.ErrM
 %monad { Err } { thenM } { returnM }
 %tokentype {Token}
 %name pProgram_internal Program
+%name pArg_internal Arg
+%name pListArg_internal ListArg
+%name pStmt_internal Stmt
+%name pListStmt_internal ListStmt
+%name pType_internal Type
+%name pArgType_internal ArgType
+%name pFullType_internal FullType
+%name pListArgType_internal ListArgType
+%name pArgMod_internal ArgMod
+%name pTypeMod_internal TypeMod
+%name pListTypeMod_internal ListTypeMod
+%name pExpr9_internal Expr9
+%name pExpr8_internal Expr8
+%name pExpr7_internal Expr7
+%name pExpr6_internal Expr6
+%name pExpr5_internal Expr5
+%name pExpr4_internal Expr4
+%name pExpr3_internal Expr3
+%name pExpr2_internal Expr2
+%name pExpr1_internal Expr1
+%name pExpr_internal Expr
+%name pListExpr_internal ListExpr
+%name pAddOp_internal AddOp
+%name pMulOp_internal MulOp
+%name pRelOp_internal RelOp
+%name pOrOp_internal OrOp
+%name pAndOp_internal AndOp
 %token
   '!' { PT _ (TS _ 1) }
   '!=' { PT _ (TS _ 2) }
@@ -531,5 +558,32 @@ happyError ts =
 myLexer = tokens
 
 pProgram = (>>= return . snd) . pProgram_internal
+pArg = (>>= return . snd) . pArg_internal
+pListArg = (>>= return . snd) . pListArg_internal
+pStmt = (>>= return . snd) . pStmt_internal
+pListStmt = (>>= return . snd) . pListStmt_internal
+pType = (>>= return . snd) . pType_internal
+pArgType = (>>= return . snd) . pArgType_internal
+pFullType = (>>= return . snd) . pFullType_internal
+pListArgType = (>>= return . snd) . pListArgType_internal
+pArgMod = (>>= return . snd) . pArgMod_internal
+pTypeMod = (>>= return . snd) . pTypeMod_internal
+pListTypeMod = (>>= return . snd) . pListTypeMod_internal
+pExpr9 = (>>= return . snd) . pExpr9_internal
+pExpr8 = (>>= return . snd) . pExpr8_internal
+pExpr7 = (>>= return . snd) . pExpr7_internal
+pExpr6 = (>>= return . snd) . pExpr6_internal
+pExpr5 = (>>= return . snd) . pExpr5_internal
+pExpr4 = (>>= return . snd) . pExpr4_internal
+pExpr3 = (>>= return . snd) . pExpr3_internal
+pExpr2 = (>>= return . snd) . pExpr2_internal
+pExpr1 = (>>= return . snd) . pExpr1_internal
+pExpr = (>>= return . snd) . pExpr_internal
+pListExpr = (>>= return . snd) . pListExpr_internal
+pAddOp = (>>= return . snd) . pAddOp_internal
+pMulOp = (>>= return . snd) . pMulOp_internal
+pRelOp = (>>= return . snd) . pRelOp_internal
+pOrOp = (>>= return . snd) . pOrOp_internal
+pAndOp = (>>= return . snd) . pAndOp_internal
 }
 

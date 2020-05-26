@@ -1,6 +1,8 @@
 module Tyche.Internal where
 
 import           Tyche.Abs
+import           Tyche.Interpreter
+import           Tyche.Trans
 import           Tyche.Types
 
 import           Data.Char
@@ -14,18 +16,19 @@ internals =
   , internal_exit
   , internal_get_char
   , internal_add_char
+  , return_test
   ]
 
 internal_read_char =
-  ( Ident "__read_char"
+  ( Ident "read_char"
   , readonlyFunctionT [] intT
   , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
-    (outerr, ("NOT IMPLEMENTED" ++ output))
+    (outerr, ("NOT IMPLEMENTED\n" ++ output))
   ))
 
 internal_print_char =
-  ( Ident "__print_char"
+  ( Ident "print_char"
   , readonlyFunctionT [varArgT readonlyIntT] voidT
   , FuncVal [valArgT readonlyIntT] (\[Value (IntVal char) ident] -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
@@ -33,23 +36,30 @@ internal_print_char =
   ))
 
 internal_exit =
-  ( Ident "__exit"
+  ( Ident "exit"
   , readonlyFunctionT [] voidT
   , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> (NoErr, ""))
   )
 
 internal_get_char =
-  ( Ident "__get_char"
+  ( Ident "get_char"
   , readonlyFunctionT [varArgT readonlyStringT, varArgT readonlyIntT] intT
   , FuncVal [varArgT readonlyStringT, varArgT readonlyIntT] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
-    (outerr, ("NOT IMPLEMENTED" ++ output))
+    (outerr, ("NOT IMPLEMENTED\n" ++ output))
   ))
 
 internal_add_char =
-  ( Ident "__add_char"
+  ( Ident "add_char"
   , readonlyFunctionT [varArgT stringT] voidT
   , FuncVal [varArgT stringT] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
-    (outerr, ("NOT IMPLEMENTED" ++ output))
+    (outerr, ("NOT IMPLEMENTED\n" ++ output))
+  ))
+
+return_test =
+  ( Ident "return_test"
+  , readonlyFunctionT [] intT
+  , FuncVal [] (\args -> \venv -> \lenv -> \icont ->
+    transStmts (stringToStmts "return 10") venv lenv icont
   ))

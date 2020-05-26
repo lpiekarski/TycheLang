@@ -5,8 +5,6 @@ layout stop "satisfying", "else" ;
 
 -- programs
 
-entrypoints Program ;
-
 Program.   Program ::= "do" "{" [Stmt] "}" ;
 
 -- function arguments
