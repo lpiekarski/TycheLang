@@ -16,7 +16,6 @@ internals =
   , internal_exit
   , internal_get_char
   , internal_add_char
-  , return_test
   ]
 
 internal_read_char =
@@ -55,11 +54,4 @@ internal_add_char =
   , FuncVal [varArgT stringT] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
     (outerr, ("NOT IMPLEMENTED\n" ++ output))
-  ))
-
-return_test =
-  ( Ident "return_test"
-  , readonlyFunctionT [] intT
-  , FuncVal [] (\args -> \venv -> \lenv -> \icont ->
-    transStmts (stringToStmts "return 10") venv lenv icont
   ))
