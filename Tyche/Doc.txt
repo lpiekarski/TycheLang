@@ -77,8 +77,8 @@ All other symbols are terminals.
   |  |  **|**  | ``break`` 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``return`` //Expr// 
-  |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``=`` //Expr1// 
-  |  |  **|**  | //Ident// ``=`` //Expr1// 
+  |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``=`` //Expr// 
+  |  |  **|**  | //Ident// ``=`` //Expr// 
   |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``(`` //[Arg]// ``)`` ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` ``else`` ``do`` ``{`` //[Stmt]// ``}`` 
@@ -139,7 +139,7 @@ All other symbols are terminals.
   |  |  **|**  | ``array`` //Expr// ``times`` //Expr// ``:`` //FullType// 
   |  |  **|**  | //Expr2// 
   | //Expr// | -> | //Expr1// ``?`` //Expr1// ``:`` //Expr1// 
-  |  |  **|**  | ``lambda`` ``:`` //FullType// ``(`` //[Arg]// ``)`` ``->`` //[Stmt]// 
+  |  |  **|**  | ``lambda`` ``:`` //FullType// ``(`` //[Arg]// ``)`` ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``random`` ``from`` //Expr1// 
   |  |  **|**  | ``random`` ``from`` //Expr1// ``distribution`` //Expr1// 
   |  |  **|**  | ``probability`` ``sampled`` //Expr1// ``times`` ``of`` ``{`` //[Stmt]// ``}`` ``satisfying`` //Expr1// 

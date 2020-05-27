@@ -185,10 +185,10 @@ Stmt :: {
 | 'return' Expr {
   (Just (tokenLineCol $1), Tyche.Abs.Ret (Just (tokenLineCol $1)) (snd $2)) 
 }
-| 'def' Ident ':' FullType '=' Expr1 {
+| 'def' Ident ':' FullType '=' Expr {
   (Just (tokenLineCol $1), Tyche.Abs.VarDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
 }
-| Ident '=' Expr1 {
+| Ident '=' Expr {
   (fst $1, Tyche.Abs.Ass (fst $1)(snd $1)(snd $3)) 
 }
 | 'def' Ident ':' FullType '(' ListArg ')' 'do' '{' ListStmt '}' {
@@ -443,8 +443,8 @@ Expr :: {
 : Expr1 '?' Expr1 ':' Expr1 {
   (fst $1, Tyche.Abs.EIf (fst $1)(snd $1)(snd $3)(snd $5)) 
 }
-| 'lambda' ':' FullType '(' ListArg ')' '->' ListStmt {
-  (Just (tokenLineCol $1), Tyche.Abs.ELambda (Just (tokenLineCol $1)) (snd $3)(snd $5)(snd $8)) 
+| 'lambda' ':' FullType '(' ListArg ')' 'do' '{' ListStmt '}' {
+  (Just (tokenLineCol $1), Tyche.Abs.ELambda (Just (tokenLineCol $1)) (snd $3)(snd $5)(snd $9)) 
 }
 | 'random' 'from' Expr1 {
   (Just (tokenLineCol $1), Tyche.Abs.ERand (Just (tokenLineCol $1)) (snd $3)) 
