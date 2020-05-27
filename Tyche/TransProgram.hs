@@ -4,7 +4,7 @@ import           Tyche.Abs
 import           Tyche.Env
 import           Tyche.Internal
 import           Tyche.State
-import           Tyche.TransStmt
+import           Tyche.TransStmtExpr
 import           Tyche.Types
 
 transProgram :: Program LineInfo -> Input -> Ans
