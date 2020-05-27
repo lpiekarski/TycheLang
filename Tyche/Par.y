@@ -104,8 +104,9 @@ import Tyche.ErrM
   'void' { PT _ (TS _ 62) }
   'while' { PT _ (TS _ 63) }
   '{' { PT _ (TS _ 64) }
-  '||' { PT _ (TS _ 65) }
-  '}' { PT _ (TS _ 66) }
+  '{}' { PT _ (TS _ 65) }
+  '||' { PT _ (TS _ 66) }
+  '}' { PT _ (TS _ 67) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -330,6 +331,9 @@ Expr9 :: {
 }
 | '[]' ':' FullType {
   (Just (tokenLineCol $1), Tyche.Abs.EEmpList (Just (tokenLineCol $1)) (snd $3)) 
+}
+| '{}' ':' FullType {
+  (Just (tokenLineCol $1), Tyche.Abs.EEmpArray (Just (tokenLineCol $1)) (snd $3)) 
 }
 | Expr9 '(' ListExpr ')' {
   (fst $1, Tyche.Abs.EApp (fst $1)(snd $1)(snd $3)) 

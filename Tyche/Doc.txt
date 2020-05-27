@@ -53,10 +53,11 @@ The symbols used in tyche are the following:
   | { | } | : | ,
   | = | ( | ) | ;
   | [ | ] | -> | []
-  | - | ! | :: | ?
-  | + | * | / | %
-  | < | <= | > | >=
-  | == | != | || | &&
+  | {} | - | ! | ::
+  | ? | + | * | /
+  | % | < | <= | >
+  | >= | == | != | ||
+  | && |  |  | 
 
 ===Comments===
 Single-line comments begin with #, //, --.Multiple-line comments are  enclosed with /* and */.
@@ -113,6 +114,7 @@ All other symbols are terminals.
   |  |  **|**  | //String// 
   |  |  **|**  | //Double// 
   |  |  **|**  | ``[]`` ``:`` //FullType// 
+  |  |  **|**  | ``{}`` ``:`` //FullType// 
   |  |  **|**  | //Expr9// ``(`` //[Expr]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //Expr8// | -> | ``-`` //Expr9// 

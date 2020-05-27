@@ -66,6 +66,7 @@ ELitFalse. Expr9 ::= "false" ;
 EString.   Expr9 ::= String ;
 ELitFloat. Expr9 ::= Double ;
 EEmpList.  Expr9 ::= "[]" ":" FullType ;
+EEmpArray. Expr9 ::= "{}" ":" FullType ;
 EApp.      Expr9 ::= Expr9 "(" [Expr] ")" ;
 
 Neg.       Expr8 ::= "-" Expr9 ;

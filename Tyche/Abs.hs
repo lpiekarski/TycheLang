@@ -105,6 +105,7 @@ data Expr a
     | EString a String
     | ELitFloat a Double
     | EEmpList a (FullType a)
+    | EEmpArray a (FullType a)
     | EApp a (Expr a) [Expr a]
     | Neg a (Expr a)
     | Not a (Expr a)
@@ -135,6 +136,7 @@ instance Functor Expr where
         EString a string -> EString (f a) string
         ELitFloat a double -> ELitFloat (f a) double
         EEmpList a fulltype -> EEmpList (f a) (fmap f fulltype)
+        EEmpArray a fulltype -> EEmpArray (f a) (fmap f fulltype)
         EApp a expr exprs -> EApp (f a) (fmap f expr) (map (fmap f) exprs)
         Neg a expr -> Neg (f a) (fmap f expr)
         Not a expr -> Not (f a) (fmap f expr)

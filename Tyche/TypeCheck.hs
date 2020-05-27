@@ -220,6 +220,7 @@ typecheckExpr x tenv functype returned inloop = case x of
   EString lineinfo string -> Ok (stringT, tenv, functype, returned, inloop)
   ELitFloat lineinfo double -> Ok (floatT, tenv, functype, returned, inloop)
   EEmpList lineinfo fulltype -> Ok (listT fulltype, tenv, functype, returned, inloop)
+  EEmpArray lineinfo fulltype -> Ok (arrayT fulltype, tenv, functype, returned, inloop)
   EApp lineinfo expr exprs ->
     case typecheckExpr expr tenv functype returned inloop of
       Bad str -> Bad (str ++ "\tat Function Application " ++ (lineInfoString lineinfo) ++ "\n")

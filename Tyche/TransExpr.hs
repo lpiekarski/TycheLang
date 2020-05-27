@@ -8,6 +8,8 @@ import           Tyche.Print
 import           Tyche.Trans
 import           Tyche.Types
 
+import           Data.Array
+
 transExpr :: Expr LineInfo -> VEnv -> LEnv -> ECont -> Cont
 transExpr x venv lenv econt = case x of
   ELitVoid _ -> econt NoVal
@@ -22,7 +24,8 @@ transExpr x venv lenv econt = case x of
   EString _ string -> econt (StringVal string)
   ELitFloat _ double -> econt (FloatVal double)
   EEmpList _ fulltype -> econt (ListVal [])
-  EApp _ expr exprs ->
+  EEmpArray _ fulltype -> econt (ArrayVal (listArray (0, 0) []))
+  EApp _ expr exprs -> --TODO args
     transExpr expr venv lenv (\val ->
       case val of
         FuncVal argtypes func ->
@@ -88,18 +91,26 @@ transExpr x venv lenv econt = case x of
           (_, ErrMsg str) -> errMsg str))
   EList _ exprs ->
     let
-      buildList :: [Expr LineInfo] ->  ECont -> Val ->  Cont
+      buildList :: [Expr LineInfo] ->  ECont -> Val -> Cont
       buildList [] buildecont (ListVal acc) =
         buildecont (ListVal (reverse acc))
       buildList (e:es) buildecont (ListVal acc) =
         transExpr e venv lenv (\val -> buildList es buildecont (ListVal (val:acc)))
     in
       buildList exprs econt (ListVal [])
-  EArr _ exprs -> econt NoVal
-  EArrSize _ fulltype expr -> econt NoVal
-  EArrApp _ expr1 expr2 -> econt NoVal
-  EIf _ expr1 expr2 expr3       -> econt NoVal
-  ELambda _ fulltype args stmts -> econt NoVal
-  ERand _ expr                  -> econt NoVal
-  ERandDist _ expr1 expr2 -> econt NoVal
-  EProbSamp _ expr1 stmts expr2 -> econt NoVal
+  EArr _ exprs ->
+    let
+      buildList :: [Expr LineInfo] -> ECont -> [Val] -> Cont
+      buildList [] buildecont acc =
+        buildecont (ArrayVal (listArray (0, (length acc) - 1) (reverse acc)))
+      buildList (e:es) buildecont acc =
+        transExpr e venv lenv (\val -> buildList es buildecont (val:acc))
+    in
+      buildList exprs econt []
+  EArrSize _ fulltype expr -> econt NoVal --TODO
+  EArrApp _ expr1 expr2 -> econt NoVal --TODO
+  EIf _ expr1 expr2 expr3       -> econt NoVal --TODO
+  ELambda _ fulltype args stmts -> econt NoVal --TODO
+  ERand _ expr                  -> econt NoVal --TODO
+  ERandDist _ expr1 expr2 -> econt NoVal --TODO
+  EProbSamp _ expr1 stmts expr2 -> econt NoVal --TODO

@@ -151,6 +151,7 @@ instance Print (Expr a) where
     EString _ str -> prPrec i 9 (concatD [prt 0 str])
     ELitFloat _ d -> prPrec i 9 (concatD [prt 0 d])
     EEmpList _ fulltype -> prPrec i 9 (concatD [doc (showString "[]"), doc (showString ":"), prt 0 fulltype])
+    EEmpArray _ fulltype -> prPrec i 9 (concatD [doc (showString "{}"), doc (showString ":"), prt 0 fulltype])
     EApp _ expr exprs -> prPrec i 9 (concatD [prt 9 expr, doc (showString "("), prt 0 exprs, doc (showString ")")])
     Neg _ expr -> prPrec i 8 (concatD [doc (showString "-"), prt 9 expr])
     Not _ expr -> prPrec i 8 (concatD [doc (showString "!"), prt 9 expr])

@@ -269,8 +269,9 @@ sToken p s = PT p (TS s i)
       "void" -> 62
       "while" -> 63
       "{" -> 64
-      "||" -> 65
-      "}" -> 66
+      "{}" -> 65
+      "||" -> 66
+      "}" -> 67
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.
