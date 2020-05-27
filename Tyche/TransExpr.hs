@@ -123,7 +123,15 @@ transExpr x venv lenv econt = case x of
               IntVal intval2 -> econt (a ! (fromIntegral intval2))
               otherwise      -> errMsg "Expected int value")
         otherwise -> errMsg "Expected array value")
-  EIf _ expr1 expr2 expr3       -> econt NoVal --TODO
+  EIf _ expr1 expr2 expr3 ->
+    transExpr expr1 venv lenv (\val1 ->
+      case val1 of
+        BoolVal bval ->
+          if bval then
+            transExpr expr2 venv lenv econt
+          else
+            transExpr expr3 venv lenv econt
+        otherwise -> errMsg "Expected bool value")
   ELambda _ fulltype args stmts -> econt NoVal --TODO
   ERand _ expr                  -> econt NoVal --TODO
   ERandDist _ expr1 expr2 -> econt NoVal --TODO
