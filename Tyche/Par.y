@@ -51,9 +51,9 @@ import Tyche.ErrM
   ',' { PT _ (TS _ 9) }
   '-' { PT _ (TS _ 10) }
   '->' { PT _ (TS _ 11) }
-  '/' { PT _ (TS _ 12) }
-  ':' { PT _ (TS _ 13) }
-  '::' { PT _ (TS _ 14) }
+  '.' { PT _ (TS _ 12) }
+  '/' { PT _ (TS _ 13) }
+  ':' { PT _ (TS _ 14) }
   ';' { PT _ (TS _ 15) }
   '<' { PT _ (TS _ 16) }
   '<=' { PT _ (TS _ 17) }
@@ -361,7 +361,7 @@ Expr8 :: {
 Expr7 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Expr8 '::' Expr7 {
+: Expr8 '.' Expr7 {
   (fst $1, Tyche.Abs.ECons (fst $1)(snd $1)(snd $3)) 
 }
 | Expr8 {

@@ -53,14 +53,14 @@ The symbols used in tyche are the following:
   | { | } | : | ,
   | = | ( | ) | ;
   | [ | ] | -> | []
-  | {} | - | ! | ::
+  | {} | - | ! | .
   | ? | + | * | /
   | % | < | <= | >
   | >= | == | != | ||
   | && |  |  | 
 
 ===Comments===
-Single-line comments begin with #, //, --.Multiple-line comments are  enclosed with /* and */.
+Single-line comments begin with //.Multiple-line comments are  enclosed with /* and */.
 
 ==The syntactic structure of tyche==
 Non-terminals are enclosed between < and >. 
@@ -121,7 +121,7 @@ All other symbols are terminals.
   |  |  **|**  | ``!`` //Expr9// 
   |  |  **|**  | ``not`` //Expr9// 
   |  |  **|**  | //Expr9// 
-  | //Expr7// | -> | //Expr8// ``::`` //Expr7// 
+  | //Expr7// | -> | //Expr8// ``.`` //Expr7// 
   |  |  **|**  | //Expr8// 
   | //Expr6// | -> | //Expr6// //MulOp// //Expr7// 
   |  |  **|**  | //Expr7// 

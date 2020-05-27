@@ -73,7 +73,7 @@ Neg.       Expr8 ::= "-" Expr9 ;
 Not.       Expr8 ::= "!" Expr9 ;
 Not.       Expr8 ::= "not" Expr9 ;
 
-ECons.     Expr7 ::= Expr8 "::" Expr7 ;
+ECons.     Expr7 ::= Expr8 "." Expr7 ;
 
 EMul.      Expr6 ::= Expr6 MulOp Expr7 ;
 
@@ -120,7 +120,5 @@ And.    AndOp ::= "and" ;
 And.    AndOp ::= "&&" ;
 
 -- comments
-comment "#" ;
 comment "//" ;
-comment "--" ;
 comment "/*" "*/" ;

@@ -155,7 +155,7 @@ instance Print (Expr a) where
     EApp _ expr exprs -> prPrec i 9 (concatD [prt 9 expr, doc (showString "("), prt 0 exprs, doc (showString ")")])
     Neg _ expr -> prPrec i 8 (concatD [doc (showString "-"), prt 9 expr])
     Not _ expr -> prPrec i 8 (concatD [doc (showString "!"), prt 9 expr])
-    ECons _ expr1 expr2 -> prPrec i 7 (concatD [prt 8 expr1, doc (showString "::"), prt 7 expr2])
+    ECons _ expr1 expr2 -> prPrec i 7 (concatD [prt 8 expr1, doc (showString "."), prt 7 expr2])
     EMul _ expr1 mulop expr2 -> prPrec i 6 (concatD [prt 6 expr1, prt 0 mulop, prt 7 expr2])
     EAdd _ expr1 addop expr2 -> prPrec i 5 (concatD [prt 5 expr1, prt 0 addop, prt 6 expr2])
     ERel _ expr1 relop expr2 -> prPrec i 4 (concatD [prt 4 expr1, prt 0 relop, prt 5 expr2])
