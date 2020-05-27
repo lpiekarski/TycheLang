@@ -118,7 +118,7 @@ data Expr a
     | EOr a (Expr a) (OrOp a) (Expr a)
     | EList a [Expr a]
     | EArr a [Expr a]
-    | EArrSize a (FullType a) (Expr a)
+    | EArrSize a (Expr a) (Expr a) (FullType a)
     | EIf a (Expr a) (Expr a) (Expr a)
     | ELambda a (FullType a) [Arg a] [Stmt a]
     | ERand a (Expr a)
@@ -149,7 +149,7 @@ instance Functor Expr where
         EOr a expr1 orop expr2 -> EOr (f a) (fmap f expr1) (fmap f orop) (fmap f expr2)
         EList a exprs -> EList (f a) (map (fmap f) exprs)
         EArr a exprs -> EArr (f a) (map (fmap f) exprs)
-        EArrSize a fulltype expr -> EArrSize (f a) (fmap f fulltype) (fmap f expr)
+        EArrSize a expr1 expr2 fulltype -> EArrSize (f a) (fmap f expr1) (fmap f expr2) (fmap f fulltype)
         EIf a expr1 expr2 expr3 -> EIf (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
         ELambda a fulltype args stmts -> ELambda (f a) (fmap f fulltype) (map (fmap f) args) (map (fmap f) stmts)
         ERand a expr -> ERand (f a) (fmap f expr)

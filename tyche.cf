@@ -88,7 +88,7 @@ EOr.       Expr2 ::= Expr3 OrOp Expr2 ;
 
 EList.     Expr1 ::= "[" [Expr] "]" ;
 EArr.      Expr1 ::= "{" [Expr] "}" ;
-EArrSize.  Expr1 ::= "array" ":" FullType "[" Expr "]" ;
+EArrSize.  Expr1 ::= "array" Expr "times" Expr ":" FullType ;
 
 EIf.       Expr ::= Expr1 "?" Expr1 ":" Expr1 ;
 ELambda.   Expr ::= "lambda" ":" FullType "(" [Arg] ")" "->" [Stmt] ;

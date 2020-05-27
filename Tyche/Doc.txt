@@ -136,7 +136,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr3// 
   | //Expr1// | -> | ``[`` //[Expr]// ``]`` 
   |  |  **|**  | ``{`` //[Expr]// ``}`` 
-  |  |  **|**  | ``array`` ``:`` //FullType// ``[`` //Expr// ``]`` 
+  |  |  **|**  | ``array`` //Expr// ``times`` //Expr// ``:`` //FullType// 
   |  |  **|**  | //Expr2// 
   | //Expr// | -> | //Expr1// ``?`` //Expr1// ``:`` //Expr1// 
   |  |  **|**  | ``lambda`` ``:`` //FullType// ``(`` //[Arg]// ``)`` ``->`` //[Stmt]// 

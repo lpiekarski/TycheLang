@@ -430,8 +430,8 @@ Expr1 :: {
 | '{' ListExpr '}' {
   (Just (tokenLineCol $1), Tyche.Abs.EArr (Just (tokenLineCol $1)) (snd $2)) 
 }
-| 'array' ':' FullType '[' Expr ']' {
-  (Just (tokenLineCol $1), Tyche.Abs.EArrSize (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
+| 'array' Expr 'times' Expr ':' FullType {
+  (Just (tokenLineCol $1), Tyche.Abs.EArrSize (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
 }
 | Expr2 {
   (fst $1, snd $1)

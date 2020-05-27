@@ -107,7 +107,13 @@ transExpr x venv lenv econt = case x of
         transExpr e venv lenv (\val -> buildList es buildecont (val:acc))
     in
       buildList exprs econt []
-  EArrSize _ fulltype expr -> econt NoVal --TODO
+  EArrSize _ expr1 expr2 fulltype ->
+    transExpr expr1 venv lenv (\val1 ->
+      case val1 of
+        IntVal intval ->
+          transExpr expr2 venv lenv (\val2 ->
+            econt (ArrayVal (listArray (0, (fromIntegral intval) - 1) (replicate (fromIntegral intval) val2))))
+        otherwise -> errMsg "Expected in value")
   EArrApp _ expr1 expr2 ->
     transExpr expr1 venv lenv (\val1 ->
       case val1 of

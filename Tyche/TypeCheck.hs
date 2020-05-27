@@ -384,14 +384,20 @@ typecheckExpr x tenv functype returned inloop = case x of
       case checkExprs exprs of
         Bad str -> Bad str
         Ok (arrayelementtype, _, _, _, _) -> Ok (arrayT arrayelementtype, tenv, functype, returned, inloop)
-  EArrSize lineinfo fulltype expr ->
-    case typecheckExpr expr tenv functype returned inloop of
+  EArrSize lineinfo expr1 expr2 fulltype ->
+    case typecheckExpr expr1 tenv functype returned inloop of
       Bad str -> Bad (str ++ "\tat Default Value Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
-      Ok (exprtype, _, _, _, _) ->
-        if isInt exprtype then
-          Ok (arrayT fulltype, tenv, functype, returned, inloop)
+      Ok (exprtype1, _, _, _, _) ->
+        if isInt exprtype1 then
+          case typecheckExpr expr2 tenv functype returned inloop of
+            Bad str -> Bad (str ++ "\tat Default Value Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
+            Ok (expr2type, _, _, _, _) ->
+              if matchFullType expr2type fulltype then
+                Ok (arrayT fulltype, tenv, functype, returned, inloop)
+              else
+                Bad ("Array value initializer type `" ++ (printTree expr2type) ++ "` doesn't match array value type `" ++ (printTree fulltype) ++ "`\n\tat Default Value Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
         else
-          Bad ("Expected expression type `" ++ (printTree intT) ++ "`, got `" ++ (printTree exprtype) ++ "`\n\tat Default Value Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
+          Bad ("Expected expression type `" ++ (printTree intT) ++ "`, got `" ++ (printTree exprtype1) ++ "`\n\tat Default Value Array Expression " ++ (lineInfoString lineinfo) ++ "\n")
   EArrApp lineinfo expr1 expr2 ->
     case typecheckExpr expr1 tenv functype returned inloop of
       Bad str -> Bad (str ++ "\tat Array Application (array expression) " ++ (lineInfoString lineinfo) ++ "\n")

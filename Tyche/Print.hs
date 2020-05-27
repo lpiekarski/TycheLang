@@ -164,7 +164,7 @@ instance Print (Expr a) where
     EOr _ expr1 orop expr2 -> prPrec i 2 (concatD [prt 3 expr1, prt 0 orop, prt 2 expr2])
     EList _ exprs -> prPrec i 1 (concatD [doc (showString "["), prt 0 exprs, doc (showString "]")])
     EArr _ exprs -> prPrec i 1 (concatD [doc (showString "{"), prt 0 exprs, doc (showString "}")])
-    EArrSize _ fulltype expr -> prPrec i 1 (concatD [doc (showString "array"), doc (showString ":"), prt 0 fulltype, doc (showString "["), prt 0 expr, doc (showString "]")])
+    EArrSize _ expr1 expr2 fulltype -> prPrec i 1 (concatD [doc (showString "array"), prt 0 expr1, doc (showString "times"), prt 0 expr2, doc (showString ":"), prt 0 fulltype])
     EIf _ expr1 expr2 expr3 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "?"), prt 1 expr2, doc (showString ":"), prt 1 expr3])
     ELambda _ fulltype args stmts -> prPrec i 0 (concatD [doc (showString "lambda"), doc (showString ":"), prt 0 fulltype, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "->"), prt 0 stmts])
     ERand _ expr -> prPrec i 0 (concatD [doc (showString "random"), doc (showString "from"), prt 1 expr])
