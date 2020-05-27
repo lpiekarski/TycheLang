@@ -116,6 +116,7 @@ All other symbols are terminals.
   |  |  **|**  | ``[]`` ``:`` //FullType// 
   |  |  **|**  | ``{}`` ``:`` //FullType// 
   |  |  **|**  | //Expr9// ``(`` //[Expr]// ``)`` 
+  |  |  **|**  | //Expr9// ``[`` //Expr// ``]`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //Expr8// | -> | ``-`` //Expr9// 
   |  |  **|**  | ``!`` //Expr9// 
@@ -136,7 +137,6 @@ All other symbols are terminals.
   | //Expr1// | -> | ``[`` //[Expr]// ``]`` 
   |  |  **|**  | ``{`` //[Expr]// ``}`` 
   |  |  **|**  | ``array`` ``:`` //FullType// ``[`` //Expr// ``]`` 
-  |  |  **|**  | //Expr2// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr2// 
   | //Expr// | -> | //Expr1// ``?`` //Expr1// ``:`` //Expr1// 
   |  |  **|**  | ``lambda`` ``:`` //FullType// ``(`` //[Arg]// ``)`` ``->`` //[Stmt]// 

@@ -338,6 +338,9 @@ Expr9 :: {
 | Expr9 '(' ListExpr ')' {
   (fst $1, Tyche.Abs.EApp (fst $1)(snd $1)(snd $3)) 
 }
+| Expr9 '[' Expr ']' {
+  (fst $1, Tyche.Abs.EArrApp (fst $1)(snd $1)(snd $3)) 
+}
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
 }
@@ -429,9 +432,6 @@ Expr1 :: {
 }
 | 'array' ':' FullType '[' Expr ']' {
   (Just (tokenLineCol $1), Tyche.Abs.EArrSize (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
-}
-| Expr2 '[' Expr ']' {
-  (fst $1, Tyche.Abs.EArrApp (fst $1)(snd $1)(snd $3)) 
 }
 | Expr2 {
   (fst $1, snd $1)

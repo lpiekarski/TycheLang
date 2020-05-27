@@ -108,7 +108,15 @@ transExpr x venv lenv econt = case x of
     in
       buildList exprs econt []
   EArrSize _ fulltype expr -> econt NoVal --TODO
-  EArrApp _ expr1 expr2 -> econt NoVal --TODO
+  EArrApp _ expr1 expr2 ->
+    transExpr expr1 venv lenv (\val1 ->
+      case val1 of
+        ArrayVal a ->
+          transExpr expr2 venv lenv (\val2 ->
+            case val2 of
+              IntVal intval2 -> econt (a ! (fromIntegral intval2))
+              otherwise      -> errMsg "Expected int value")
+        otherwise -> errMsg "Expected array value")
   EIf _ expr1 expr2 expr3       -> econt NoVal --TODO
   ELambda _ fulltype args stmts -> econt NoVal --TODO
   ERand _ expr                  -> econt NoVal --TODO

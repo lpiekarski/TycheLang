@@ -68,6 +68,7 @@ ELitFloat. Expr9 ::= Double ;
 EEmpList.  Expr9 ::= "[]" ":" FullType ;
 EEmpArray. Expr9 ::= "{}" ":" FullType ;
 EApp.      Expr9 ::= Expr9 "(" [Expr] ")" ;
+EArrApp.   Expr9 ::= Expr9 "[" Expr "]" ;
 
 Neg.       Expr8 ::= "-" Expr9 ;
 Not.       Expr8 ::= "!" Expr9 ;
@@ -88,7 +89,6 @@ EOr.       Expr2 ::= Expr3 OrOp Expr2 ;
 EList.     Expr1 ::= "[" [Expr] "]" ;
 EArr.      Expr1 ::= "{" [Expr] "}" ;
 EArrSize.  Expr1 ::= "array" ":" FullType "[" Expr "]" ;
-EArrApp.   Expr1 ::= Expr2 "[" Expr "]" ;
 
 EIf.       Expr ::= Expr1 "?" Expr1 ":" Expr1 ;
 ELambda.   Expr ::= "lambda" ":" FullType "(" [Arg] ")" "->" [Stmt] ;
