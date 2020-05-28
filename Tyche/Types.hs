@@ -13,15 +13,15 @@ type Input = String
 type Output = String
 data ArgVal = Variable Loc Ident
     | Value Val Ident
-    | Inout Ident Ident
+    | Inout Loc Ident
+    | ArgError
 data Val = IntVal Integer
     | FloatVal Double
     | BoolVal Bool
     | StringVal String
     | ListVal [Val]
     | ArrayVal (Array Int Val)
-    | FuncVal [ArgType LineInfo]
-          ([ArgVal] -> VEnv -> LEnv -> ICont -> Cont)
+    | FuncVal [Arg LineInfo] ([ArgVal] -> VEnv -> LEnv -> ICont -> Cont)
     | NoVal
 instance Show Val where
   show val = case val of
@@ -74,11 +74,16 @@ floatT = FullType Nothing [] (Float Nothing)
 readonlyListT fulltype = FullType Nothing [TModReadonly Nothing] (List Nothing fulltype)
 listT fulltype = FullType Nothing [] (List Nothing fulltype)
 arrayT fulltype = FullType Nothing [] (Array Nothing fulltype)
-valArgT = ArgType Nothing (AModVal Nothing)
-varArgT = ArgType Nothing (AModVar Nothing)
-inoutArgT = ArgType Nothing (AModVar Nothing)
+valT = AModVal Nothing
+varT = AModVar Nothing
+inoutT = AModInOut Nothing
+valArgT = ArgType Nothing (valT)
+varArgT = ArgType Nothing (varT)
+inoutArgT = ArgType Nothing (inoutT)
 readonlyFunctionT args fulltype = FullType Nothing [TModReadonly Nothing] (Fun Nothing args fulltype)
 functionT args fulltype = FullType Nothing [] (Fun Nothing args fulltype)
+identT ident = Ident ident
+argT argmod ident fulltype = Arg Nothing argmod ident fulltype
 
 isReadonly :: FullType a -> Bool
 isReadonly ft = case ft of

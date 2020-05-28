@@ -45,7 +45,7 @@ transStmt x venv lenv icont = case x of
   FnDef _ ident fulltype args stmts -> \(store, input) -> do
     let (funcvarloc, storeafterfuncvardef) = newLoc store
     let venvafterfuncvardef = extendFunc venv ident (Just funcvarloc)
-    let funcval = FuncVal (argsToArgTypes args) (\funcargs -> \callvenv -> transStmts stmts venvafterfuncvardef)
+    let funcval = FuncVal args (\funcargs -> \callvenv -> transStmts stmts venvafterfuncvardef)
     let storeafterfuncvarsave = saveInStore storeafterfuncvardef funcvarloc funcval
     let cont = icont venvafterfuncvardef
     cont (storeafterfuncvarsave, input)
@@ -127,7 +127,7 @@ transExpr :: Expr LineInfo -> VEnv -> LEnv -> ECont -> Cont
 transExpr x venv lenv econt = case x of
   ELitVoid _ -> econt NoVal
   EVar _ ident -> case venv ident of
-    Nothing -> errMsg ("Undefined variable " ++ (printTree ident))
+    Nothing -> errMsg ("Undefined variable `" ++ (printTree ident) ++ "`\n")
     Just loc -> \(store@(next, storef), input) -> do
       let cont = econt (storef loc)
       cont (store, input)
@@ -141,22 +141,49 @@ transExpr x venv lenv econt = case x of
   EApp _ expr exprs -> --TODO args
     transExpr expr venv lenv (\val ->
       case val of
-        FuncVal argtypes func ->
+        FuncVal args func ->
           let
-            exprsToArgVals :: [Expr LineInfo] -> [ArgType LineInfo] -> [ArgVal] -> ([ArgVal] -> Cont) -> Cont
+            exprsToArgVals :: [Expr LineInfo] -> [Arg LineInfo] -> [ArgVal] -> ([ArgVal] -> Cont) -> Cont
             exprsToArgVals [] [] acc avcont = avcont (reverse acc)
-            exprsToArgVals (e:es) ((ArgType _ argmod fulltype):ats) acc avcont =
+            exprsToArgVals (e:es) ((Arg _ argmod argident argfulltype):as) acc avcont =
               transExpr e venv lenv (\val ->
-                {-let
+                let
                   av = case argmod of
-                    AModVar _ -> Variable loc ident
-                    AModVal _ -> Value val ident
+                    AModVar _ ->
+                      case e of
+                        EVar _ ident ->
+                          case venv ident of
+                            Just loc -> Variable loc argident
+                            Nothing  -> ArgError
+                        otherwise -> ArgError
+                    AModVal _ -> Value val argident
                     AModInOut _ ->
-                in-}
-                  exprsToArgVals es ats ({-av:-}acc) avcont
+                      case e of
+                        EVar _ ident ->
+                          case venv ident of
+                              Just loc -> Inout loc argident
+                              Nothing  -> ArgError
+                        otherwise     -> ArgError
+                in
+                  exprsToArgVals es as (av:acc) avcont
               )
           in
-          \(store, input) -> (func []{-(exprsToArgVals exprs argtypes [] )-} venv (addReturnLabel lenv econt) (\v -> econt NoVal)) (store, input)
+            exprsToArgVals exprs args [] (\argvals -> do
+              let
+                addArgValsToVEnv :: [ArgVal] -> VEnv -> (VEnv -> Cont) -> Cont
+                addArgValsToVEnv [] acc venvcont = venvcont acc
+                addArgValsToVEnv (av:avs) acc venvcont =
+                  case av of
+                    Variable loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
+                    Value val argident -> \(store, input) -> do
+                      let (varloc, storeaftervardef) = newLoc store
+                      let venvaftervardef = extendFunc acc argident (Just varloc)
+                      let storeaftervalsave = saveInStore storeaftervardef varloc val
+                      addArgValsToVEnv avs venvaftervardef venvcont (storeaftervalsave, input)
+                    Inout loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
+                    ArgError -> errMsg "Argument error\n"
+              addArgValsToVEnv argvals venv (\venvwithargs ->
+                (func argvals venvwithargs (addReturnLabel lenv econt) (\v -> econt NoVal))))
         otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))
@@ -226,7 +253,7 @@ transExpr x venv lenv econt = case x of
         IntVal intval ->
           transExpr expr2 venv lenv (\val2 ->
             econt (ArrayVal (listArray (0, (fromIntegral intval) - 1) (replicate (fromIntegral intval) val2))))
-        otherwise -> errMsg "Expected in value")
+        otherwise -> errMsg "Expected int value\n")
   EArrApp _ expr1 expr2 ->
     transExpr expr1 venv lenv (\val1 ->
       case val1 of
@@ -234,8 +261,8 @@ transExpr x venv lenv econt = case x of
           transExpr expr2 venv lenv (\val2 ->
             case val2 of
               IntVal intval2 -> econt (a ! (fromIntegral intval2))
-              otherwise      -> errMsg "Expected int value")
-        otherwise -> errMsg "Expected array value")
+              otherwise      -> errMsg "Expected int value\n")
+        otherwise -> errMsg "Expected array value\n")
   EIf _ expr1 expr2 expr3 ->
     transExpr expr1 venv lenv (\val1 ->
       case val1 of
@@ -244,9 +271,9 @@ transExpr x venv lenv econt = case x of
             transExpr expr2 venv lenv econt
           else
             transExpr expr3 venv lenv econt
-        otherwise -> errMsg "Expected bool value")
+        otherwise -> errMsg "Expected bool value\n")
   ELambda _ fulltype args stmts ->
-    econt (FuncVal (argsToArgTypes args) (\funcargs -> \callvenv -> transStmts stmts venv))
+    econt (FuncVal args (\funcargs -> \callvenv -> transStmts stmts venv))
   ERand _ expr                  -> econt NoVal --TODO
   ERandDist _ expr1 expr2 -> econt NoVal --TODO
   EProbSamp _ expr1 stmts expr2 -> econt NoVal --TODO

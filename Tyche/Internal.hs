@@ -29,7 +29,7 @@ internal_read_char =
 internal_print_char =
   ( Ident "print_char"
   , readonlyFunctionT [varArgT readonlyIntT] voidT
-  , FuncVal [valArgT readonlyIntT] (\[Value (IntVal char) ident] -> \venv -> \lenv -> \icont -> \(store, input) -> do
+  , FuncVal [argT valT (identT "ch") readonlyIntT] (\[Value (IntVal char) ident] -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
     (outerr, ((chr (fromIntegral char)):output))
   ))
@@ -43,15 +43,15 @@ internal_exit =
 internal_get_char =
   ( Ident "get_char"
   , readonlyFunctionT [varArgT readonlyStringT, varArgT readonlyIntT] intT
-  , FuncVal [varArgT readonlyStringT, varArgT readonlyIntT] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
+  , FuncVal [argT varT (identT "str") readonlyStringT, argT varT (identT "id") readonlyIntT] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
     (outerr, ("NOT IMPLEMENTED\n" ++ output))
   ))
 
 internal_add_char =
   ( Ident "add_char"
-  , readonlyFunctionT [varArgT stringT] voidT
-  , FuncVal [varArgT stringT] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
+  , readonlyFunctionT [varArgT stringT, varArgT readonlyIntT] voidT
+  , FuncVal [argT varT (identT "str") stringT, argT varT (identT "ch") readonlyIntT] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
     (outerr, ("NOT IMPLEMENTED\n" ++ output))
   ))
