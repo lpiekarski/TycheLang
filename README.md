@@ -36,3 +36,7 @@ rm Makefile
 mv Makefile.bak Makefile
 make
 ```
+Then you need to adjust `Tyche/TypeCheck*` and `Tyche/Trans*` files to match your new grammar and replace the bnfc Makefile with old one:
+```bash
+rm -rf Makefile && mv Makefile.bak Makefile
+```
