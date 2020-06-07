@@ -45,10 +45,57 @@ transStmt x venv lenv icont = case x of
   FnDef _ ident fulltype args stmts -> \(store, input) -> do
     let (funcvarloc, storeafterfuncvardef) = newLoc store
     let venvafterfuncvardef = extendFunc venv ident (Just funcvarloc)
-    let funcval = FuncVal args (\funcargs -> \callvenv -> transStmts stmts venvafterfuncvardef)
+    let funcval = FuncVal args (\funcargs -> \callvenv -> transStmts stmts (mergeVEnv venvafterfuncvardef callvenv))
     let storeafterfuncvarsave = saveInStore storeafterfuncvardef funcvarloc funcval
     let cont = icont venvafterfuncvardef
     cont (storeafterfuncvarsave, input)
+  FnApp _ expr exprs -> --TODO args
+    transExpr expr venv lenv (\val ->
+      case val of
+        FuncVal args func ->
+          let
+            exprsToArgVals :: [Expr LineInfo] -> [Arg LineInfo] -> [ArgVal] -> ([ArgVal] -> Cont) -> Cont
+            exprsToArgVals [] [] acc avcont = avcont (reverse acc)
+            exprsToArgVals (e:es) ((Arg _ argmod argident argfulltype):as) acc avcont =
+              transExpr e venv lenv (\val ->
+                let
+                  av = case argmod of
+                    AModVar _ ->
+                      case e of
+                        EVar _ ident ->
+                          case venv ident of
+                            Just loc -> Variable loc argident
+                            Nothing  -> ArgError
+                        otherwise -> ArgError
+                    AModVal _ -> Value val argident
+                    AModInOut _ ->
+                      case e of
+                        EVar _ ident ->
+                          case venv ident of
+                              Just loc -> Inout loc argident
+                              Nothing  -> ArgError
+                        otherwise     -> ArgError
+                in
+                  exprsToArgVals es as (av:acc) avcont
+              )
+          in
+            exprsToArgVals exprs args [] (\argvals -> do
+              let
+                addArgValsToVEnv :: [ArgVal] -> VEnv -> (VEnv -> Cont) -> Cont
+                addArgValsToVEnv [] acc venvcont = venvcont acc
+                addArgValsToVEnv (av:avs) acc venvcont =
+                  case av of
+                    Variable loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
+                    Value val argident -> \(store, input) -> do
+                      let (varloc, storeaftervardef) = newLoc store
+                      let venvaftervardef = extendFunc acc argident (Just varloc)
+                      let storeaftervalsave = saveInStore storeaftervardef varloc val
+                      addArgValsToVEnv avs venvaftervardef venvcont (storeaftervalsave, input)
+                    Inout loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
+                    ArgError -> errMsg "Argument error\n"
+              addArgValsToVEnv argvals (\x -> Nothing) (\venvwithargs ->
+                (func argvals venvwithargs (addReturnLabel lenv (\val -> icont venv)) (\v -> icont venv))))
+        otherwise    -> errMsg "Expected a function\n")
   Cond _ expr stmts ->
     transExpr expr venv lenv (\val ->
       case val of
@@ -110,7 +157,6 @@ transStmt x venv lenv icont = case x of
               iterate :: Integer -> Integer -> Integer -> VEnv -> ICont -> Cont
               iterate iterval targetval direction itervenv itericont =
                 if iterval - direction == targetval then do
-                  let itericont = itericont
                   itericont itervenv
                 else \(iterstore, iterinput) -> do
                   let storewithloopvarvalue = saveInStore iterstore loopvarloc (IntVal iterval)
@@ -182,7 +228,7 @@ transExpr x venv lenv econt = case x of
                       addArgValsToVEnv avs venvaftervardef venvcont (storeaftervalsave, input)
                     Inout loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
                     ArgError -> errMsg "Argument error\n"
-              addArgValsToVEnv argvals venv (\venvwithargs ->
+              addArgValsToVEnv argvals (\x -> Nothing) (\venvwithargs ->
                 (func argvals venvwithargs (addReturnLabel lenv econt) (\v -> econt NoVal))))
         otherwise    -> errMsg "Expected a function\n")
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))

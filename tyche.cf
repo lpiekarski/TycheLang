@@ -22,6 +22,7 @@ VarDef.      Stmt ::= "def" Ident ":" FullType "=" Expr ;
 Ass.         Stmt ::= Ident "=" Expr ;
 
 FnDef.       Stmt ::= "def" Ident ":" FullType "(" [Arg] ")" "do" "{" [Stmt] "}" ;
+FnApp.       Stmt ::= Expr9 "(" [Expr] ")" ;
 
 Cond.        Stmt ::= "if" Expr "do" "{" [Stmt] "}" ;
 CondElse.    Stmt ::= "if" Expr "do" "{" [Stmt] "}" "else" "do" "{" [Stmt] "}" ;

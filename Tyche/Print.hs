@@ -102,6 +102,7 @@ instance Print (Stmt a) where
     VarDef _ id fulltype expr -> prPrec i 0 (concatD [doc (showString "def"), prt 0 id, doc (showString ":"), prt 0 fulltype, doc (showString "="), prt 0 expr])
     Ass _ id expr -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 0 expr])
     FnDef _ id fulltype args stmts -> prPrec i 0 (concatD [doc (showString "def"), prt 0 id, doc (showString ":"), prt 0 fulltype, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
+    FnApp _ expr exprs -> prPrec i 0 (concatD [prt 9 expr, doc (showString "("), prt 0 exprs, doc (showString ")")])
     Cond _ expr stmts -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
     CondElse _ expr stmts1 stmts2 -> prPrec i 0 (concatD [doc (showString "if"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts1, doc (showString "}"), doc (showString "else"), doc (showString "do"), doc (showString "{"), prt 0 stmts2, doc (showString "}")])
     While _ expr stmts -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])

@@ -6,6 +6,12 @@ import           Tyche.Types
 extendFunc :: (Eq a) => (a -> b) -> a -> b -> a -> b
 extendFunc f nx ny x = if nx == x then ny else f x
 
+mergeVEnv :: VEnv -> VEnv -> VEnv
+mergeVEnv first second = \x ->
+  case second x of
+    Just val -> Just val
+    Nothing  -> first x
+
 extendVEnv :: VEnv -> Ident -> Loc -> VEnv
 extendVEnv venv var loc = \x ->
   if x == var then Just loc

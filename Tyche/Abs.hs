@@ -28,6 +28,7 @@ data Stmt a
     | VarDef a Ident (FullType a) (Expr a)
     | Ass a Ident (Expr a)
     | FnDef a Ident (FullType a) [Arg a] [Stmt a]
+    | FnApp a (Expr a) [Expr a]
     | Cond a (Expr a) [Stmt a]
     | CondElse a (Expr a) [Stmt a] [Stmt a]
     | While a (Expr a) [Stmt a]
@@ -44,6 +45,7 @@ instance Functor Stmt where
         VarDef a ident fulltype expr -> VarDef (f a) ident (fmap f fulltype) (fmap f expr)
         Ass a ident expr -> Ass (f a) ident (fmap f expr)
         FnDef a ident fulltype args stmts -> FnDef (f a) ident (fmap f fulltype) (map (fmap f) args) (map (fmap f) stmts)
+        FnApp a expr exprs -> FnApp (f a) (fmap f expr) (map (fmap f) exprs)
         Cond a expr stmts -> Cond (f a) (fmap f expr) (map (fmap f) stmts)
         CondElse a expr stmts1 stmts2 -> CondElse (f a) (fmap f expr) (map (fmap f) stmts1) (map (fmap f) stmts2)
         While a expr stmts -> While (f a) (fmap f expr) (map (fmap f) stmts)

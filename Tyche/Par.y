@@ -194,6 +194,9 @@ Stmt :: {
 | 'def' Ident ':' FullType '(' ListArg ')' 'do' '{' ListStmt '}' {
   (Just (tokenLineCol $1), Tyche.Abs.FnDef (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $10)) 
 }
+| Expr9 '(' ListExpr ')' {
+  (fst $1, Tyche.Abs.FnApp (fst $1)(snd $1)(snd $3)) 
+}
 | 'if' Expr 'do' '{' ListStmt '}' {
   (Just (tokenLineCol $1), Tyche.Abs.Cond (Just (tokenLineCol $1)) (snd $2)(snd $5)) 
 }

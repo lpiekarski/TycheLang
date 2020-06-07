@@ -80,6 +80,7 @@ All other symbols are terminals.
   |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``=`` //Expr// 
   |  |  **|**  | //Ident// ``=`` //Expr// 
   |  |  **|**  | ``def`` //Ident// ``:`` //FullType// ``(`` //[Arg]// ``)`` ``do`` ``{`` //[Stmt]// ``}`` 
+  |  |  **|**  | //Expr9// ``(`` //[Expr]// ``)`` 
   |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``if`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` ``else`` ``do`` ``{`` //[Stmt]// ``}`` 
   |  |  **|**  | ``while`` //Expr// ``do`` ``{`` //[Stmt]// ``}`` 

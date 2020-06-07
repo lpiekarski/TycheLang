@@ -90,6 +90,27 @@ typecheckStmt x tenv functype returned inloop = case x of
             Ok (voidT, tenvForAfterFunc, functype, returned, inloop)
           else
             Bad ("Function returns no value (return statement is missing)\n\tat Function Definition " ++ (lineInfoString lineinfo) ++ "\n")
+  FnApp lineinfo expr exprs ->
+    case typecheckExpr expr tenv functype returned inloop of
+      Bad str -> Bad (str ++ "\tat Function Application " ++ (lineInfoString lineinfo) ++ "\n")
+      Ok (ftype, _, _, _, _) ->
+        case ftype of
+          FullType _ _ (Fun _ argtypes fulltype) ->
+            let
+              checkArgTypesWithExprs [] [] = Ok (fulltype, tenv, functype, returned, inloop)
+              checkArgTypesWithExprs [] e = Bad ("Too many arguments. Expected " ++ (show $ length argtypes) ++ ", got " ++ (show $ length exprs) ++ "\n\tat Function Application" ++ (lineInfoString lineinfo) ++ "\n")
+              checkArgTypesWithExprs at [] = Bad ("Too few arguments. Expected " ++ (show $ length argtypes) ++ ", got " ++ (show $ length exprs) ++ "\n\tat Function Application" ++ (lineInfoString lineinfo) ++ "\n")
+              checkArgTypesWithExprs (at:ats) (e:es) =
+                case typecheckExpr e tenv functype returned inloop of
+                  Bad str -> Bad (str ++ "\tat Function Application " ++ (lineInfoString lineinfo) ++ "\n")
+                  Ok (etype, _, _, _, _) -> let expectedtype = argTypeToFullType at in
+                    if matchFullType etype expectedtype then
+                      checkArgTypesWithExprs ats es
+                    else
+                      Bad ("Can't match expected argument type `" ++ (printTree expectedtype) ++ "` with actual type `" ++ (printTree etype) ++ "`\n\tat Function Application " ++ (lineInfoString lineinfo) ++ "\n")
+            in
+              checkArgTypesWithExprs argtypes exprs
+          otherwise -> Bad ("Expected function, got `" ++ (printTree ftype) ++ "`\n\tat Function Application " ++ (lineInfoString lineinfo) ++ "\n")
   Cond lineinfo expr stmts ->
     case typecheckExpr expr tenv functype returned inloop of
       Bad str -> Bad (str ++ "\tat If Statement " ++ (lineInfoString lineinfo) ++ "\n")

@@ -32,11 +32,9 @@ stack --stack-yaml stack-8.6.4.yaml --local-bin-path ~/tmp/bin install
 cd ..
 ~/tmp/bin/bnfc --functor -m -d tyche.cf
 make
-rm Makefile
-mv Makefile.bak Makefile
-make
 ```
-Then you need to adjust `Tyche/TypeCheck*` and `Tyche/Trans*` files to match your new grammar and replace the bnfc Makefile with old one:
+Then you need to adjust `Tyche/TypeCheck*` and `Tyche/Trans*` files to match your new grammar, replace the bnfc Makefile with old one and build the interpreter:
 ```bash
 rm -rf Makefile && mv Makefile.bak Makefile
+make
 ```
