@@ -1,0 +1,6 @@
+do
+
+def func : void () do
+  def x : int = 0
+  y = 10
+  return void

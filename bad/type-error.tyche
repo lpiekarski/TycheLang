@@ -1,0 +1,5 @@
+do
+
+def x : string = "str"
+
+x = 10
