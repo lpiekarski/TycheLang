@@ -5,12 +5,7 @@ Simply run
 ```bash
 ./interpreter [file]
 ```
-or
-```bash
-./interpreter
-```
-and provide the program to run in the standard input.
-There is also a short help describing interpreter usage
+There is also a short help command available describing interpreter usage
 ```bash
 ./interpreter --help
 ```
