@@ -11,25 +11,9 @@ There is also a short help command available describing interpreter usage
 ```
 
 ## Compiling the interpreter
-WARNING! If you are running this on the students server please replace stack location in Makefile. Replace:
-```
-stack setup
-stack install random
-stack ghc -- --make Tyche/Main.hs -o interpreter
-```
-with:
-```
-export STACK="/home/students/inf/PUBLIC/MRJP/Stack/stack --system-ghc --resolver lts-13.19"
-$STACK setup
-$STACK config set system-ghc --global true
-$STACK config set resolver lts-13.19
-$STACK upgrade --force-download
-export PATH=$($STACK path --local-bin):$PATH
-$STACK install random
-$STACK ghc -- --make Tyche/Main.hs -o interpreter
-```
+WARNING! If you are running this on the students server run script `./students-setup.sh` instead of running make.
 
-To compile the interpreter all you have to do is run:
+To compile the interpreter all you have to do is run (doesn't work on students):
 ```bash
 make
 ```
