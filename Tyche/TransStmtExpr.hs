@@ -310,4 +310,22 @@ transExpr x venv lenv econt = case x of
       in
         econt (list!!(randint `mod` (length list))) (store, (istream, randstream)))
   ERandDist _ expr1 expr2 -> econt NoVal --TODO
-  EProbSamp _ expr1 stmts expr2 -> econt NoVal --TODO
+  EProbSamp _ expr1 stmts expr2 ->
+    transExpr expr1 venv lenv (\samplesval -> \(store, input) -> case samplesval of
+      IntVal samples ->
+        let
+          iterProb :: Int -> Int -> (Int -> Cont) -> Cont
+          iterProb 0 acc intcont = intcont acc
+          iterProb i acc intcont =
+            transStmts stmts venv lenv (\aftervenv ->
+              transExpr expr2 aftervenv lenv (\val -> \(afterstore, afterinput) -> case val of
+                BoolVal bval ->
+                  if bval then
+                    iterProb (i - 1) (acc + 1) intcont (store, afterinput)
+                  else
+                    iterProb (i - 1) acc intcont (store, afterinput)
+                otherwise -> errMsg "Probability check expression should have type bool\n" (afterstore, afterinput))
+              )
+        in
+          iterProb (fromIntegral samples) 0 (\satisfied -> econt (FloatVal ((fromIntegral satisfied) / (fromIntegral samples)))) (store, input)
+      otherwise -> errMsg "Number of samples must be an integer\n" (store, input))

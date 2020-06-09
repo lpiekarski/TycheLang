@@ -21,6 +21,8 @@ internals =
   , internal_get_char
   , internal_add_char
   , internal_string_length
+  , internal_random_int
+  , internal_random_float
   ]
 
 internal_read_char =
@@ -29,7 +31,7 @@ internal_read_char =
   , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, input@(ch:istream, randstream)) -> do
     case lenv LReturn of
       Nothing          -> errMsg "internal error (return label is Nothing)" (store, input)
-      Just returnecont -> returnecont (IntVal (toInteger $ ord ch)) (store, input)
+      Just returnecont -> returnecont (IntVal (toInteger $ ord ch)) (store, (istream, randstream))
   ))
 
 internal_print_char =
@@ -102,4 +104,22 @@ internal_string_length =
     case lenv LReturn of
       Nothing          -> errMsg "internal error (return label is Nothing)"
       Just returnecont -> returnecont (IntVal (toInteger $ length str))
+  ))
+
+internal_random_int =
+  ( Ident "random_int"
+  , readonlyFunctionT [] intT
+  , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, input@(istream, randint:randstream)) -> do
+    case lenv LReturn of
+      Nothing          -> errMsg "internal error (return label is Nothing)" (store, input)
+      Just returnecont -> returnecont (IntVal (toInteger randint)) (store, (istream, randstream))
+  ))
+
+internal_random_float =
+  ( Ident "random_float"
+  , readonlyFunctionT [] floatT
+  , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, input@(istream, randint:randstream)) -> do
+    case lenv LReturn of
+      Nothing          -> errMsg "internal error (return label is Nothing)" (store, input)
+      Just returnecont -> returnecont (FloatVal ((1.0 + ((fromIntegral randint) / (fromIntegral (maxBound::Int)))) / 2.0)) (store, (istream, randstream))
   ))
