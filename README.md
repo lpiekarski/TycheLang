@@ -19,6 +19,8 @@ There is also a short help describing interpreter usage
 
 To compile the interpreter all you have to do is run:
 ```bash
+stack setup
+stack install random
 make
 ```
 After this the interpreter executable will be created.
