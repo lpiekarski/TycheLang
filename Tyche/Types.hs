@@ -13,7 +13,7 @@ type Input = String
 type Output = String
 data ArgVal = Variable Loc Ident
     | Value Val Ident
-    | Inout Loc Ident
+    | Inout Val Loc Ident
     | ArgError
 data Val = IntVal Integer
     | FloatVal Double

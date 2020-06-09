@@ -12,6 +12,75 @@ import           Tyche.Types
 
 import           Data.Array
 
+funcApp :: Expr LineInfo -> [Expr LineInfo] -> VEnv -> LEnv -> ECont -> Cont
+funcApp expr exprs venv lenv econt =
+  transExpr expr venv lenv (\val ->
+    case val of
+      FuncVal args func ->
+        let
+          exprsToArgVals :: [Expr LineInfo] -> [Arg LineInfo] -> [ArgVal] -> ([ArgVal] -> Cont) -> Cont
+          exprsToArgVals [] [] acc avcont = avcont (reverse acc)
+          exprsToArgVals (e:es) ((Arg _ argmod argident argfulltype):as) acc avcont =
+            transExpr e venv lenv (\val ->
+              let
+                av = case argmod of
+                  AModVar _ ->
+                    case e of
+                      EVar _ ident ->
+                        case venv ident of
+                          Just loc -> Variable loc argident
+                          Nothing  -> ArgError
+                      otherwise -> ArgError
+                  AModVal _ -> Value val argident
+                  AModInOut _ ->
+                    case e of
+                      EVar _ ident ->
+                        case venv ident of
+                            Just loc -> Inout val loc argident
+                            Nothing  -> ArgError
+                      otherwise -> ArgError
+              in
+                exprsToArgVals es as (av:acc) avcont
+            )
+        in
+          exprsToArgVals exprs args [] (\argvals -> do
+            let
+              addArgValsToVEnv :: [ArgVal] -> VEnv -> [Maybe Loc] -> (VEnv -> [Maybe Loc] -> Cont) -> Cont
+              addArgValsToVEnv [] acc locs venvloccont = venvloccont acc (reverse locs)
+              addArgValsToVEnv (av:avs) acc locs venvloccont =
+                case av of
+                  Variable loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) (Nothing:locs) venvloccont
+                  Value val argident -> \(store, input) -> do
+                    let (varloc, storeaftervardef) = newLoc store
+                    let venvaftervardef = extendFunc acc argident (Just varloc)
+                    let storeaftervalsave = saveInStore storeaftervardef varloc val
+                    addArgValsToVEnv avs venvaftervardef (Nothing:locs) venvloccont (storeaftervalsave, input)
+                  Inout val loc argident -> \(store, input) -> do
+                    let (varloc, storeaftervardef) = newLoc store
+                    let venvaftervardef = extendFunc acc argident (Just varloc)
+                    let storeaftervalsave = saveInStore storeaftervardef varloc val
+                    addArgValsToVEnv avs venvaftervardef ((Just varloc):locs) venvloccont (storeaftervalsave, input)
+                  ArgError -> errMsg "Argument error\n"
+            let
+              venvloccont = (\venvwithargs -> \inoutlocs ->
+                let
+                  restoreInouts :: [ArgVal] -> [Maybe Loc] -> Store -> Cont -> Cont
+                  restoreInouts [] [] afterfuncstore cont = cont
+                  restoreInouts (av:avs) (l:ls) (afterfuncstore@(next, storefunc)) cont = case av of
+                    Variable _ _ -> restoreInouts avs ls afterfuncstore cont
+                    Value _ _ -> restoreInouts avs ls afterfuncstore cont
+                    Inout _ loc argident -> \(store, input) -> case l of
+                      Nothing -> errMsg "Inout parameter without location\n" (store, input)
+                      Just ploc -> do
+                        let storeafter = saveInStore store loc (storefunc ploc)
+                        restoreInouts avs ls afterfuncstore cont (storeafter, input)
+                  econtinouted val (afterfuncstore, afterfuncinput) =
+                    restoreInouts argvals inoutlocs afterfuncstore (econt val) (afterfuncstore, afterfuncinput)
+                in
+                  func argvals venvwithargs (addReturnLabel lenv econtinouted) (\v -> econtinouted NoVal))
+            addArgValsToVEnv argvals (\x -> Nothing) [] venvloccont)
+      otherwise    -> errMsg "Expected a function\n")
+
 transStmts :: [Stmt LineInfo] -> VEnv -> LEnv -> ICont -> Cont
 transStmts x venv lenv icont = case x of
   [] -> icont venv
@@ -49,66 +118,20 @@ transStmt x venv lenv icont = case x of
     let storeafterfuncvarsave = saveInStore storeafterfuncvardef funcvarloc funcval
     let cont = icont venvafterfuncvardef
     cont (storeafterfuncvarsave, input)
-  FnApp _ expr exprs -> --TODO args
-    transExpr expr venv lenv (\val ->
-      case val of
-        FuncVal args func ->
-          let
-            exprsToArgVals :: [Expr LineInfo] -> [Arg LineInfo] -> [ArgVal] -> ([ArgVal] -> Cont) -> Cont
-            exprsToArgVals [] [] acc avcont = avcont (reverse acc)
-            exprsToArgVals (e:es) ((Arg _ argmod argident argfulltype):as) acc avcont =
-              transExpr e venv lenv (\val ->
-                let
-                  av = case argmod of
-                    AModVar _ ->
-                      case e of
-                        EVar _ ident ->
-                          case venv ident of
-                            Just loc -> Variable loc argident
-                            Nothing  -> ArgError
-                        otherwise -> ArgError
-                    AModVal _ -> Value val argident
-                    AModInOut _ ->
-                      case e of
-                        EVar _ ident ->
-                          case venv ident of
-                              Just loc -> Inout loc argident
-                              Nothing  -> ArgError
-                        otherwise     -> ArgError
-                in
-                  exprsToArgVals es as (av:acc) avcont
-              )
-          in
-            exprsToArgVals exprs args [] (\argvals -> do
-              let
-                addArgValsToVEnv :: [ArgVal] -> VEnv -> (VEnv -> Cont) -> Cont
-                addArgValsToVEnv [] acc venvcont = venvcont acc
-                addArgValsToVEnv (av:avs) acc venvcont =
-                  case av of
-                    Variable loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
-                    Value val argident -> \(store, input) -> do
-                      let (varloc, storeaftervardef) = newLoc store
-                      let venvaftervardef = extendFunc acc argident (Just varloc)
-                      let storeaftervalsave = saveInStore storeaftervardef varloc val
-                      addArgValsToVEnv avs venvaftervardef venvcont (storeaftervalsave, input)
-                    Inout loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
-                    ArgError -> errMsg "Argument error\n"
-              addArgValsToVEnv argvals (\x -> Nothing) (\venvwithargs ->
-                (func argvals venvwithargs (addReturnLabel lenv (\val -> icont venv)) (\v -> icont venv))))
-        otherwise    -> errMsg "Expected a function\n")
+  FnApp _ expr exprs -> funcApp expr exprs venv lenv (\v -> icont venv)
   Cond _ expr stmts ->
     transExpr expr venv lenv (\val ->
       case val of
         BoolVal boolval ->
-          if boolval then transStmts stmts venv lenv icont
+          if boolval then transStmts stmts venv lenv (\v -> icont venv)
           else icont venv
         otherwise -> errMsg "Value inside If expression is not bool\n")
   CondElse _ expr stmts1 stmts2 ->
     transExpr expr venv lenv (\val ->
       case val of
         BoolVal boolval ->
-          if boolval then transStmts stmts1 venv lenv icont
-          else transStmts stmts2 venv lenv icont
+          if boolval then transStmts stmts1 venv lenv (\v -> icont venv)
+          else transStmts stmts2 venv lenv (\v -> icont venv)
         otherwise -> errMsg "Value inside If expression is not bool\n")
   While _ expr stmts ->
     transExpr expr venv lenv (\val ->
@@ -180,57 +203,15 @@ transExpr x venv lenv econt = case x of
   ELitInt _ integer -> econt (IntVal integer)
   ELitTrue _ -> econt (BoolVal True)
   ELitFalse _ -> econt (BoolVal False)
-  EString _ string -> econt (StringVal string)
+  EString _ string -> do
+    let
+      firstLast xs@(_:_) = tail (init xs)
+      firstLast _        = []
+    econt (StringVal (firstLast string))
   ELitFloat _ double -> econt (FloatVal double)
   EEmpList _ fulltype -> econt (ListVal [])
   EEmpArray _ fulltype -> econt (ArrayVal (listArray (0, 0) []))
-  EApp _ expr exprs -> --TODO args
-    transExpr expr venv lenv (\val ->
-      case val of
-        FuncVal args func ->
-          let
-            exprsToArgVals :: [Expr LineInfo] -> [Arg LineInfo] -> [ArgVal] -> ([ArgVal] -> Cont) -> Cont
-            exprsToArgVals [] [] acc avcont = avcont (reverse acc)
-            exprsToArgVals (e:es) ((Arg _ argmod argident argfulltype):as) acc avcont =
-              transExpr e venv lenv (\val ->
-                let
-                  av = case argmod of
-                    AModVar _ ->
-                      case e of
-                        EVar _ ident ->
-                          case venv ident of
-                            Just loc -> Variable loc argident
-                            Nothing  -> ArgError
-                        otherwise -> ArgError
-                    AModVal _ -> Value val argident
-                    AModInOut _ ->
-                      case e of
-                        EVar _ ident ->
-                          case venv ident of
-                              Just loc -> Inout loc argident
-                              Nothing  -> ArgError
-                        otherwise     -> ArgError
-                in
-                  exprsToArgVals es as (av:acc) avcont
-              )
-          in
-            exprsToArgVals exprs args [] (\argvals -> do
-              let
-                addArgValsToVEnv :: [ArgVal] -> VEnv -> (VEnv -> Cont) -> Cont
-                addArgValsToVEnv [] acc venvcont = venvcont acc
-                addArgValsToVEnv (av:avs) acc venvcont =
-                  case av of
-                    Variable loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
-                    Value val argident -> \(store, input) -> do
-                      let (varloc, storeaftervardef) = newLoc store
-                      let venvaftervardef = extendFunc acc argident (Just varloc)
-                      let storeaftervalsave = saveInStore storeaftervardef varloc val
-                      addArgValsToVEnv avs venvaftervardef venvcont (storeaftervalsave, input)
-                    Inout loc argident -> addArgValsToVEnv avs (extendFunc acc argident (Just loc)) venvcont
-                    ArgError -> errMsg "Argument error\n"
-              addArgValsToVEnv argvals (\x -> Nothing) (\venvwithargs ->
-                (func argvals venvwithargs (addReturnLabel lenv econt) (\v -> econt NoVal))))
-        otherwise    -> errMsg "Expected a function\n")
+  EApp _ expr exprs -> funcApp expr exprs venv lenv econt
   Neg _ expr -> transExpr expr venv lenv (\val -> econt (negateNumerical val))
   Not _ expr -> transExpr expr venv lenv (\val -> econt (negateBool val))
   ECons _ expr1 expr2 ->

@@ -1,4 +1,10 @@
-def factorial : int (var x : readonly int)
-  x equals 0 ? 1 : factorial(x - 1);
+do
 
-factorial(10);
+def factorial : int (val x : readonly int) do
+  if x < 2 do
+    return 1
+  return x * factorial(x - 1)
+
+
+print_int(factorial(7))
+println()

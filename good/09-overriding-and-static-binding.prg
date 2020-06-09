@@ -1,18 +1,26 @@
-def x : int = 1;
+do
+def x : int = 1
 
-def f : (var int) -> void ( ) {
-  return lambda : void (var y : int) -> {
-    y = y + x;
-    return;
-  };
-}
+def f : (var int) -> void () do
+  return lambda : void (var y : int) do
+    y = y + x
+    return void
 
-def g : void (var x : int) {
-  def a : int = 0;
-  def l : (var int) -> void = f( );
-  l(a);
-  if a == 1 then
-    ; // binding is static
-  else
-    ; // binding is not static
-}
+
+
+def g : void (var x : int) do
+  def a : int = 0
+  def l : (var int) -> void = f()
+  l(a)
+  if a == 1 do
+    print_string("a is 1")
+    println()
+  else do
+    print_string("a is not 1")
+    println()
+    print_string("a is ")
+    print_int(a)
+    println()
+  return void
+
+g(10)

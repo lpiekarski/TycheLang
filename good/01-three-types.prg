@@ -1,5 +1,4 @@
-{
-  def num : int = 10
-; def str : string = "abcdefghijk"
-; def flt : float = 0.1234
-}
+do
+def a : int = 11
+def b : float = 10.05
+def c : string = "asdasdasd"

@@ -1,9 +1,9 @@
-{
-  def num : int = 10;
-def str : string = "abcdefghijk";
-def flt : float = 0.1234;
-
-num <= 10;
-flt == 0.1;
-0 < 1;
-}
+do
+def a : int = 10
+def b : float = 10.05
+if a > b do
+  print_string("a is bigger than b")
+  println()
+else do
+  print_string("b is bigger than a")
+  println()

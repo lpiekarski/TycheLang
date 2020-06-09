@@ -1,9 +1,17 @@
-def str : string = "foo";
-str = "bar";
+do
 
+def x : int = 10
 
-def str2 : readonly string = "foo";
-/*
-// TypeCheck Error: at 8:1 Cannot assign value to readonly variable
-str2 = "bar";
-*/
+def print_x : void (val x : readonly int) do
+  print_string("x is equal ")
+  print_int(x)
+  println()
+  return void
+
+print_x(x)
+
+if true do
+  def x : int = x + 5
+  print_x(x)
+
+print_x(x)

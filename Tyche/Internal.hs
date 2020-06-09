@@ -15,6 +15,7 @@ internals =
   , internal_print_char
   , internal_print_string
   , internal_print_int
+  , internal_print_float
   , internal_println
   , internal_exit
   , internal_get_char
@@ -25,9 +26,10 @@ internals =
 internal_read_char =
   ( Ident "read_char"
   , readonlyFunctionT [] intT
-  , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
-    let (outerr, output) = icont venv (store, input)
-    (outerr, ("NOT IMPLEMENTED\n" ++ output))
+  , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, (ch:input)) -> do
+    case lenv LReturn of
+      Nothing          -> errMsg "internal error (return label is Nothing)" (store, input)
+      Just returnecont -> returnecont (IntVal (toInteger $ ord ch)) (store, input)
   ))
 
 internal_print_char =
@@ -49,9 +51,17 @@ internal_print_string =
 internal_print_int =
   ( Ident "print_int"
   , readonlyFunctionT [valArgT readonlyIntT] voidT
-  , FuncVal [argT valT (identT "str") readonlyIntT] (\[Value (IntVal int) ident] -> \venv -> \lenv -> \icont -> \(store, input) -> do
+  , FuncVal [argT valT (identT "num") readonlyIntT] (\[Value (IntVal int) ident] -> \venv -> \lenv -> \icont -> \(store, input) -> do
     let (outerr, output) = icont venv (store, input)
     (outerr, ((show int) ++ output))
+  ))
+
+internal_print_float =
+  ( Ident "print_float"
+  , readonlyFunctionT [valArgT readonlyFloatT] voidT
+  , FuncVal [argT valT (identT "flt") readonlyFloatT] (\[Value (FloatVal flt) ident] -> \venv -> \lenv -> \icont -> \(store, input) -> do
+    let (outerr, output) = icont venv (store, input)
+    (outerr, ((show flt) ++ output))
   ))
 
 internal_println =
@@ -70,10 +80,11 @@ internal_exit =
 
 internal_get_char =
   ( Ident "get_char"
-  , readonlyFunctionT [varArgT readonlyStringT, varArgT readonlyIntT] intT
-  , FuncVal [argT varT (identT "str") readonlyStringT, argT varT (identT "id") readonlyIntT] (\args -> \venv -> \lenv -> \icont -> \(store, input) -> do
-    let (outerr, output) = icont venv (store, input)
-    (outerr, ("NOT IMPLEMENTED\n" ++ output))
+  , readonlyFunctionT [valArgT readonlyStringT, valArgT readonlyIntT] intT
+  , FuncVal [argT valT (identT "str") readonlyStringT, argT valT (identT "id") readonlyIntT] (\[Value (StringVal str) identstr, Value (IntVal id) identid] -> \venv -> \lenv -> \icont -> do
+    case lenv LReturn of
+      Nothing          -> errMsg "internal error (return label is Nothing)"
+      Just returnecont -> returnecont (IntVal (toInteger $ ord (str!!(fromIntegral id))))
   ))
 
 internal_add_char =
