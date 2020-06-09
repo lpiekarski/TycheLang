@@ -1,0 +1,24 @@
+do
+
+def x : int = 1
+
+
+def f : (var int) -> void () do
+  def z : int = x
+  return lambda : void (var y : int) do
+    y = y + z
+    return void
+
+def f1 : (var int) -> void = f()
+x = 3
+def f2 : (var int) -> void = f()
+
+def y : int = 10
+
+f1(y)
+print_int(y)
+println()
+
+f2(y)
+print_int(y)
+println()

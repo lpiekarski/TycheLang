@@ -1,11 +1,12 @@
 do
+
 def x : int = 1
+
 
 def f : (var int) -> void () do
   return lambda : void (var y : int) do
     y = y + x
     return void
-
 
 
 def g : void (var x : int) do
@@ -23,4 +24,6 @@ def g : void (var x : int) do
     println()
   return void
 
-g(10)
+def x : int = 10
+def arg : int = 10
+g(arg)

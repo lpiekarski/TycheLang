@@ -1,4 +1,5 @@
 do
+
 def a : int = 10
 def b : float = 10.05
 if a > b do

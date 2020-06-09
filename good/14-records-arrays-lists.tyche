@@ -1,0 +1,11 @@
+do
+
+def arr : {int} = {0, 1, 2, 3, 4}
+def lst : [int] = [0, 1, 2, 3, 4]
+def arr2 : {int} = array 100 times 5 : int
+
+lst = -1 . lst    // cons
+print_int(arr[2])   // reference to array element
+println()
+print_int(arr2[90])
+println()

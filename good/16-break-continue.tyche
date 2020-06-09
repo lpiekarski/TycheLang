@@ -1,0 +1,17 @@
+do
+
+print_string("first loop:")
+println()
+for i from 0 to 10 do
+  print_int(i)
+  println()
+  if i == 5 do
+    break
+
+print_string("second loop:")
+println()
+for i from 0 to 10 do
+  if i == 5 do
+    continue
+  print_int(i)
+  println()

@@ -1,0 +1,28 @@
+do
+
+def a : int = 0
+def b : int = 0
+def c : int = 0
+
+
+def f : void (var a : int, val b : int, inout c : int) do
+  a = a + 1
+  b = b + 2
+  c = c + 3
+  return void
+
+f(a, b, c)
+print_int(a)
+println()
+print_int(b)
+println()
+print_int(c)
+println()
+
+f(a, a, a)
+print_int(a)
+println()
+print_int(b)
+println()
+print_int(c)
+println()

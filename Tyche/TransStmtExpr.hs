@@ -299,8 +299,9 @@ transExpr x venv lenv econt = case x of
           else
             transExpr expr3 venv lenv econt
         otherwise -> errMsg "Expected bool value\n")
-  ELambda _ fulltype args stmts ->
-    econt (FuncVal args (\funcargs -> \callvenv -> transStmts stmts venv))
+  ELambda _ fulltype args stmts -> do
+    let funcval = FuncVal args (\funcargs -> \callvenv -> transStmts stmts (mergeVEnv venv callvenv))
+    econt funcval
   ERand _ expr ->
     transExpr expr venv lenv (\val -> \(store, (istream, (randint:randstream))) ->
       let

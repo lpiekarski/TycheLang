@@ -1,0 +1,11 @@
+do
+
+def x : string = "asd"
+
+/*
+// Static Error
+x = 10
+*/
+
+// OK
+def x : int = 10
