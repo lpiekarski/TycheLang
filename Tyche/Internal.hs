@@ -26,7 +26,7 @@ internals =
 internal_read_char =
   ( Ident "read_char"
   , readonlyFunctionT [] intT
-  , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, (ch:input)) -> do
+  , FuncVal [] (\args -> \venv -> \lenv -> \icont -> \(store, input@(ch:istream, randstream)) -> do
     case lenv LReturn of
       Nothing          -> errMsg "internal error (return label is Nothing)" (store, input)
       Just returnecont -> returnecont (IntVal (toInteger $ ord ch)) (store, input)

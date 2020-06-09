@@ -1,0 +1,29 @@
+name:                TycheLang
+version:             0.1.0.0
+github:              "lpiekarski/TycheLang"
+license:             BSD3
+author:              "Lukasz Piekarski"
+maintainer:          "wookashp98@gmail.com"
+copyright:           "2020 Lukasz Piekarski"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/lpiekarski/TycheLang#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: .
+
+#executables:
+
+#tests:

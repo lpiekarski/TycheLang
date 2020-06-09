@@ -4,6 +4,7 @@ import           Control.Monad      (when)
 import           System.Environment (getArgs, getProgName)
 import           System.Exit        (exitFailure, exitSuccess)
 import           System.IO          (hGetContents, stdin)
+import           System.Random
 
 import           Tyche.Abs
 import           Tyche.ErrM
@@ -41,9 +42,10 @@ runProgram :: Program LineInfo -> IO ()
 runProgram prog = do
   case typecheckProgram prog of
     Ok _ -> do
+        let randomStream = randoms (mkStdGen 42) :: RandomStream
         interact (\inputstr ->
           let
-            (err, output) = transProgram prog inputstr
+            (err, output) = transProgram prog (inputstr, randomStream)
           in
             output ++ (case err of
               NoErr      -> ""

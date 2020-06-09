@@ -9,7 +9,8 @@ import           System.IO   (hGetContents, stdin)
 
 
 type Loc = Int
-type Input = String
+type RandomStream = [Int]
+type Input = (String, RandomStream)
 type Output = String
 data ArgVal = Variable Loc Ident
     | Value Val Ident
