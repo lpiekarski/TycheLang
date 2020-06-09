@@ -42,7 +42,8 @@ runProgram :: Program LineInfo -> IO ()
 runProgram prog = do
   case typecheckProgram prog of
     Ok _ -> do
-        let randomStream = randoms (mkStdGen 42) :: RandomStream
+        gen <- getStdGen
+        let randomStream = randoms gen :: RandomStream
         interact (\inputstr ->
           let
             (err, output) = transProgram prog (inputstr, randomStream)

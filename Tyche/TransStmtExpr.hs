@@ -301,6 +301,13 @@ transExpr x venv lenv econt = case x of
         otherwise -> errMsg "Expected bool value\n")
   ELambda _ fulltype args stmts ->
     econt (FuncVal args (\funcargs -> \callvenv -> transStmts stmts venv))
-  ERand _ expr                  -> econt NoVal --TODO
+  ERand _ expr ->
+    transExpr expr venv lenv (\val -> \(store, (istream, (randint:randstream))) ->
+      let
+        list = case val of
+          ListVal l  -> l
+          ArrayVal a -> elems a
+      in
+        econt (list!!(randint `mod` (length list))) (store, (istream, randstream)))
   ERandDist _ expr1 expr2 -> econt NoVal --TODO
   EProbSamp _ expr1 stmts expr2 -> econt NoVal --TODO
