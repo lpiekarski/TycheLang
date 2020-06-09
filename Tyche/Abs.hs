@@ -124,7 +124,6 @@ data Expr a
     | EIf a (Expr a) (Expr a) (Expr a)
     | ELambda a (FullType a) [Arg a] [Stmt a]
     | ERand a (Expr a)
-    | ERandDist a (Expr a) (Expr a)
     | EProbSamp a (Expr a) [Stmt a] (Expr a)
   deriving (Eq, Ord, Show, Read)
 
@@ -155,7 +154,6 @@ instance Functor Expr where
         EIf a expr1 expr2 expr3 -> EIf (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
         ELambda a fulltype args stmts -> ELambda (f a) (fmap f fulltype) (map (fmap f) args) (map (fmap f) stmts)
         ERand a expr -> ERand (f a) (fmap f expr)
-        ERandDist a expr1 expr2 -> ERandDist (f a) (fmap f expr1) (fmap f expr2)
         EProbSamp a expr1 stmts expr2 -> EProbSamp (f a) (fmap f expr1) (map (fmap f) stmts) (fmap f expr2)
 data AddOp a = Plus a | Minus a
   deriving (Eq, Ord, Show, Read)

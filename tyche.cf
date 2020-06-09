@@ -94,7 +94,6 @@ EArrSize.  Expr1 ::= "array" Expr "times" Expr ":" FullType ;
 EIf.       Expr ::= Expr1 "?" Expr1 ":" Expr1 ;
 ELambda.   Expr ::= "lambda" ":" FullType "(" [Arg] ")" "do" "{" [Stmt] "}" ;
 ERand.     Expr ::= "random" "from" Expr1 ;
-ERandDist. Expr ::= "random" "from" Expr1 "distribution" Expr1 ;
 EProbSamp. Expr ::= "probability" "sampled" Expr1 "times" "of" "{" [Stmt] "}" "satisfying" Expr1 ;
 
 coercions Expr 9 ;

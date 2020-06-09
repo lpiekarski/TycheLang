@@ -309,7 +309,6 @@ transExpr x venv lenv econt = case x of
           ArrayVal a -> elems a
       in
         econt (list!!(randint `mod` (length list))) (store, (istream, randstream)))
-  ERandDist _ expr1 expr2 -> econt NoVal --TODO
   EProbSamp _ expr1 stmts expr2 ->
     transExpr expr1 venv lenv (\samplesval -> \(store, input) -> case samplesval of
       IntVal samples ->

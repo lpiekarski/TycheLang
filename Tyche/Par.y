@@ -71,42 +71,41 @@ import Tyche.ErrM
   'break' { PT _ (TS _ 29) }
   'continue' { PT _ (TS _ 30) }
   'def' { PT _ (TS _ 31) }
-  'distribution' { PT _ (TS _ 32) }
-  'do' { PT _ (TS _ 33) }
-  'each' { PT _ (TS _ 34) }
-  'else' { PT _ (TS _ 35) }
-  'equals' { PT _ (TS _ 36) }
-  'false' { PT _ (TS _ 37) }
-  'float' { PT _ (TS _ 38) }
-  'for' { PT _ (TS _ 39) }
-  'from' { PT _ (TS _ 40) }
-  'if' { PT _ (TS _ 41) }
-  'inout' { PT _ (TS _ 42) }
-  'int' { PT _ (TS _ 43) }
-  'lambda' { PT _ (TS _ 44) }
-  'mod' { PT _ (TS _ 45) }
-  'not' { PT _ (TS _ 46) }
-  'of' { PT _ (TS _ 47) }
-  'or' { PT _ (TS _ 48) }
-  'probability' { PT _ (TS _ 49) }
-  'random' { PT _ (TS _ 50) }
-  'readonly' { PT _ (TS _ 51) }
-  'return' { PT _ (TS _ 52) }
-  'sampled' { PT _ (TS _ 53) }
-  'satisfying' { PT _ (TS _ 54) }
-  'skip' { PT _ (TS _ 55) }
-  'string' { PT _ (TS _ 56) }
-  'times' { PT _ (TS _ 57) }
-  'to' { PT _ (TS _ 58) }
-  'true' { PT _ (TS _ 59) }
-  'val' { PT _ (TS _ 60) }
-  'var' { PT _ (TS _ 61) }
-  'void' { PT _ (TS _ 62) }
-  'while' { PT _ (TS _ 63) }
-  '{' { PT _ (TS _ 64) }
-  '{}' { PT _ (TS _ 65) }
-  '||' { PT _ (TS _ 66) }
-  '}' { PT _ (TS _ 67) }
+  'do' { PT _ (TS _ 32) }
+  'each' { PT _ (TS _ 33) }
+  'else' { PT _ (TS _ 34) }
+  'equals' { PT _ (TS _ 35) }
+  'false' { PT _ (TS _ 36) }
+  'float' { PT _ (TS _ 37) }
+  'for' { PT _ (TS _ 38) }
+  'from' { PT _ (TS _ 39) }
+  'if' { PT _ (TS _ 40) }
+  'inout' { PT _ (TS _ 41) }
+  'int' { PT _ (TS _ 42) }
+  'lambda' { PT _ (TS _ 43) }
+  'mod' { PT _ (TS _ 44) }
+  'not' { PT _ (TS _ 45) }
+  'of' { PT _ (TS _ 46) }
+  'or' { PT _ (TS _ 47) }
+  'probability' { PT _ (TS _ 48) }
+  'random' { PT _ (TS _ 49) }
+  'readonly' { PT _ (TS _ 50) }
+  'return' { PT _ (TS _ 51) }
+  'sampled' { PT _ (TS _ 52) }
+  'satisfying' { PT _ (TS _ 53) }
+  'skip' { PT _ (TS _ 54) }
+  'string' { PT _ (TS _ 55) }
+  'times' { PT _ (TS _ 56) }
+  'to' { PT _ (TS _ 57) }
+  'true' { PT _ (TS _ 58) }
+  'val' { PT _ (TS _ 59) }
+  'var' { PT _ (TS _ 60) }
+  'void' { PT _ (TS _ 61) }
+  'while' { PT _ (TS _ 62) }
+  '{' { PT _ (TS _ 63) }
+  '{}' { PT _ (TS _ 64) }
+  '||' { PT _ (TS _ 65) }
+  '}' { PT _ (TS _ 66) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -451,9 +450,6 @@ Expr :: {
 }
 | 'random' 'from' Expr1 {
   (Just (tokenLineCol $1), Tyche.Abs.ERand (Just (tokenLineCol $1)) (snd $3)) 
-}
-| 'random' 'from' Expr1 'distribution' Expr1 {
-  (Just (tokenLineCol $1), Tyche.Abs.ERandDist (Just (tokenLineCol $1)) (snd $3)(snd $5)) 
 }
 | 'probability' 'sampled' Expr1 'times' 'of' '{' ListStmt '}' 'satisfying' Expr1 {
   (Just (tokenLineCol $1), Tyche.Abs.EProbSamp (Just (tokenLineCol $1)) (snd $3)(snd $7)(snd $10)) 

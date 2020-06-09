@@ -169,7 +169,6 @@ instance Print (Expr a) where
     EIf _ expr1 expr2 expr3 -> prPrec i 0 (concatD [prt 1 expr1, doc (showString "?"), prt 1 expr2, doc (showString ":"), prt 1 expr3])
     ELambda _ fulltype args stmts -> prPrec i 0 (concatD [doc (showString "lambda"), doc (showString ":"), prt 0 fulltype, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "do"), doc (showString "{"), prt 0 stmts, doc (showString "}")])
     ERand _ expr -> prPrec i 0 (concatD [doc (showString "random"), doc (showString "from"), prt 1 expr])
-    ERandDist _ expr1 expr2 -> prPrec i 0 (concatD [doc (showString "random"), doc (showString "from"), prt 1 expr1, doc (showString "distribution"), prt 1 expr2])
     EProbSamp _ expr1 stmts expr2 -> prPrec i 0 (concatD [doc (showString "probability"), doc (showString "sampled"), prt 1 expr1, doc (showString "times"), doc (showString "of"), doc (showString "{"), prt 0 stmts, doc (showString "}"), doc (showString "satisfying"), prt 1 expr2])
   prtList _ [] = (concatD [])
   prtList _ [x] = (concatD [prt 0 x])

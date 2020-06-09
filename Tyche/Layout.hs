@@ -236,42 +236,41 @@ sToken p s = PT p (TS s i)
       "break" -> 29
       "continue" -> 30
       "def" -> 31
-      "distribution" -> 32
-      "do" -> 33
-      "each" -> 34
-      "else" -> 35
-      "equals" -> 36
-      "false" -> 37
-      "float" -> 38
-      "for" -> 39
-      "from" -> 40
-      "if" -> 41
-      "inout" -> 42
-      "int" -> 43
-      "lambda" -> 44
-      "mod" -> 45
-      "not" -> 46
-      "of" -> 47
-      "or" -> 48
-      "probability" -> 49
-      "random" -> 50
-      "readonly" -> 51
-      "return" -> 52
-      "sampled" -> 53
-      "satisfying" -> 54
-      "skip" -> 55
-      "string" -> 56
-      "times" -> 57
-      "to" -> 58
-      "true" -> 59
-      "val" -> 60
-      "var" -> 61
-      "void" -> 62
-      "while" -> 63
-      "{" -> 64
-      "{}" -> 65
-      "||" -> 66
-      "}" -> 67
+      "do" -> 32
+      "each" -> 33
+      "else" -> 34
+      "equals" -> 35
+      "false" -> 36
+      "float" -> 37
+      "for" -> 38
+      "from" -> 39
+      "if" -> 40
+      "inout" -> 41
+      "int" -> 42
+      "lambda" -> 43
+      "mod" -> 44
+      "not" -> 45
+      "of" -> 46
+      "or" -> 47
+      "probability" -> 48
+      "random" -> 49
+      "readonly" -> 50
+      "return" -> 51
+      "sampled" -> 52
+      "satisfying" -> 53
+      "skip" -> 54
+      "string" -> 55
+      "times" -> 56
+      "to" -> 57
+      "true" -> 58
+      "val" -> 59
+      "var" -> 60
+      "void" -> 61
+      "while" -> 62
+      "{" -> 63
+      "{}" -> 64
+      "||" -> 65
+      "}" -> 66
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

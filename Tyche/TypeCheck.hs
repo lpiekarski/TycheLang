@@ -469,23 +469,6 @@ typecheckExpr x tenv functype returned inloop = case x of
           Ok (elementType exprtype, tenv, functype, returned, inloop)
         else
           Bad ("Expected an Array or a List, got `" ++ (printTree exprtype) ++ "`\n\tat Random Expression " ++ (lineInfoString lineinfo) ++ "\n")
-  ERandDist lineinfo expr1 expr2 ->
-    case typecheckExpr expr1 tenv functype returned inloop of
-      Bad str -> Bad (str ++ "\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
-      Ok (expr1type, _, _, _, _) ->
-        if isArray expr1type || isList expr1type then
-          case typecheckExpr expr2 tenv functype returned inloop of
-            Bad str -> Bad (str ++ "\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
-            Ok (expr2type, _, _, _, _) ->
-              if isArray expr2type || isList expr2type then
-                if matchFullType (elementType expr2type) floatT then
-                  Ok (elementType expr1type, tenv, functype, returned, inloop)
-                else
-                  Bad ("Expected element type `" ++ (printTree floatT) ++ "`, got `" ++ (printTree (elementType expr2type)) ++ "`\n\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
-              else
-                Bad ("Expected an Array or a List, got `" ++ (printTree expr2type) ++ "`\n\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
-        else
-          Bad ("Expected an Array or a List, got `" ++ (printTree expr1type) ++ "`\n\tat Random with Distribution " ++ (lineInfoString lineinfo) ++ "\n")
   EProbSamp lineinfo expr1 stmts expr2 ->
     case typecheckExpr expr1 tenv functype returned inloop of
       Bad str -> Bad (str ++ "\tat Sampled Probability (number of samples expression) " ++ (lineInfoString lineinfo) ++ "\n")
