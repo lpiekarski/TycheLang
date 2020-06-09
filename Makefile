@@ -1,4 +1,6 @@
 all:
+	stack setup
+	stack install random
 	stack ghc -- --make Tyche/Main.hs -o interpreter
 grammar:
 	happy -gca Tyche/Par.y

@@ -16,11 +16,21 @@ There is also a short help describing interpreter usage
 ```
 
 ## Compiling the interpreter
+WARNING! If you are running this on the students server please replace stack location in Makefile. Replace:
+```
+stack setup
+stack install random
+stack ghc -- --make Tyche/Main.hs -o interpreter
+```
+with:
+```
+/home/students/inf/PUBLIC/MRJP/Stack/stack setup
+/home/students/inf/PUBLIC/MRJP/Stack/stack install random
+/home/students/inf/PUBLIC/MRJP/Stack/stack ghc -- --make Tyche/Main.hs -o interpreter
+```
 
 To compile the interpreter all you have to do is run:
 ```bash
-stack setup
-stack install random
 make
 ```
 After this the interpreter executable will be created.
